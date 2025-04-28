@@ -1,0 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --gold-gradient: linear-gradient(90deg, #FFD700 0%, #FFC300 100%);
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-black text-gray-100 font-inter;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-spaceGrotesk font-bold;
+  }
+
+  h1 {
+    @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight;
+  }
+
+  h2 {
+    @apply text-2xl sm:text-3xl md:text-4xl leading-tight;
+  }
+
+  h3 {
+    @apply text-xl sm:text-2xl md:text-3xl leading-tight;
+  }
+
+  p {
+    @apply leading-relaxed;
+  }
+}
+
+@layer components {
+  .container {
+    @apply px-4 mx-auto max-w-7xl;
+  }
+
+  .section {
+    @apply py-12 sm:py-16 md:py-24;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-medium rounded-lg transition-all duration-300;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-amber-400 to-amber-500 text-black hover:shadow-[0_0_15px_rgba(255,215,0,0.5)] focus:ring-2 focus:ring-amber-400;
+  }
+
+  .btn-outline {
+    @apply border-2 border-amber-400 text-amber-400 hover:bg-amber-400/10 hover:shadow-[0_0_15px_rgba(255,215,0,0.3)];
+  }
+
+  .card {
+    @apply bg-dark-800 rounded-2xl p-4 sm:p-6 transition-all duration-300;
+  }
+
+  .nav-link {
+    @apply relative py-2 font-medium transition-all duration-300 hover:text-amber-400;
+  }
+
+  .nav-link::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-300;
+  }
+
+  .nav-link:hover::after {
+    @apply w-full;
+  }
+
+  .nav-link.active {
+    @apply text-amber-400;
+  }
+
+  .nav-link.active::after {
+    @apply w-full;
+  }
+
+  .gold-glow {
+    @apply hover:shadow-[0_0_15px_rgba(255,215,0,0.5)];
+  }
+
+  /* Animations */
+  .animate-fade-up {
+    @apply opacity-0 translate-y-8 transition-all duration-700 ease-out;
+  }
+
+  .animate-fade-up.active {
+    @apply opacity-100 translate-y-0;
+  }
+
+  /* Mobile optimizations */
+  @media (max-width: 640px) {
+    .container {
+      @apply px-4;
+    }
+
+    .section {
+      @apply py-8;
+    }
+
+    .card {
+      @apply p-4;
+    }
+
+    .btn {
+      @apply w-full justify-center;
+    }
+  }
+}
