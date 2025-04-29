@@ -4,8 +4,8 @@ import TimerDisplay from '../components/TimerDisplay';
 import TimerControls from '../components/TimerControls';
 import TimerSettings from '../components/TimerSettings';
 import { useTimerContext } from '../context/TimerContext';
-import { useEffect, useState, useRef } from 'react';
-import gsap from 'gsap';
+import { useEffect, useState } from 'react';
+import { CSSProperties } from 'react';
 
 // Phase color definitions with higher quality uneven gradient flow - no textures
 const PHASE_GRADIENTS = {
@@ -15,6 +15,13 @@ const PHASE_GRADIENTS = {
   cooldown: 'radial-gradient(circle at 60% 50%, rgba(96, 165, 250, 0.8) 0%, rgba(37, 99, 235, 0.6) 25%, rgba(29, 78, 216, 0.4) 50%, rgba(9, 17, 40, 0.95) 75%, rgba(0, 0, 0, 1) 100%)',
   complete: 'radial-gradient(circle at 50% 30%, rgba(168, 85, 247, 0.8) 0%, rgba(126, 34, 206, 0.6) 25%, rgba(107, 33, 168, 0.4) 50%, rgba(9, 17, 40, 0.95) 75%, rgba(0, 0, 0, 1) 100%)'
 };
+
+// Define type for layer
+interface GradientLayer {
+  gradient: string;
+  opacity: number;
+  zIndex: number;
+}
 
 const TimerPage = () => {
   const { currentPhase, timerMode } = useTimerContext();
@@ -111,7 +118,7 @@ const TimerPage = () => {
   };
   
   // CSS for the gradient layers - no texture overlay
-  const gradientLayerStyle = (layer) => ({
+  const gradientLayerStyle = (layer: GradientLayer): CSSProperties => ({
     position: 'absolute',
     inset: 0,
     background: layer.gradient,
@@ -121,7 +128,7 @@ const TimerPage = () => {
   });
   
   // Add a subtle vignette effect
-  const vignetteStyle = {
+  const vignetteStyle: CSSProperties = {
     position: 'absolute',
     inset: 0,
     background: 'radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%)',

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimerContext } from '../context/TimerContext';
-import { ChevronRight, Lightbulb, ArrowRight } from 'lucide-react';
+import { Lightbulb, ArrowRight } from 'lucide-react';
 import { gsap } from 'gsap';
 
 interface TimerDisplayProps {
@@ -36,10 +36,7 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
     minutes,
     seconds,
     isRunning,
-    formatTime,
     calculateProgress,
-    calculateRoundProgress,
-    exitFullscreen,
     transitionActive
   } = useTimerContext();
 

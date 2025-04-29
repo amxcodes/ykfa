@@ -33,18 +33,6 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const previousVolume = useRef<number>(settings.soundVolume);
   
-  // Get initial values
-  const getInitialValue = (setting: keyof typeof settings, type: 'minutes' | 'seconds' | 'value') => {
-    const rawValue = settings[setting];
-    if (type === 'minutes') {
-      return getMinutes(rawValue as number).toString();
-    } else if (type === 'seconds') {
-      return getSeconds(rawValue as number).toString();
-    } else {
-      return rawValue?.toString() || '';
-    }
-  };
-
   // Update input values when settings change
   useEffect(() => {
     const newInputValues: Record<string, { minutes?: string; seconds?: string; value?: string }> = {};
@@ -196,7 +184,7 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       const startButton = settingsRef.current.querySelector('.start-button');
       if (startButton) {
         gsap.to(startButton, {
-          boxShadow: ['0 0 0px rgba(96, 165, 250, 0)', '0 0 15px rgba(96, 165, 250, 0.5)', '0 0 0px rgba(96, 165, 250, 0)'],
+          boxShadow: '0 0 0px rgba(96, 165, 250, 0), 0 0 15px rgba(96, 165, 250, 0.5), 0 0 0px rgba(96, 165, 250, 0)',
           repeat: -1,
           duration: 2,
           ease: 'sine.inOut'
@@ -204,60 +192,6 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       }
     }
   }, []);
-
-  const handleTimeChange = (setting: keyof typeof settings, value: number) => {
-    // Ensure time is at least 5 seconds total
-    const validValue = Math.max(5, value);
-    
-    if (validValue <= 9999) {
-      updateSettings(setting, validValue);
-      animateSettingChange(`.${setting}-value`);
-    }
-  };
-
-  const handleMinutesChange = (setting: keyof typeof settings, e: React.ChangeEvent<HTMLInputElement>) => {
-    const minutes = parseInt(e.target.value, 10);
-    
-    if (!isNaN(minutes) && minutes >= 0 && minutes <= 99) {
-      // Get current seconds
-      const seconds = settings[setting] % 60;
-      
-      // Calculate new total seconds
-      const totalSeconds = (minutes * 60) + seconds;
-      
-      // Enforce minimum 5 seconds total
-      const validValue = Math.max(5, totalSeconds);
-      
-      updateSettings(setting, validValue);
-      animateSettingChange(`.${setting}-value`);
-    }
-  };
-
-  const handleSecondsChange = (setting: keyof typeof settings, e: React.ChangeEvent<HTMLInputElement>) => {
-    const seconds = parseInt(e.target.value, 10);
-    
-    if (!isNaN(seconds) && seconds >= 0 && seconds <= 59) {
-      // Get current minutes
-      const minutes = Math.floor(settings[setting] / 60);
-      
-      // Calculate new total seconds
-      const totalSeconds = (minutes * 60) + seconds;
-      
-      // If total time is less than 5 seconds, enforce minimum
-      if (totalSeconds < 5) {
-        // If minutes are 0, set seconds to 5
-        // Otherwise, keep seconds as is (even if 0) since total time > 5s
-        const validSeconds = minutes === 0 ? 5 : seconds;
-        const validValue = (minutes * 60) + validSeconds;
-        
-        updateSettings(setting, validValue);
-      } else {
-        updateSettings(setting, totalSeconds);
-      }
-      
-      animateSettingChange(`.${setting}-value`);
-    }
-  };
 
   const getMinutes = (totalSeconds: number) => {
     return Math.floor(totalSeconds / 60);
