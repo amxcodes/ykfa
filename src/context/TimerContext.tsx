@@ -37,6 +37,7 @@ interface TimerContextProps {
   resetTimer: () => void;
   setTimerMode: (mode: TimerMode) => void;
   exitFullscreen: () => void;
+  backgroundGradient: string;
 }
 
 const defaultSettings: TimerSettings = {
@@ -54,11 +55,50 @@ export const TimerContext = createContext<TimerContextProps | undefined>(undefin
 
 // Sound URLs from free online libraries
 const SOUND_URLS = {
-  start: 'https://assets.mixkit.co/active_storage/sfx/212/212-preview.mp3', // Mixkit Success Bell
-  stop: 'https://assets.mixkit.co/active_storage/sfx/270/270-preview.mp3',  // Mixkit Attention Bell
-  round: 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3', // Mixkit Sport Buzzer
-  complete: 'https://assets.mixkit.co/active_storage/sfx/1010/1010-preview.mp3', // Mixkit Achievement Bell
-  countdown: 'https://assets.mixkit.co/active_storage/sfx/254/254-preview.mp3' // Mixkit Click Tone
+  start: '/sounds/start.mp3', // Local start sound
+  stop: '/sounds/stop.mp3',  // Local stop sound
+  round: '/sounds/round.mp3', // Local round sound
+  complete: 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3', // Game experience level increased
+  countdown: 'https://assets.mixkit.co/active_storage/sfx/254/254-preview.mp3', // Mixkit Click Tone
+  // Round announcement sounds
+  roundOne: '/sounds/round one.mp3', // Local round one sound
+  nextRound: '/sounds/next round.mp3', // Local next round sound
+  lastRound: '/sounds/next round.mp3', // Local last round sound
+  finalRound: '/sounds/LAST ROUND.mp3', // Using last round for final round too
+  // Phase announcement sounds
+  warmup: '/sounds/warm up.mp3', // Local warm up announcement
+  cooldown: '/sounds/cool down.mp3', // Local cool down announcement
+  // Ambient background sound
+  ambient: 'https://assets.mixkit.co/active_storage/sfx/2466/2466-preview.mp3' // Medium speed heartbeat for background
+};
+
+// Add phase color constants for the background gradients
+const PHASE_COLORS = {
+  warmup: {
+    primary: '#4299e1',   // blue-500
+    secondary: '#90cdf4', // blue-300
+    gradient: 'linear-gradient(120deg, rgba(66, 153, 225, 0.6) 0%, rgba(144, 205, 244, 0.3) 100%)'
+  },
+  round: {
+    primary: '#ed8936',   // orange-500
+    secondary: '#fbd38d', // orange-300
+    gradient: 'linear-gradient(120deg, rgba(237, 137, 54, 0.6) 0%, rgba(251, 211, 141, 0.3) 100%)'
+  },
+  break: {
+    primary: '#48bb78',   // green-500
+    secondary: '#9ae6b4', // green-300
+    gradient: 'linear-gradient(120deg, rgba(72, 187, 120, 0.6) 0%, rgba(154, 230, 180, 0.3) 100%)'
+  },
+  cooldown: {
+    primary: '#667eea',   // indigo-500
+    secondary: '#c3dafe', // indigo-300
+    gradient: 'linear-gradient(120deg, rgba(102, 126, 234, 0.6) 0%, rgba(195, 218, 254, 0.3) 100%)'
+  },
+  complete: {
+    primary: '#9f7aea',   // purple-500
+    secondary: '#d6bcfa', // purple-300
+    gradient: 'linear-gradient(120deg, rgba(159, 122, 234, 0.6) 0%, rgba(214, 188, 250, 0.3) 100%)'
+  }
 };
 
 export function TimerProvider({ children }: { children: ReactNode }) {
@@ -69,11 +109,11 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   const [activeLayer, setActiveLayer] = useState<TimerLayer>('primary');
   const [timerMode, setTimerMode] = useState<TimerMode>('setup');
   const [transitionActive, setTransitionActive] = useState(false);
+  // Add state for background gradient
+  const [backgroundGradient, setBackgroundGradient] = useState(PHASE_COLORS.warmup.gradient);
   
   const isInPhaseTransition = useRef(false);
-  const transitionTimeout = useRef<NodeJS.Timeout | null>(null);
-  const timerDisplayRef = useRef<HTMLDivElement | null>(null);
-  const phaseLabelsRef = useRef<HTMLDivElement | null>(null);
+  const transitionTimeout = useRef<number | null>(null);
 
   // Audio elements for sounds
   const startSoundRef = useRef<HTMLAudioElement | null>(null);
@@ -81,6 +121,16 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   const roundChangeSoundRef = useRef<HTMLAudioElement | null>(null);
   const completeSoundRef = useRef<HTMLAudioElement | null>(null);
   const countdownSoundRef = useRef<HTMLAudioElement | null>(null);
+  // Round announcement audio elements
+  const roundOneSoundRef = useRef<HTMLAudioElement | null>(null);
+  const nextRoundSoundRef = useRef<HTMLAudioElement | null>(null);
+  const lastRoundSoundRef = useRef<HTMLAudioElement | null>(null);
+  const finalRoundSoundRef = useRef<HTMLAudioElement | null>(null);
+  // Phase announcement audio elements
+  const warmupSoundRef = useRef<HTMLAudioElement | null>(null);
+  const cooldownSoundRef = useRef<HTMLAudioElement | null>(null);
+  // Ambient sound for continuous play
+  const ambientSoundRef = useRef<HTMLAudioElement | null>(null);
   
   // Initialize audio elements
   useEffect(() => {
@@ -89,9 +139,27 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     roundChangeSoundRef.current = new Audio(SOUND_URLS.round);
     completeSoundRef.current = new Audio(SOUND_URLS.complete);
     countdownSoundRef.current = new Audio(SOUND_URLS.countdown);
+    // Initialize round announcement audio
+    roundOneSoundRef.current = new Audio(SOUND_URLS.roundOne);
+    nextRoundSoundRef.current = new Audio(SOUND_URLS.nextRound);
+    lastRoundSoundRef.current = new Audio(SOUND_URLS.lastRound);
+    finalRoundSoundRef.current = new Audio(SOUND_URLS.finalRound);
+    // Initialize phase announcement audio
+    warmupSoundRef.current = new Audio(SOUND_URLS.warmup);
+    cooldownSoundRef.current = new Audio(SOUND_URLS.cooldown);
+    // Initialize ambient sound with looping enabled
+    ambientSoundRef.current = new Audio(SOUND_URLS.ambient);
+    if (ambientSoundRef.current) {
+      ambientSoundRef.current.loop = true;
+      ambientSoundRef.current.volume = settings.soundVolume * 0.3; // Lower volume for ambient sound
+    }
     
     // Set volume for all sounds
-    [startSoundRef, stopSoundRef, roundChangeSoundRef, completeSoundRef, countdownSoundRef].forEach(ref => {
+    [
+      startSoundRef, stopSoundRef, roundChangeSoundRef, completeSoundRef, countdownSoundRef,
+      roundOneSoundRef, nextRoundSoundRef, lastRoundSoundRef, finalRoundSoundRef,
+      warmupSoundRef, cooldownSoundRef
+    ].forEach(ref => {
       if (ref.current) {
         ref.current.volume = settings.soundVolume;
       }
@@ -99,7 +167,11 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     
     // Cleanup
     return () => {
-      [startSoundRef, stopSoundRef, roundChangeSoundRef, completeSoundRef, countdownSoundRef].forEach(ref => {
+      [
+        startSoundRef, stopSoundRef, roundChangeSoundRef, completeSoundRef, countdownSoundRef,
+        roundOneSoundRef, nextRoundSoundRef, lastRoundSoundRef, finalRoundSoundRef,
+        warmupSoundRef, cooldownSoundRef, ambientSoundRef
+      ].forEach(ref => {
         if (ref.current) {
           ref.current.pause();
           ref.current.currentTime = 0;
@@ -110,11 +182,20 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   
   // Update sound volume when settings change
   useEffect(() => {
-    [startSoundRef, stopSoundRef, roundChangeSoundRef, completeSoundRef, countdownSoundRef].forEach(ref => {
+    [
+      startSoundRef, stopSoundRef, roundChangeSoundRef, completeSoundRef, countdownSoundRef,
+      roundOneSoundRef, nextRoundSoundRef, lastRoundSoundRef, finalRoundSoundRef,
+      warmupSoundRef, cooldownSoundRef
+    ].forEach(ref => {
       if (ref.current) {
         ref.current.volume = settings.soundVolume;
       }
     });
+    
+    // Ambient sound at lower volume
+    if (ambientSoundRef.current) {
+      ambientSoundRef.current.volume = settings.soundVolume * 0.3;
+    }
   }, [settings.soundVolume]);
   
   // Sound player functions
@@ -136,6 +217,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   const playRoundChangeSound = useCallback(() => playSound(roundChangeSoundRef), [playSound]);
   const playCompleteSound = useCallback(() => playSound(completeSoundRef), [playSound]);
   const playCountdownSound = useCallback(() => playSound(countdownSoundRef), [playSound]);
+  const playRoundOneSound = useCallback(() => playSound(roundOneSoundRef), [playSound]);
+  const playNextRoundSound = useCallback(() => playSound(nextRoundSoundRef), [playSound]);
+  const playLastRoundSound = useCallback(() => playSound(lastRoundSoundRef), [playSound]);
+  const playFinalRoundSound = useCallback(() => playSound(finalRoundSoundRef), [playSound]);
+  const playWarmupSound = useCallback(() => playSound(warmupSoundRef), [playSound]);
+  const playCooldownSound = useCallback(() => playSound(cooldownSoundRef), [playSound]);
 
   const getExpiryTimestamp = useCallback((seconds: number) => {
     const time = new Date();
@@ -177,12 +264,33 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     }
   }, [currentPhase, currentRound, settings.rounds]);
 
+  // Update background gradient when phase changes
+  useEffect(() => {
+    // Update gradient based on current phase
+    setBackgroundGradient(PHASE_COLORS[currentPhase].gradient);
+    
+    // Apply the gradient to the body
+    document.body.style.background = backgroundGradient;
+    
+    // Cleanup
+    return () => {
+      document.body.style.background = '';
+    };
+  }, [currentPhase, backgroundGradient]);
+
   const animatePhaseChange = useCallback(() => {
     const timeline = gsap.timeline();
     
     if (navigator.vibrate) {
       navigator.vibrate([100, 50, 100]);
     }
+    
+    // Add animation for background gradient
+    gsap.to('body', {
+      background: PHASE_COLORS[currentPhase].gradient,
+      duration: 1.2,
+      ease: 'power2.inOut'
+    });
     
     timeline.to('.timer-display', {
       scale: 1.05,
@@ -192,7 +300,10 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     });
     
     timeline.to('.timer-background', {
-      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+      backgroundColor: `rgba(${currentPhase === 'round' ? '237, 137, 54' : 
+                             currentPhase === 'break' ? '72, 187, 120' : 
+                             currentPhase === 'cooldown' ? '102, 126, 234' : 
+                             currentPhase === 'complete' ? '159, 122, 234' : '66, 153, 225'}, 0.15)`,
       duration: 0.2,
       ease: 'power1.inOut',
     }, '<');
@@ -226,10 +337,9 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     });
     
     return timeline;
-  }, []);
+  }, [currentPhase]);
 
   const handlePhaseComplete = useCallback(() => {
-    playRoundChangeSound();
     setTransitionActive(true);
     isInPhaseTransition.current = true;
     
@@ -250,20 +360,68 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       
       setCurrentPhase('complete');
       setIsPaused(true);
-      playCompleteSound(); // Using new complete sound
+      playCompleteSound(); // Play completion sound
       setTransitionActive(false);
       isInPhaseTransition.current = false;
       return;
     }
     
-    animatePhaseChange();
+    // Handle different phase transitions with appropriate sounds
+    if (nextPhase === 'round') {
+      // Play only the round announcement sound without any other sounds
+      if (nextRound === 1) {
+        // First round starting after warmup
+        playRoundOneSound();
+      } else if (nextRound === settings.rounds) {
+        // Last round
+        playFinalRoundSound();
+      } else if (nextRound === settings.rounds - 1) {
+        // Second to last round
+        playLastRoundSound();
+      } else {
+        // Other rounds
+        playNextRoundSound();
+      }
+      
+      // Add a delay to let the announcement play before visual changes
+      setTimeout(() => {
+        animatePhaseChange();
+      }, 1000);
+    } else if (nextPhase === 'warmup') {
+      // Play warmup announcement
+      playWarmupSound();
+      
+      // Add a delay to let the announcement play before visual changes
+      setTimeout(() => {
+        animatePhaseChange();
+      }, 1000);
+    } else if (nextPhase === 'cooldown') {
+      // Play cooldown announcement
+      playCooldownSound();
+      
+      // Add a delay to let the announcement play before visual changes
+      setTimeout(() => {
+        animatePhaseChange();
+      }, 1000);
+    } else {
+      // For non-announced transitions (like break), play the standard round change sound
+      playRoundChangeSound();
+      animatePhaseChange();
+    }
     
     if (transitionTimeout.current) {
       clearTimeout(transitionTimeout.current);
     }
     
-    // Play countdown during transition
-    playCountdownSound();
+    // Only play countdown sound if we're not in an announced phase
+    if (nextPhase !== 'round' && nextPhase !== 'warmup' && nextPhase !== 'cooldown') {
+      playCountdownSound();
+    }
+    
+    // Set longer delay for announcement phases to ensure they complete playing
+    const transitionDelayMs = settings.transitionDelay * 1000;
+    const needsExtraDelay = (nextPhase === 'round' || nextPhase === 'warmup' || nextPhase === 'cooldown');
+    const extraDelayForAnnouncement = needsExtraDelay ? 1500 : 0;
     
     transitionTimeout.current = setTimeout(() => {
       setCurrentPhase(nextPhase);
@@ -272,7 +430,8 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       restart(getExpiryTimestamp(
         nextPhase === 'round' ? settings.roundDuration :
         nextPhase === 'break' ? settings.breakDuration :
-        nextPhase === 'cooldown' ? settings.cooldownDuration : 0
+        nextPhase === 'cooldown' ? settings.cooldownDuration :
+        nextPhase === 'warmup' ? settings.warmupDuration : 0
       ), settings.autoStart);
       
       setTransitionActive(false);
@@ -280,13 +439,22 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       
       if (settings.autoStart) {
         setIsPaused(false);
-        playStartSound();
+        // Don't play start sound for announced transitions to avoid interrupting announcements
+        if (nextPhase !== 'round' && nextPhase !== 'warmup' && nextPhase !== 'cooldown') {
+          playStartSound();
+        }
       } else {
         setIsPaused(true);
       }
-    }, settings.transitionDelay * 1000);
+    }, transitionDelayMs + extraDelayForAnnouncement);
     
-  }, [currentPhase, currentRound, settings, playRoundChangeSound, playCompleteSound, playCountdownSound, getNextPhaseInfo, animatePhaseChange, getExpiryTimestamp, playStartSound]);
+  }, [
+    currentPhase, currentRound, settings, 
+    playRoundChangeSound, playCompleteSound, playCountdownSound, 
+    playRoundOneSound, playNextRoundSound, playLastRoundSound, playFinalRoundSound,
+    playWarmupSound, playCooldownSound,
+    getNextPhaseInfo, animatePhaseChange, getExpiryTimestamp, playStartSound
+  ]);
 
   const {
     seconds,
@@ -300,6 +468,23 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     onExpire: handlePhaseComplete,
     autoStart: false
   });
+
+  // Control ambient sound based on timer running state - now added after timer declaration
+  useEffect(() => {
+    // Play ambient sound when timer is running and not paused or in transition
+    if (isRunning && !isPaused && !transitionActive && timerMode === 'running') {
+      if (ambientSoundRef.current) {
+        ambientSoundRef.current.play().catch(error => {
+          console.log('Error playing ambient sound:', error);
+        });
+      }
+    } else {
+      // Pause ambient sound when timer is paused or in transition
+      if (ambientSoundRef.current) {
+        ambientSoundRef.current.pause();
+      }
+    }
+  }, [isRunning, isPaused, transitionActive, timerMode]);
 
   useEffect(() => {
     if (!isRunning && !transitionActive) {
@@ -406,10 +591,39 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         }
       );
       
-      // Start timer immediately when entering running mode
-      start();
-      setIsPaused(false);
-      playStartSound();
+      // Play warmup announcement when starting the timer from setup
+      if (currentPhase === 'warmup') {
+        playWarmupSound();
+        
+        // Small delay to let announcement play
+        setTimeout(() => {
+          // Start timer after announcement
+          start();
+          setIsPaused(false);
+          
+          // Start ambient sound after a short delay
+          setTimeout(() => {
+            if (ambientSoundRef.current) {
+              ambientSoundRef.current.play().catch(error => {
+                console.log('Error playing ambient sound:', error);
+              });
+            }
+          }, 500);
+        }, 1200);
+      } else {
+        // Start timer immediately for other phases
+        start();
+        setIsPaused(false);
+        playStartSound();
+        
+        // Start ambient sound
+        if (ambientSoundRef.current) {
+          ambientSoundRef.current.play().catch(error => {
+            console.log('Error playing ambient sound:', error);
+          });
+        }
+      }
+      
       return;
     }
     
@@ -417,6 +631,11 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       pause();
       setIsPaused(true);
       playStopSound();
+      
+      // Pause ambient sound
+      if (ambientSoundRef.current) {
+        ambientSoundRef.current.pause();
+      }
       
       gsap.to('.timer-display', {
         scale: 0.98,
@@ -429,6 +648,13 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       setIsPaused(false);
       playStartSound();
       
+      // Resume ambient sound
+      if (ambientSoundRef.current) {
+        ambientSoundRef.current.play().catch(error => {
+          console.log('Error playing ambient sound:', error);
+        });
+      }
+      
       gsap.to('.timer-display', {
         scale: 1,
         opacity: 1,
@@ -436,21 +662,31 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         ease: 'back.out(1.2)'
       });
     }
-  }, [isRunning, start, pause, playStartSound, playStopSound, timerMode]);
+  }, [isRunning, start, pause, playStartSound, playStopSound, timerMode, currentPhase, playWarmupSound]);
 
   const updateTimerMode = useCallback((mode: TimerMode) => {
     if (mode === 'running' && timerMode === 'setup') {
       setTimerMode(mode);
       
-      setTimeout(() => {
-        start();
-        setIsPaused(false);
-        playStartSound();
-      }, 300);
+      // Play warmup announcement when starting from settings
+      if (currentPhase === 'warmup') {
+        playWarmupSound();
+        
+        setTimeout(() => {
+          start();
+          setIsPaused(false);
+        }, 1200);
+      } else {
+        setTimeout(() => {
+          start();
+          setIsPaused(false);
+          playStartSound();
+        }, 300);
+      }
     } else {
       setTimerMode(mode);
     }
-  }, [timerMode, start, playStartSound, setTimerMode]);
+  }, [timerMode, start, playStartSound, setTimerMode, currentPhase, playWarmupSound]);
 
   const updateSettings = useCallback((key: keyof TimerSettings, value: number | boolean) => {
     setSettings(prev => ({
@@ -487,6 +723,16 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     setTimerMode('setup');
   }, [isRunning, pause]);
 
+  // Add this useEffect to ensure warmup sound plays after setup
+  useEffect(() => {
+    // Play warmup sound when transitioning from setup to running mode
+    if (timerMode === 'running' && currentPhase === 'warmup' && !isRunning && !transitionActive) {
+      setTimeout(() => {
+        playWarmupSound();
+      }, 100);
+    }
+  }, [timerMode, currentPhase, isRunning, transitionActive, playWarmupSound]);
+
   const value = {
     settings,
     currentPhase,
@@ -507,10 +753,23 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     resetTimer,
     setTimerMode: updateTimerMode,
     exitFullscreen,
+    backgroundGradient,
   };
 
+  // Wrap the timer provider with a div that has the background gradient
   return (
     <TimerContext.Provider value={value}>
+      <div className="gradient-container" style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: -1,
+        background: backgroundGradient,
+        transition: 'background 0.8s ease'
+      }}>
+      </div>
       {children}
     </TimerContext.Provider>
   );

@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimerContext } from '../context/TimerContext';
 import { 
-  Play, Flame, Clock, Activity, Coffee, Fan, Volume2, Plus, Minus
+  Play, Flame, Clock, Activity, Coffee, Fan, Volume2, Plus, Minus, VolumeX, Volume1
 } from 'lucide-react';
 import { gsap } from 'gsap';
 
@@ -25,6 +25,151 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
   } = useTimerContext();
 
   const settingsRef = useRef<HTMLDivElement>(null);
+
+  // Local state for input fields
+  const [inputValues, setInputValues] = useState<Record<string, { minutes?: string; seconds?: string; value?: string }>>({});
+  
+  // Add state for tracking muted status
+  const [isMuted, setIsMuted] = useState<boolean>(false);
+  const previousVolume = useRef<number>(settings.soundVolume);
+  
+  // Get initial values
+  const getInitialValue = (setting: keyof typeof settings, type: 'minutes' | 'seconds' | 'value') => {
+    const rawValue = settings[setting];
+    if (type === 'minutes') {
+      return getMinutes(rawValue as number).toString();
+    } else if (type === 'seconds') {
+      return getSeconds(rawValue as number).toString();
+    } else {
+      return rawValue?.toString() || '';
+    }
+  };
+
+  // Update input values when settings change
+  useEffect(() => {
+    const newInputValues: Record<string, { minutes?: string; seconds?: string; value?: string }> = {};
+    
+    // Build new input values from settings
+    settingSections.forEach(section => {
+      if (section.showMinutes) {
+        newInputValues[section.key] = {
+          minutes: getMinutes(settings[section.key as keyof typeof settings] as number).toString(),
+          seconds: getSeconds(settings[section.key as keyof typeof settings] as number).toString()
+        };
+      } else if (section.key === 'rounds') {
+        newInputValues[section.key] = {
+          value: settings[section.key].toString()
+        };
+      } else {
+        newInputValues[section.key] = {
+          value: settings[section.key as keyof typeof settings]?.toString() || ''
+        };
+      }
+    });
+    
+    setInputValues(newInputValues);
+  }, [settings]);
+
+  // Handler for input changes
+  const handleInputChange = (
+    setting: keyof typeof settings, 
+    type: 'minutes' | 'seconds' | 'value', 
+    value: string
+  ) => {
+    // Update local state immediately for responsive UI
+    setInputValues(prev => ({
+      ...prev,
+      [setting]: {
+        ...prev[setting],
+        [type]: value
+      }
+    }));
+  };
+
+  // Validate and commit changes on blur
+  const handleInputBlur = (
+    setting: keyof typeof settings, 
+    type: 'minutes' | 'seconds' | 'value'
+  ) => {
+    const currentValue = inputValues[setting]?.[type] || '';
+    let parsedValue = parseInt(currentValue, 10);
+    
+    // Handle empty inputs
+    if (currentValue === '' || isNaN(parsedValue)) {
+      parsedValue = type === 'minutes' || type === 'value' ? 0 : 5;
+    }
+    
+    if (type === 'minutes') {
+      // Clamp minutes between 0-99
+      parsedValue = Math.max(0, Math.min(99, parsedValue));
+      
+      // Get current seconds
+      const seconds = parseInt(inputValues[setting]?.seconds || '0', 10) || 0;
+      
+      // Calculate new total time
+      let totalSeconds = (parsedValue * 60) + seconds;
+      
+      // If minutes are 0, ensure seconds are at least 5
+      if (parsedValue === 0 && seconds < 5) {
+        totalSeconds = 5;
+        
+        // Update the seconds field in UI
+        setInputValues(prev => ({
+          ...prev,
+          [setting]: {
+            ...prev[setting],
+            seconds: '5'
+          }
+        }));
+      }
+      
+      // Update setting
+      updateSettings(setting, totalSeconds);
+      animateSettingChange(`.${setting}-value`);
+      
+    } else if (type === 'seconds') {
+      // Clamp seconds between 0-59
+      parsedValue = Math.max(0, Math.min(59, parsedValue));
+      
+      // Get current minutes
+      const minutes = parseInt(inputValues[setting]?.minutes || '0', 10) || 0;
+      
+      // If minutes are 0, ensure seconds are at least 5
+      if (minutes === 0 && parsedValue < 5) {
+        parsedValue = 5;
+        
+        // Update the seconds field in UI
+        setInputValues(prev => ({
+          ...prev,
+          [setting]: {
+            ...prev[setting],
+            seconds: '5'
+          }
+        }));
+      }
+      
+      // Calculate new total time
+      const totalSeconds = (minutes * 60) + parsedValue;
+      
+      // Update setting
+      updateSettings(setting, totalSeconds);
+      animateSettingChange(`.${setting}-value`);
+      
+    } else { // type === 'value'
+      if (setting === 'rounds') {
+        // Clamp rounds between 1-99
+        parsedValue = Math.max(1, Math.min(99, parsedValue));
+      } else {
+        // For transition delay and other simple values
+        // Ensure minimum 5 seconds
+        parsedValue = Math.max(5, Math.min(59, parsedValue));
+      }
+      
+      // Update setting
+      updateSettings(setting, parsedValue);
+      animateSettingChange(`.${setting}-value`);
+    }
+  };
 
   useEffect(() => {
     // Reset the timer when entering settings view
@@ -60,12 +205,66 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
     }
   }, []);
 
-  const handleTimeChange = (setting: keyof typeof settings, value: string) => {
-    const numValue = parseInt(value, 10);
-    if (!isNaN(numValue) && numValue >= 1 && numValue <= 999) {
-      updateSettings(setting, numValue);
+  const handleTimeChange = (setting: keyof typeof settings, value: number) => {
+    // Ensure time is at least 5 seconds total
+    const validValue = Math.max(5, value);
+    
+    if (validValue <= 9999) {
+      updateSettings(setting, validValue);
       animateSettingChange(`.${setting}-value`);
     }
+  };
+
+  const handleMinutesChange = (setting: keyof typeof settings, e: React.ChangeEvent<HTMLInputElement>) => {
+    const minutes = parseInt(e.target.value, 10);
+    
+    if (!isNaN(minutes) && minutes >= 0 && minutes <= 99) {
+      // Get current seconds
+      const seconds = settings[setting] % 60;
+      
+      // Calculate new total seconds
+      const totalSeconds = (minutes * 60) + seconds;
+      
+      // Enforce minimum 5 seconds total
+      const validValue = Math.max(5, totalSeconds);
+      
+      updateSettings(setting, validValue);
+      animateSettingChange(`.${setting}-value`);
+    }
+  };
+
+  const handleSecondsChange = (setting: keyof typeof settings, e: React.ChangeEvent<HTMLInputElement>) => {
+    const seconds = parseInt(e.target.value, 10);
+    
+    if (!isNaN(seconds) && seconds >= 0 && seconds <= 59) {
+      // Get current minutes
+      const minutes = Math.floor(settings[setting] / 60);
+      
+      // Calculate new total seconds
+      const totalSeconds = (minutes * 60) + seconds;
+      
+      // If total time is less than 5 seconds, enforce minimum
+      if (totalSeconds < 5) {
+        // If minutes are 0, set seconds to 5
+        // Otherwise, keep seconds as is (even if 0) since total time > 5s
+        const validSeconds = minutes === 0 ? 5 : seconds;
+        const validValue = (minutes * 60) + validSeconds;
+        
+        updateSettings(setting, validValue);
+      } else {
+        updateSettings(setting, totalSeconds);
+      }
+      
+      animateSettingChange(`.${setting}-value`);
+    }
+  };
+
+  const getMinutes = (totalSeconds: number) => {
+    return Math.floor(totalSeconds / 60);
+  };
+
+  const getSeconds = (totalSeconds: number) => {
+    return totalSeconds % 60;
   };
 
   const handleIncreaseRounds = () => {
@@ -87,6 +286,33 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value);
     updateSettings('soundVolume', newVolume);
+    if (isMuted && newVolume > 0) {
+      setIsMuted(false);
+    }
+  };
+  
+  const toggleMute = () => {
+    if (isMuted) {
+      // Unmute - restore previous volume or default to 0.5
+      updateSettings('soundVolume', previousVolume.current > 0 ? previousVolume.current : 0.5);
+      setIsMuted(false);
+    } else {
+      // Mute - save current volume first
+      previousVolume.current = settings.soundVolume;
+      updateSettings('soundVolume', 0);
+      setIsMuted(true);
+    }
+  };
+  
+  // Function to get appropriate volume icon based on level
+  const getVolumeIcon = () => {
+    if (isMuted || settings.soundVolume === 0) {
+      return <VolumeX className="w-5 h-5 text-pink-400" />;
+    } else if (settings.soundVolume < 0.5) {
+      return <Volume1 className="w-5 h-5 text-pink-400" />;
+    } else {
+      return <Volume2 className="w-5 h-5 text-pink-400" />;
+    }
   };
 
   const handleStartWorkout = () => {
@@ -113,50 +339,56 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       key: 'warmupDuration', 
       label: 'Warm Up', 
       icon: <Flame className="w-5 h-5 text-cyan-400" />,
-      color: 'bg-cyan-800/20 border-cyan-600/30 hover:bg-cyan-700/30',
-      unit: 's'
+      color: 'bg-blue-900/30 border-blue-500/20 hover:bg-blue-800/30',
+      unit: 's',
+      showMinutes: true
     },
     { 
       key: 'rounds', 
       label: 'Rounds', 
       icon: <Activity className="w-5 h-5 text-amber-400" />,
-      color: 'bg-amber-800/20 border-amber-600/30 hover:bg-amber-700/30',
-      unit: ''
+      color: 'bg-amber-900/30 border-amber-500/20 hover:bg-amber-800/30',
+      unit: '',
+      showMinutes: false
     },
     { 
       key: 'roundDuration', 
       label: 'Round Time', 
       icon: <Clock className="w-5 h-5 text-amber-400" />,
-      color: 'bg-amber-800/20 border-amber-600/30 hover:bg-amber-700/30',
-      unit: 's'
+      color: 'bg-amber-900/30 border-amber-500/20 hover:bg-amber-800/30',
+      unit: 's',
+      showMinutes: true
     },
     { 
       key: 'breakDuration', 
       label: 'Break Time', 
       icon: <Coffee className="w-5 h-5 text-green-400" />,
-      color: 'bg-green-800/20 border-green-600/30 hover:bg-green-700/30',
-      unit: 's'
+      color: 'bg-green-900/30 border-green-500/20 hover:bg-green-800/30',
+      unit: 's',
+      showMinutes: true
     },
     { 
       key: 'cooldownDuration', 
       label: 'Cool Down', 
       icon: <Fan className="w-5 h-5 text-blue-400" />,
-      color: 'bg-blue-800/20 border-blue-600/30 hover:bg-blue-700/30',
-      unit: 's'
+      color: 'bg-blue-900/30 border-blue-500/20 hover:bg-blue-800/30',
+      unit: 's',
+      showMinutes: true
     },
     {
       key: 'transitionDelay',
       label: 'Transition',
       icon: <Clock className="w-5 h-5 text-purple-400" />,
-      color: 'bg-purple-800/20 border-purple-600/30 hover:bg-purple-700/30',
-      unit: 's'
+      color: 'bg-purple-900/30 border-purple-500/20 hover:bg-purple-800/30',
+      unit: 's',
+      showMinutes: false
     }
   ];
 
   return (
     <div 
       ref={settingsRef}
-      className={`bg-dark-900 rounded-lg p-5 ${className} max-w-md mx-auto w-full overflow-hidden`}
+      className={`bg-black/70 backdrop-blur-md rounded-lg p-5 border border-white/10 ${className} max-w-md mx-auto w-full overflow-hidden`}
     >
       <motion.h2 
         className="text-xl md:text-2xl font-bold mb-6 text-center"
@@ -178,7 +410,7 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
               transition={{ duration: 0.3, delay: index * 0.05 }}
               className={`
                 ${section.color} 
-                border rounded-lg p-3 transition-all duration-200
+                border rounded-lg p-3 transition-all duration-200 backdrop-blur-sm
               `}
             >
               <div className="flex items-center justify-between">
@@ -199,11 +431,13 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
                         <Minus className="w-4 h-4" />
                       </motion.button>
                       
-                      <div 
-                        className="w-10 text-center font-semibold rounds-value"
-                      >
-                        {settings.rounds}
-                      </div>
+                      <input
+                        type="text"
+                        value={inputValues[section.key]?.value || settings.rounds.toString()}
+                        onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'value', e.target.value)}
+                        onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'value')}
+                        className="w-10 bg-dark-800 text-center font-semibold rounds-value"
+                      />
                       
                       <motion.button
                         className="w-8 h-8 flex items-center justify-center rounded-full bg-dark-800 hover:bg-dark-700 transition-colors"
@@ -214,15 +448,37 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
                         <Plus className="w-4 h-4" />
                       </motion.button>
                     </div>
+                  ) : section.showMinutes ? (
+                    <div className="flex items-center">
+                      <div className="flex items-center">
+                        <input
+                          type="text"
+                          value={inputValues[section.key]?.minutes || getMinutes(settings[section.key as keyof typeof settings] as number).toString()}
+                          onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'minutes', e.target.value)}
+                          onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'minutes')}
+                          className={`w-12 bg-dark-800 text-center font-semibold rounded-l px-2 py-1 ${section.key}-minutes-value`}
+                        />
+                        <span className="mx-1">m</span>
+                      </div>
+                      <div className="flex items-center">
+                        <input
+                          type="text"
+                          value={inputValues[section.key]?.seconds || getSeconds(settings[section.key as keyof typeof settings] as number).toString()}
+                          onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'seconds', e.target.value)}
+                          onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'seconds')}
+                          className={`w-12 bg-dark-800 text-center font-semibold rounded-l px-2 py-1 ${section.key}-seconds-value`}
+                        />
+                        <span className="ml-1">s</span>
+                      </div>
+                    </div>
                   ) : (
                     <div className="flex items-center">
                       <input
-                        type="number"
-                        min="1"
-                        max="999"
-                        value={settings[section.key as keyof typeof settings]}
-                        onChange={(e) => handleTimeChange(section.key as keyof typeof settings, e.target.value)}
-                        className={`w-16 bg-dark-800 text-center font-semibold rounded px-2 py-1 ${section.key}-value`}
+                        type="text"
+                        value={inputValues[section.key]?.value || settings[section.key as keyof typeof settings].toString()}
+                        onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'value', e.target.value)}
+                        onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'value')}
+                        className={`w-12 bg-dark-800 text-center font-semibold rounded px-2 py-1 ${section.key}-value`}
                       />
                       <span className="ml-1">{section.unit}</span>
                     </div>
@@ -238,14 +494,20 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
             transition={{ duration: 0.3, delay: settingSections.length * 0.05 }}
-            className="bg-pink-800/20 border-pink-600/30 hover:bg-pink-700/30 border rounded-lg p-3 transition-all duration-200"
+            className="bg-pink-900/30 border-pink-500/20 hover:bg-pink-800/30 border rounded-lg p-3 transition-all duration-200 backdrop-blur-sm"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Volume2 className="w-5 h-5 text-pink-400" />
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={toggleMute}
+                  className="p-1 rounded-full hover:bg-pink-800/40 transition-colors"
+                >
+                  {getVolumeIcon()}
+                </motion.button>
                 <span>Sound Volume</span>
               </div>
-              <div className="flex items-center space-x-2 w-28">
+              <div className="flex items-center space-x-2 w-32">
                 <input
                   type="range"
                   min="0"
@@ -253,11 +515,25 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
                   step="0.1"
                   value={settings.soundVolume}
                   onChange={handleVolumeChange}
-                  className="w-full h-2 bg-dark-800 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-pink-400"
+                  className="w-full h-2 bg-dark-800 rounded-lg appearance-none cursor-pointer 
+                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 
+                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-pink-400 
+                    [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:transition-transform"
                 />
-                <div className="w-8 text-center font-semibold soundVolume-value">
+                <motion.div 
+                  className={`w-8 text-center font-semibold soundVolume-value ${settings.soundVolume === 0 ? 'text-pink-500/50' : 'text-pink-400'}`}
+                  animate={{ 
+                    scale: [1, 1.2, 1],
+                  }}
+                  transition={{ 
+                    duration: 0.3,
+                    ease: "easeOut",
+                    times: [0, 0.6, 1]
+                  }}
+                  key={settings.soundVolume}
+                >
                   {Math.round(settings.soundVolume * 10)}
-                </div>
+                </motion.div>
               </div>
             </div>
           </motion.div>
@@ -265,7 +541,7 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       </div>
 
       <motion.button
-        className="start-button w-full py-3 px-5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg flex items-center justify-center space-x-2 transition-all duration-200 shadow-lg"
+        className="start-button w-full py-3 px-5 bg-blue-600/70 backdrop-blur-md hover:bg-blue-700/80 text-white font-semibold rounded-lg flex items-center justify-center space-x-2 transition-all duration-200 shadow-none border border-white/10"
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={handleStartWorkout}

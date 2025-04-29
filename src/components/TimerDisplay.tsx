@@ -181,12 +181,12 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
     switch (phaseName) {
       case 'warmup':
         return { 
-          main: '#22d3ee', 
-          bg: 'rgba(34, 211, 238, 0.1)',
-          text: '#22d3ee',
-          glow: 'rgba(34, 211, 238, 0.3)',
-          gradientStart: '#22d3ee',
-          gradientEnd: '#0891b2',
+          main: '#60a5fa', 
+          bg: 'rgba(96, 165, 250, 0.1)',
+          text: '#60a5fa',
+          glow: 'rgba(96, 165, 250, 0.3)',
+          gradientStart: '#60a5fa',
+          gradientEnd: '#2563eb',
           id: 'warmupGradient'
         };
       case 'round':
@@ -272,19 +272,19 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
 
   if (fullscreen) {
     if (isSmallScreen) {
-      containerSize = "w-[85%] max-w-[300px] mt-16"; 
+      containerSize = "w-[85%] max-w-[300px] mt-8"; // Reduced top margin for mobile
       timeSize = "text-4xl";
       progressSize = "text-5xl";
       labelSize = "text-sm";
-      strokeWidth = 14;
+      strokeWidth = 12;
     } else if (isMediumScreen) {
-      containerSize = "w-[85%] max-w-[400px] mt-24";
+      containerSize = "w-[85%] max-w-[400px] mt-16";
       timeSize = "text-5xl";
       progressSize = "text-6xl";
       labelSize = "text-base";
       strokeWidth = 16;
     } else {
-      containerSize = "w-[85%] max-w-[500px] mt-32";
+      containerSize = "w-[85%] max-w-[500px] mt-24";
       timeSize = "text-6xl";
       progressSize = "text-7xl";
       labelSize = "text-lg";
@@ -307,45 +307,48 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
   const currentFact = fitnessFacts[factIndex];
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center w-full">
       <div 
         ref={timerRef} 
-        className={`relative timer-display ${className} ${containerSize} mx-auto flex flex-col items-center justify-center`}
+        className={`relative timer-display ${className} ${containerSize} mx-auto flex flex-col items-center justify-center pb-4`}
       >
         <div className="relative aspect-square">
           <svg
             className="w-full h-full -rotate-90"
             viewBox="0 0 100 100"
-            style={{ filter: 'drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.3))' }}
           >
             {/* Define all gradients */}
             <defs>
               <linearGradient id="roundGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#f59e0b" />
+                <stop offset="50%" stopColor="#ea580c" />
                 <stop offset="100%" stopColor="#d97706" />
               </linearGradient>
               <linearGradient id="warmupGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#22d3ee" />
-                <stop offset="100%" stopColor="#0891b2" />
+                <stop offset="0%" stopColor="#60a5fa" />
+                <stop offset="50%" stopColor="#3b82f6" />
+                <stop offset="100%" stopColor="#2563eb" />
               </linearGradient>
               <linearGradient id="breakGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#4ade80" />
+                <stop offset="50%" stopColor="#22c55e" />
                 <stop offset="100%" stopColor="#16a34a" />
               </linearGradient>
               <linearGradient id="cooldownGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#60a5fa" />
+                <stop offset="50%" stopColor="#3b82f6" />
                 <stop offset="100%" stopColor="#2563eb" />
               </linearGradient>
               <linearGradient id="completeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#a855f7" />
+                <stop offset="50%" stopColor="#9333ea" />
                 <stop offset="100%" stopColor="#7e22ce" />
               </linearGradient>
               
-              {/* Filter for inner shadow (depth effect) */}
-              <filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur" />
-                <feOffset dx="0" dy="4" result="offsetBlur" />
-                <feComposite in="SourceGraphic" in2="offsetBlur" operator="over" />
+              {/* Subtle glow effect only for progress ring */}
+              <filter id="subtleGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="1.5" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
               </filter>
             </defs>
             
@@ -355,12 +358,12 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
               cy="50"
               r="40"
               fill="none"
-              stroke="#333333"
+              stroke="rgba(30, 30, 30, 0.5)"
               strokeWidth={strokeWidth}
-              opacity="0.3"
+              opacity="0.5"
             />
             
-            {/* Progress Ring with Gradient Fill - with key changing to force animation restart */}
+            {/* Progress Ring with Gradient Fill */}
             <motion.circle
               key={`circle-${shouldResetRing ? 'reset' : 'normal'}-${currentPhase}`}
               cx="50"
@@ -371,7 +374,7 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
               className="timer-circle-primary"
               strokeWidth={strokeWidth}
               strokeLinecap="round"
-              filter="url(#innerShadow)"
+              filter="url(#subtleGlow)"
               strokeDasharray={`${2 * Math.PI * 40} ${2 * Math.PI * 40}`}
               initial={{ strokeDashoffset: `${2 * Math.PI * 40}` }}
               animate={{
@@ -409,36 +412,35 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
         </div>
       </div>
       
-      {/* Glassmorphism Fitness Fact Box */}
+      {/* Glassmorphism Fitness Fact Box - Adjusted for mobile position */}
       {fullscreen && (
         <AnimatePresence mode="wait">
           <motion.div 
             key={factIndex}
-            className="mt-8 px-6 py-4 rounded-xl w-[85%] max-w-md mx-auto 
-              backdrop-blur-md bg-white/10 border border-white/20 shadow-lg
-              relative overflow-hidden mb-16" // Added bottom margin to make room for buttons
+            className="mt-8 sm:mt-6 md:mt-4 mb-16 px-4 py-3 rounded-xl w-[90%] max-w-md mx-auto 
+              backdrop-blur-xl bg-black/30 border border-white/10 shadow-none
+              relative overflow-hidden"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, x: -100 }}
             transition={{ duration: 0.5 }}
           >
-            {/* Glowing accent */}
+            {/* Subtle gradient line at top */}
             <div 
-              className="absolute top-0 left-0 w-full h-1" 
+              className="absolute top-0 left-0 w-full h-[1px]" 
               style={{ 
-                background: `linear-gradient(to right, ${phaseColors.gradientStart}, ${phaseColors.gradientEnd})`,
-                boxShadow: `0 0 10px ${phaseColors.gradientStart}`
+                background: `linear-gradient(to right, rgba(255,255,255,0.3), rgba(255,255,255,0.1), rgba(255,255,255,0.3))`
               }}
             />
             
             <div className="flex items-start gap-3">
-              <Lightbulb className="w-6 h-6 text-white mt-0.5 flex-shrink-0" />
-              <div>
+              <Lightbulb className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
                 <h3 className="text-white font-medium mb-1 text-sm">Fitness Tip</h3>
-                <p className="text-white/90 text-sm">{currentFact}</p>
+                <p className="text-white/90 text-xs sm:text-sm">{currentFact}</p>
                 
                 <div className="flex items-center justify-end mt-2 text-xs text-white/70">
-                  <span>New tip every minute</span>
+                  <span className="text-xs">New tip every minute</span>
                   <ArrowRight className="w-3 h-3 ml-1 animate-pulse" />
                 </div>
               </div>
