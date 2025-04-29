@@ -7,6 +7,8 @@ import ProgramsPage from './pages/ProgramsPage';
 import InstructorsPage from './pages/InstructorsPage';
 import MembershipPage from './pages/MembershipPage';
 import ContactPage from './pages/ContactPage';
+import TimerPage from './pages/TimerPage';
+import { TimerProvider } from './context/TimerContext';
 
 function App() {
   const location = useLocation();
@@ -65,6 +67,14 @@ function App() {
         <Route path="instructors" element={<InstructorsPage />} />
         <Route path="membership" element={<MembershipPage />} />
         <Route path="contact" element={<ContactPage />} />
+        <Route 
+          path="timer" 
+          element={
+            <TimerProvider>
+              <TimerPage />
+            </TimerProvider>
+          } 
+        />
       </Route>
     </Routes>
   );
