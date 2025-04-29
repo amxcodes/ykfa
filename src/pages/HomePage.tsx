@@ -2,6 +2,8 @@ import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Hero from '../components/Hero';
 import { useState } from 'react';
+// Add an icon for the floating button (you can use any icon you prefer)
+import { Timer } from 'lucide-react';
 
 const ProgramCard = ({ 
   title, 
@@ -35,37 +37,6 @@ const ProgramCard = ({
   );
 };
 
-const TestimonialCard = ({ 
-  quote, 
-  name, 
-  role, 
-  image 
-}: { 
-  quote: string; 
-  name: string; 
-  role: string; 
-  image: string; 
-}) => {
-  return (
-    <div className="bg-dark-700 p-6 rounded-2xl shadow animate-fade-up">
-      <div className="flex items-start mb-4">
-        <div className="text-3xl text-amber-400">"</div>
-      </div>
-      <p className="text-gray-300 mb-6">{quote}</p>
-      <div className="flex items-center gap-3">
-        <img 
-          src={image} 
-          alt={name} 
-          className="w-10 h-10 rounded-full object-cover"
-        />
-        <div>
-          <h4 className="font-medium">{name}</h4>
-          <p className="text-sm text-gray-400">{role}</p>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const HomePage = () => {
   const [selectedTab, setSelectedTab] = useState<'all' | 'karate' | 'fitness' | 'kickboxing'>('all');
@@ -234,41 +205,15 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="section bg-dark-800">
-        <div className="container">
-          <div className="text-center max-w-2xl mx-auto mb-12 animate-fade-up">
-            <div className="inline-block mb-4 py-1 px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
-              <p className="text-amber-400 font-medium text-sm">Testimonials</p>
-            </div>
-            <h2 className="mb-4">What Our Members <span className="text-transparent bg-clip-text bg-gold-gradient">Say</span></h2>
-            <p className="text-gray-300">
-              Hear from our members about their transformative experiences at Yaseen's YKFA.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <TestimonialCard 
-              quote="The karate training at YKFA has not only improved my physical fitness but also my mental discipline. The instructors are world-class and truly care about your progress."
-              name="Michael Chen"
-              role="Member for 3 years"
-              image="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-            />
-            <TestimonialCard 
-              quote="I've tried many gyms before, but YKFA offers something special. The combination of traditional martial arts with modern fitness techniques has given me incredible results."
-              name="Sarah Johnson"
-              role="Member for 1 year"
-              image="https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-            />
-            <TestimonialCard 
-              quote="Enrolling my kids in the children's program was one of the best decisions I've made. They've gained confidence, discipline, and physical skills in a supportive environment."
-              name="David Rodriguez"
-              role="Parent of YKFA students"
-              image="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-            />
-          </div>
-        </div>
-      </section>
+      {/* Floating Timer Icon */}
+      <Link
+        to="/timer"
+        className="fixed bottom-8 right-8 z-50 bg-amber-400 text-black rounded-full shadow-lg p-4 flex items-center justify-center hover:bg-amber-500 transition-colors"
+        title="Go to Timer"
+        style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
+      >
+        <Timer className="w-7 h-7" />
+      </Link>
     </>
   );
 };
