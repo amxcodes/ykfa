@@ -26,6 +26,7 @@
     @apply bg-black text-gray-100 font-inter;
     /* Prevent any potential white lines or flashes */
     overflow-x: hidden;
+    width: 100%;
   }
 
   /* This ensures that no white background shows through between elements */

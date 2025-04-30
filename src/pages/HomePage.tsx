@@ -208,8 +208,8 @@ const HomePage = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="section bg-dark-800 overflow-visible py-12 sm:py-16">
-        <div className="container px-4 sm:px-6">
+      <section className="section bg-dark-800 py-12 sm:py-16">
+        <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12 animate-fade-up">
             <div className="inline-block mb-4 py-1 px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
               <p className="text-amber-400 font-medium text-sm">Testimonials</p>

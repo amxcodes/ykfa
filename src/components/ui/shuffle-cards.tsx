@@ -49,8 +49,8 @@ function ShuffleCards() {
   };
 
   return (
-    <div className="flex justify-center items-center w-full overflow-visible">
-      <div className={`relative min-h-[450px] w-full ${isMobile ? 'max-w-[300px]' : 'max-w-[350px] sm:max-w-[400px] md:max-w-[500px]'} py-6 sm:py-10`}>
+    <div className="flex justify-center items-center w-full">
+      <div className={`relative min-h-[300px] sm:min-h-[400px] md:min-h-[450px] w-full ${isMobile ? 'max-w-[200px]' : 'max-w-[320px] md:max-w-[350px]'} py-4 sm:py-10`}>
         {testimonials.map((testimonial, index) => (
           <TestimonialCard
             key={testimonial.id}
