@@ -12,14 +12,11 @@ const Hero = () => {
             backgroundImage: "url('https://images.pexels.com/photos/4761352/pexels-photo-4761352.jpeg?auto=compress&cs=tinysrgb&w=1920')" 
           }}
         ></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/40 to-black"></div>
       </div>
 
       <div className="container relative z-10 pt-16 md:pt-24 pb-12">
         <div className="max-w-3xl animate-fade-up">
-          <div className="inline-block mb-4 py-1 px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
-            <p className="text-amber-400 font-medium text-sm">Elevate Your Fitness Journey</p>
-          </div>
           <h1 className="mb-6">
             Discover Your <span className="text-transparent bg-clip-text bg-gold-gradient">Strength</span> and <span className="text-transparent bg-clip-text bg-gold-gradient">Discipline</span> at YKFA
           </h1>

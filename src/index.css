@@ -24,6 +24,13 @@
 
   body {
     @apply bg-black text-gray-100 font-inter;
+    /* Prevent any potential white lines or flashes */
+    overflow-x: hidden;
+  }
+
+  /* This ensures that no white background shows through between elements */
+  body, header, main, section {
+    @apply bg-black;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -95,6 +102,49 @@
 
   .gold-glow {
     @apply hover:shadow-[0_0_15px_rgba(255,215,0,0.5)];
+  }
+
+  /* Glassmorphism effects */
+  .glassmorphic {
+    @apply backdrop-blur-lg bg-white/10 border border-white/20 shadow-xl;
+  }
+
+  .glassmorphic-dark {
+    @apply backdrop-blur-xl bg-black/40 border border-white/10;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+  }
+
+  .glassmorphic-nav {
+    @apply backdrop-blur-xl bg-black/30 border-b border-white/10;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.2);
+  }
+
+  .glassmorphic-card {
+    @apply rounded-xl backdrop-blur-lg bg-white/5 border border-white/10 transition-all duration-300;
+    box-shadow: 0 10px 40px -15px rgba(0, 0, 0, 0.5);
+  }
+
+  .glassmorphic-icon {
+    position: relative;
+    z-index: 1;
+  }
+
+  .glassmorphic-icon::before {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    z-index: -1;
+    border-radius: 12px;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    backdrop-filter: blur(7px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .glassmorphic-icon:hover::before {
+    opacity: 1;
   }
 
   /* Animations */

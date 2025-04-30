@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
+import MobileMenu from './MobileMenu';
 
 interface NavbarProps {
   isScrolled: boolean;
@@ -47,21 +48,34 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
     };
   }, [isMenuOpen]);
 
+  // Lock scrolling when menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
+
   return (
     <header
-      className={`fixed w-full z-[100] transition-all duration-300 ${
+      className={`fixed w-full z-[100] transition-all duration-300 glassmorphic-nav ${
         isScrolled 
-          ? 'bg-black/90 supports-[backdrop-filter]:bg-black/75 backdrop-blur-lg border-b border-amber-400/20' 
-          : 'bg-gradient-to-b from-black/80 to-transparent'
+          ? 'bg-black/40 backdrop-blur-xl border-b border-white/10' 
+          : 'bg-gradient-to-b from-black/60 via-black/40 to-transparent backdrop-blur-md'
       } ${!show ? '-translate-y-full' : 'translate-y-0'}`}
       style={{ 
-        WebkitBackdropFilter: isScrolled ? 'blur(8px)' : 'none',
-        backdropFilter: isScrolled ? 'blur(8px)' : 'none' 
+        marginBottom: '-2px',
+        boxShadow: isScrolled ? '0 10px 30px -10px rgba(0, 0, 0, 0.3)' : 'none'
       }}
     >
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between relative">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2 glassmorphic-icon">
             <div className="relative w-10 h-10 flex items-center justify-center rounded-lg overflow-hidden bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg hover:shadow-amber-400/50 transition-shadow duration-300 group p-0">
               <span className="absolute inset-0 bg-gradient-to-br from-amber-300 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
               <img 
@@ -79,144 +93,60 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-1">
             <NavLink to="/" className={({ isActive }) => 
-              `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-amber-400/10' : 'text-white hover:text-amber-400 hover:bg-dark-800/50'}`
+              `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-white/5 backdrop-blur-md shadow-sm' : 'text-white hover:text-amber-400 hover:bg-white/5'}`
             }>
               Home
             </NavLink>
             <NavLink to="/about" className={({ isActive }) => 
-              `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-amber-400/10' : 'text-white hover:text-amber-400 hover:bg-dark-800/50'}`
+              `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-white/5 backdrop-blur-md shadow-sm' : 'text-white hover:text-amber-400 hover:bg-white/5'}`
             }>
               About
             </NavLink>
             <NavLink to="/programs" className={({ isActive }) => 
-              `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-amber-400/10' : 'text-white hover:text-amber-400 hover:bg-dark-800/50'}`
+              `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-white/5 backdrop-blur-md shadow-sm' : 'text-white hover:text-amber-400 hover:bg-white/5'}`
             }>
               Programs
             </NavLink>
             <NavLink to="/instructors" className={({ isActive }) => 
-              `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-amber-400/10' : 'text-white hover:text-amber-400 hover:bg-dark-800/50'}`
+              `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-white/5 backdrop-blur-md shadow-sm' : 'text-white hover:text-amber-400 hover:bg-white/5'}`
             }>
               Instructors
             </NavLink>
             <NavLink to="/membership" className={({ isActive }) => 
-              `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-amber-400/10' : 'text-white hover:text-amber-400 hover:bg-dark-800/50'}`
+              `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-white/5 backdrop-blur-md shadow-sm' : 'text-white hover:text-amber-400 hover:bg-white/5'}`
             }>
               Membership
             </NavLink>
             <NavLink to="/contact" className={({ isActive }) => 
-              `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-amber-400/10' : 'text-white hover:text-amber-400 hover:bg-dark-800/50'}`
+              `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-white/5 backdrop-blur-md shadow-sm' : 'text-white hover:text-amber-400 hover:bg-white/5'}`
             }>
               Contact
             </NavLink>
             <Link 
               to="/contact" 
-              className="ml-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black px-6 py-2 rounded-lg hover:shadow-[0_0_15px_rgba(255,215,0,0.5)] transition-shadow"
+              className="ml-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black px-6 py-2 rounded-lg hover:shadow-[0_0_15px_rgba(255,215,0,0.5)] transition-shadow backdrop-blur-md"
             >
               Join Now
             </Link>
           </nav>
 
           {/* Mobile Navigation Toggle */}
-          <div className="lg:hidden relative">
+          <div className="lg:hidden relative z-50">
             <button
               id="menu-button"
-              className="relative z-50 w-10 h-10 flex items-center justify-center rounded-lg hover:bg-dark-800/50 transition-colors"
+              className="relative z-50 w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors backdrop-blur-sm"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label="Toggle menu"
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
-
-            {/* Mobile Navigation Dropdown */}
-            <div 
-              id="mobile-nav"
-              className={`absolute right-0 top-full mt-2 w-64 bg-dark-800/95 backdrop-blur-md rounded-lg shadow-lg border border-dark-700 overflow-hidden transition-all duration-200 origin-top-right ${
-                isMenuOpen 
-                  ? 'opacity-100 visible scale-100 translate-y-0' 
-                  : 'opacity-0 invisible scale-95 -translate-y-2'
-              }`}
-            >
-              <nav className="py-2">
-                <NavLink 
-                  to="/" 
-                  className={({ isActive }) => 
-                    `block px-4 py-2 text-sm ${
-                      isActive ? 'text-amber-400 bg-amber-400/10' : 'text-white hover:bg-dark-700'
-                    }`
-                  }
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Home
-                </NavLink>
-                <NavLink 
-                  to="/about" 
-                  className={({ isActive }) => 
-                    `block px-4 py-2 text-sm ${
-                      isActive ? 'text-amber-400 bg-amber-400/10' : 'text-white hover:bg-dark-700'
-                    }`
-                  }
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  About
-                </NavLink>
-                <NavLink 
-                  to="/programs" 
-                  className={({ isActive }) => 
-                    `block px-4 py-2 text-sm ${
-                      isActive ? 'text-amber-400 bg-amber-400/10' : 'text-white hover:bg-dark-700'
-                    }`
-                  }
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Programs
-                </NavLink>
-                <NavLink 
-                  to="/instructors" 
-                  className={({ isActive }) => 
-                    `block px-4 py-2 text-sm ${
-                      isActive ? 'text-amber-400 bg-amber-400/10' : 'text-white hover:bg-dark-700'
-                    }`
-                  }
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Instructors
-                </NavLink>
-                <NavLink 
-                  to="/membership" 
-                  className={({ isActive }) => 
-                    `block px-4 py-2 text-sm ${
-                      isActive ? 'text-amber-400 bg-amber-400/10' : 'text-white hover:bg-dark-700'
-                    }`
-                  }
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Membership
-                </NavLink>
-                <NavLink 
-                  to="/contact" 
-                  className={({ isActive }) => 
-                    `block px-4 py-2 text-sm ${
-                      isActive ? 'text-amber-400 bg-amber-400/10' : 'text-white hover:bg-dark-700'
-                    }`
-                  }
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Contact
-                </NavLink>
-                <div className="px-4 py-2 border-t border-dark-700 mt-2">
-                  <Link 
-                    to="/contact" 
-                    className="block w-full bg-gradient-to-r from-amber-400 to-amber-500 text-black text-center text-sm font-medium px-4 py-2 rounded-lg hover:shadow-[0_0_15px_rgba(255,215,0,0.5)] transition-shadow"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Join Now
-                  </Link>
-                </div>
-              </nav>
-            </div>
           </div>
         </div>
       </div>
+      <div className="absolute bottom-0 left-0 w-full h-2 bg-inherit" style={{ transform: 'translateY(100%)' }}></div>
+
+      {/* Mobile Menu Component */}
+      <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
     </header>
   );
 };
