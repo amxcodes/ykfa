@@ -177,7 +177,9 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       updateSettings(setting, delayValue);
     } else {
       // Time-based sliders (in seconds)
-      updateSettings(setting, value);
+      // Round to ensure consistency
+      const roundedValue = Math.round(value);
+      updateSettings(setting, roundedValue);
     }
     
     // Animate the value change with a more subtle effect

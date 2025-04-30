@@ -225,8 +225,13 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   const playCooldownSound = useCallback(() => playSound(cooldownSoundRef), [playSound]);
 
   const getExpiryTimestamp = useCallback((seconds: number) => {
+    // Round seconds to ensure consistency
+    const roundedSeconds = Math.round(seconds);
+    
     const time = new Date();
-    time.setSeconds(time.getSeconds() + seconds);
+    // Clear milliseconds to sync with whole seconds
+    time.setMilliseconds(0);
+    time.setSeconds(time.getSeconds() + roundedSeconds);
     return time;
   }, []);
 
@@ -488,7 +493,10 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isRunning && !transitionActive) {
-      restart(getExpiryTimestamp(getCurrentPhaseDuration()), false);
+      const duration = getCurrentPhaseDuration();
+      // Make sure to reset milliseconds for more consistent timing
+      const expiryTime = getExpiryTimestamp(duration);
+      restart(expiryTime, false);
     }
   }, [settings, getCurrentPhaseDuration, getExpiryTimestamp, isRunning, restart, transitionActive]);
 
@@ -694,6 +702,40 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       [key]: value
     }));
     
+    // If the setting is related to time duration and we're in the current phase,
+    // we need to update the timer to reflect the new duration
+    if (
+      (key === 'warmupDuration' && currentPhase === 'warmup') ||
+      (key === 'roundDuration' && currentPhase === 'round') ||
+      (key === 'breakDuration' && currentPhase === 'break') ||
+      (key === 'cooldownDuration' && currentPhase === 'cooldown')
+    ) {
+      // Get the new value as number
+      const newDuration = value as number;
+      
+      // Calculate how much of the current phase has already passed
+      const currentProgress = calculateProgress();
+      const elapsedTimePercent = currentProgress / 100;
+      
+      // Calculate new time remaining based on new total duration and current progress
+      let timeRemaining = Math.round(newDuration * (1 - elapsedTimePercent));
+      
+      // Ensure we have at least 1 second remaining
+      timeRemaining = Math.max(1, timeRemaining);
+      
+      // Set up new expiry timestamp based on remaining time
+      const newTimestamp = getExpiryTimestamp(timeRemaining);
+      
+      // Pause the timer temporarily
+      const wasRunning = !isPaused;
+      if (wasRunning) {
+        pause();
+      }
+      
+      // Update the timer with the new expiry timestamp
+      restart(newTimestamp, wasRunning);
+    }
+    
     gsap.fromTo('.settings-item',
       { scale: 1 },
       { 
@@ -705,7 +747,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         ease: 'power1.inOut' 
       }
     );
-  }, []);
+  }, [currentPhase, calculateProgress, getExpiryTimestamp, isPaused, pause, restart]);
 
   const exitFullscreen = useCallback(() => {
     if (isRunning) {
