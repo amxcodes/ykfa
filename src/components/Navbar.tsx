@@ -143,7 +143,6 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
           </div>
         </div>
       </div>
-      <div className="absolute bottom-0 left-0 w-full h-2 bg-inherit" style={{ transform: 'translateY(100%)' }}></div>
 
       {/* Mobile Menu Component */}
       <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />

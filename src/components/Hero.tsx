@@ -15,7 +15,7 @@ const Hero = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/40 to-black"></div>
       </div>
 
-      <div className="container relative z-10 pt-16 md:pt-24 pb-12">
+      <div className="container relative z-10 pt-28 sm:pt-20 md:pt-24 pb-12">
         <div className="max-w-3xl animate-fade-up">
           <h1 className="mb-6">
             Discover Your <span className="text-transparent bg-clip-text bg-gold-gradient">Strength</span> and <span className="text-transparent bg-clip-text bg-gold-gradient">Discipline</span> at YKFA
