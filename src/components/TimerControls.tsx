@@ -8,7 +8,7 @@ interface TimerControlsProps {
 }
 
 const TimerControls = ({ className = '' }: TimerControlsProps) => {
-  const { isRunning, toggleTimer, resetTimer, timerMode, transitionActive } = useTimerContext();
+  const { isRunning, toggleTimer, resetTimer, transitionActive } = useTimerContext();
   const [windowHeight, setWindowHeight] = useState(0);
   const [windowWidth, setWindowWidth] = useState(0);
   

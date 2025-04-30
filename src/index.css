@@ -1,3 +1,12 @@
+/* 
+ * This file uses Tailwind CSS directives:
+ * - @tailwind directives are used to include Tailwind's base, components, and utilities styles
+ * - @apply directives are used to apply Tailwind utility classes within CSS rules
+ * 
+ * These directives are processed by the Tailwind CSS compiler and are valid CSS.
+ * Editor warnings about unknown at-rules (@tailwind, @apply) can be safely ignored.
+ */
+
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@300;400;500;600&display=swap');
 
 @tailwind base;

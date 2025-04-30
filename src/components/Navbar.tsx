@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { Menu, X, Dumbbell } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 interface NavbarProps {
   isScrolled: boolean;
@@ -62,10 +62,15 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between relative">
           <Link to="/" className="flex items-center gap-2">
-            <span className="relative w-10 h-10 flex items-center justify-center rounded-lg overflow-hidden bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg hover:shadow-amber-400/50 transition-shadow duration-300 group">
+            <div className="relative w-10 h-10 flex items-center justify-center rounded-lg overflow-hidden bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg hover:shadow-amber-400/50 transition-shadow duration-300 group p-0">
               <span className="absolute inset-0 bg-gradient-to-br from-amber-300 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-              <Dumbbell className="w-6 h-6 text-black relative z-10 transform group-hover:scale-110 transition-transform duration-300" />
-            </span>
+              <img 
+                src="/icons/dumbbell-small.svg" 
+                alt="Dumbbell icon" 
+                className="w-10 h-10 text-black z-10 transform group-hover:scale-105 transition-transform duration-300 p-0"
+                style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))' }}
+              />
+            </div>
             <span className="text-xl font-bold font-spaceGrotesk tracking-wide">
               Yaseen's <span className="text-amber-400">YKFA</span>
             </span>

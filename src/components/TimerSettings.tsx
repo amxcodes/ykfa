@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimerContext } from '../context/TimerContext';
 import { 
-  Play, Flame, Clock, Activity, Coffee, Fan, Volume2, Plus, Minus, VolumeX, Volume1
+  Play, Flame, Clock, Activity, Coffee, Fan, Volume2, Plus, Minus, VolumeX, Volume1, Sliders
 } from 'lucide-react';
 import { gsap } from 'gsap';
 
@@ -32,6 +32,9 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
   // Add state for tracking muted status
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const previousVolume = useRef<number>(settings.soundVolume);
+  
+  // Set slider mode as default state
+  const [isSliderMode, setIsSliderMode] = useState<boolean>(true);
   
   // Update input values when settings change
   useEffect(() => {
@@ -159,6 +162,45 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
     }
   };
 
+  // Handler for slider changes with smooth animation
+  const handleSliderChange = (
+    setting: keyof typeof settings,
+    value: number
+  ) => {
+    if (setting === 'rounds') {
+      // Rounds slider
+      const roundsValue = Math.max(1, Math.min(99, value));
+      updateSettings(setting, roundsValue);
+    } else if (setting === 'transitionDelay') {
+      // Transition delay slider (5-60 seconds)
+      const delayValue = Math.max(5, Math.min(60, value));
+      updateSettings(setting, delayValue);
+    } else {
+      // Time-based sliders (in seconds)
+      updateSettings(setting, value);
+    }
+    
+    // Animate the value change with a more subtle effect
+    if (settingsRef.current) {
+      const target = settingsRef.current.querySelector(`.${setting}-value`);
+      if (target) {
+        gsap.fromTo(
+          target,
+          { 
+            scale: 1.1,
+            color: '#fbbf24' // amber-400
+          },
+          { 
+            scale: 1,
+            color: '#ffffff',
+            duration: 0.5,
+            ease: 'elastic.out(1, 0.5)'
+          }
+        );
+      }
+    }
+  };
+
   useEffect(() => {
     // Reset the timer when entering settings view
     resetTimer();
@@ -275,7 +317,10 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       icon: <Flame className="w-5 h-5 text-cyan-400" />,
       color: 'bg-blue-900/30 border-blue-500/20 hover:bg-blue-800/30',
       unit: 's',
-      showMinutes: true
+      showMinutes: true,
+      sliderMin: 30,
+      sliderMax: 300,
+      sliderStep: 30
     },
     { 
       key: 'rounds', 
@@ -283,7 +328,10 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       icon: <Activity className="w-5 h-5 text-amber-400" />,
       color: 'bg-amber-900/30 border-amber-500/20 hover:bg-amber-800/30',
       unit: '',
-      showMinutes: false
+      showMinutes: false,
+      sliderMin: 1,
+      sliderMax: 20,
+      sliderStep: 1
     },
     { 
       key: 'roundDuration', 
@@ -291,7 +339,10 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       icon: <Clock className="w-5 h-5 text-amber-400" />,
       color: 'bg-amber-900/30 border-amber-500/20 hover:bg-amber-800/30',
       unit: 's',
-      showMinutes: true
+      showMinutes: true,
+      sliderMin: 30,
+      sliderMax: 600,
+      sliderStep: 30
     },
     { 
       key: 'breakDuration', 
@@ -299,7 +350,10 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       icon: <Coffee className="w-5 h-5 text-green-400" />,
       color: 'bg-green-900/30 border-green-500/20 hover:bg-green-800/30',
       unit: 's',
-      showMinutes: true
+      showMinutes: true,
+      sliderMin: 15,
+      sliderMax: 300,
+      sliderStep: 15
     },
     { 
       key: 'cooldownDuration', 
@@ -307,7 +361,10 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       icon: <Fan className="w-5 h-5 text-blue-400" />,
       color: 'bg-blue-900/30 border-blue-500/20 hover:bg-blue-800/30',
       unit: 's',
-      showMinutes: true
+      showMinutes: true,
+      sliderMin: 30,
+      sliderMax: 300,
+      sliderStep: 30
     },
     {
       key: 'transitionDelay',
@@ -315,9 +372,25 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       icon: <Clock className="w-5 h-5 text-purple-400" />,
       color: 'bg-purple-900/30 border-purple-500/20 hover:bg-purple-800/30',
       unit: 's',
-      showMinutes: false
+      showMinutes: false,
+      sliderMin: 3,
+      sliderMax: 10,
+      sliderStep: 1
     }
   ];
+
+  // Function to format time for slider labels
+  const formatTimeForSlider = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (mins === 0) {
+      return `${secs}s`;
+    } else if (secs === 0) {
+      return `${mins}m`;
+    } else {
+      return `${mins}m ${secs}s`;
+    }
+  };
 
   return (
     <div 
@@ -332,6 +405,42 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       >
         Workout Timer Settings
       </motion.h2>
+
+      {/* Toggle switch for slider mode */}
+      <div className="flex items-center justify-center mb-6">
+        <div className="flex items-center space-x-2 bg-dark-800/80 rounded-lg p-2">
+          <span className={`text-sm ${!isSliderMode ? 'text-amber-400' : 'text-gray-400'}`}>Input</span>
+          <button 
+            onClick={() => setIsSliderMode(!isSliderMode)}
+            className="relative w-12 h-6 transition-colors duration-300 rounded-full focus:outline-none"
+          >
+            <div className={`absolute inset-0 rounded-full transition-colors ${isSliderMode ? 'bg-amber-500' : 'bg-gray-600'}`}></div>
+            <motion.div 
+              className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow"
+              initial={false}
+              animate={{ 
+                x: isSliderMode ? 24 : 0 
+              }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 400, 
+                damping: 20
+              }}
+            />
+            <motion.div
+              className="absolute right-1 top-0.5 w-4 h-4 text-black"
+              initial={false}
+              animate={{ 
+                opacity: isSliderMode ? 1 : 0 
+              }}
+              transition={{ duration: 0.2 }}
+            >
+              <Sliders className="w-full h-full" />
+            </motion.div>
+          </button>
+          <span className={`text-sm ${isSliderMode ? 'text-amber-400' : 'text-gray-400'}`}>Slider</span>
+        </div>
+      </div>
 
       <div className="space-y-4 mb-6">
         <AnimatePresence mode="wait">
@@ -353,71 +462,106 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
                   <span>{section.label}</span>
                 </div>
                 
-                <div className="flex items-center space-x-2">
-                  {section.key === 'rounds' ? (
-                    <div className="flex items-center space-x-2">
-                      <motion.button
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-dark-800 hover:bg-dark-700 transition-colors"
-                        whileTap={{ scale: 0.95 }}
-                        onClick={handleDecreaseRounds}
-                        disabled={settings.rounds <= 1}
+                {isSliderMode ? (
+                  <div className="w-full ml-4">
+                    <div className="flex items-center justify-between">
+                      <div className="w-9/12">
+                        <input
+                          type="range"
+                          min={section.sliderMin}
+                          max={section.sliderMax}
+                          step={section.sliderStep}
+                          value={settings[section.key as keyof typeof settings] as number}
+                          onChange={(e) => handleSliderChange(section.key as keyof typeof settings, parseInt(e.target.value, 10))}
+                          className="w-full h-2 bg-dark-800 rounded-lg appearance-none cursor-pointer 
+                            [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 
+                            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-amber-400 
+                            [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:hover:bg-amber-300
+                            [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:shadow-md"
+                        />
+                      </div>
+                      <motion.div 
+                        className={`w-3/12 text-right font-semibold ${section.key}-value`}
+                        initial={false}
+                        animate={{ scale: 1 }}
+                        key={String(settings[section.key as keyof typeof settings])}
                       >
-                        <Minus className="w-4 h-4" />
-                      </motion.button>
-                      
-                      <input
-                        type="text"
-                        value={inputValues[section.key]?.value || settings.rounds.toString()}
-                        onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'value', e.target.value)}
-                        onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'value')}
-                        className="w-10 bg-dark-800 text-center font-semibold rounds-value"
-                      />
-                      
-                      <motion.button
-                        className="w-8 h-8 flex items-center justify-center rounded-full bg-dark-800 hover:bg-dark-700 transition-colors"
-                        whileTap={{ scale: 0.95 }}
-                        onClick={handleIncreaseRounds}
-                        disabled={settings.rounds >= 99}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </motion.button>
+                        {section.key === 'rounds' 
+                          ? settings.rounds 
+                          : section.key === 'transitionDelay'
+                            ? `${settings.transitionDelay}s`
+                            : formatTimeForSlider(settings[section.key as keyof typeof settings] as number)
+                        }
+                      </motion.div>
                     </div>
-                  ) : section.showMinutes ? (
-                    <div className="flex items-center">
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    {section.key === 'rounds' ? (
+                      <div className="flex items-center space-x-2">
+                        <motion.button
+                          className="w-8 h-8 flex items-center justify-center rounded-full bg-dark-800 hover:bg-dark-700 transition-colors"
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleDecreaseRounds}
+                          disabled={settings.rounds <= 1}
+                        >
+                          <Minus className="w-4 h-4" />
+                        </motion.button>
+                        
+                        <input
+                          type="text"
+                          value={inputValues[section.key]?.value || settings.rounds.toString()}
+                          onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'value', e.target.value)}
+                          onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'value')}
+                          className="w-10 bg-dark-800 text-center font-semibold rounds-value"
+                        />
+                        
+                        <motion.button
+                          className="w-8 h-8 flex items-center justify-center rounded-full bg-dark-800 hover:bg-dark-700 transition-colors"
+                          whileTap={{ scale: 0.95 }}
+                          onClick={handleIncreaseRounds}
+                          disabled={settings.rounds >= 99}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </motion.button>
+                      </div>
+                    ) : section.showMinutes ? (
+                      <div className="flex items-center">
+                        <div className="flex items-center">
+                          <input
+                            type="text"
+                            value={inputValues[section.key]?.minutes || getMinutes(settings[section.key as keyof typeof settings] as number).toString()}
+                            onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'minutes', e.target.value)}
+                            onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'minutes')}
+                            className={`w-12 bg-dark-800 text-center font-semibold rounded-l px-2 py-1 ${section.key}-minutes-value`}
+                          />
+                          <span className="mx-1">m</span>
+                        </div>
+                        <div className="flex items-center">
+                          <input
+                            type="text"
+                            value={inputValues[section.key]?.seconds || getSeconds(settings[section.key as keyof typeof settings] as number).toString()}
+                            onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'seconds', e.target.value)}
+                            onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'seconds')}
+                            className={`w-12 bg-dark-800 text-center font-semibold rounded-l px-2 py-1 ${section.key}-seconds-value`}
+                          />
+                          <span className="ml-1">s</span>
+                        </div>
+                      </div>
+                    ) : (
                       <div className="flex items-center">
                         <input
                           type="text"
-                          value={inputValues[section.key]?.minutes || getMinutes(settings[section.key as keyof typeof settings] as number).toString()}
-                          onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'minutes', e.target.value)}
-                          onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'minutes')}
-                          className={`w-12 bg-dark-800 text-center font-semibold rounded-l px-2 py-1 ${section.key}-minutes-value`}
+                          value={inputValues[section.key]?.value || settings[section.key as keyof typeof settings].toString()}
+                          onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'value', e.target.value)}
+                          onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'value')}
+                          className={`w-12 bg-dark-800 text-center font-semibold rounded px-2 py-1 ${section.key}-value`}
                         />
-                        <span className="mx-1">m</span>
+                        <span className="ml-1">{section.unit}</span>
                       </div>
-                      <div className="flex items-center">
-                        <input
-                          type="text"
-                          value={inputValues[section.key]?.seconds || getSeconds(settings[section.key as keyof typeof settings] as number).toString()}
-                          onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'seconds', e.target.value)}
-                          onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'seconds')}
-                          className={`w-12 bg-dark-800 text-center font-semibold rounded-l px-2 py-1 ${section.key}-seconds-value`}
-                        />
-                        <span className="ml-1">s</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center">
-                      <input
-                        type="text"
-                        value={inputValues[section.key]?.value || settings[section.key as keyof typeof settings].toString()}
-                        onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'value', e.target.value)}
-                        onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'value')}
-                        className={`w-12 bg-dark-800 text-center font-semibold rounded px-2 py-1 ${section.key}-value`}
-                      />
-                      <span className="ml-1">{section.unit}</span>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
             </motion.div>
           ))}
@@ -450,9 +594,10 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
                   value={settings.soundVolume}
                   onChange={handleVolumeChange}
                   className="w-full h-2 bg-dark-800 rounded-lg appearance-none cursor-pointer 
-                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 
-                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-pink-400 
-                    [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:transition-transform"
+                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 
+                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-pink-400
+                    [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:hover:bg-pink-300
+                    [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:shadow-md"
                 />
                 <motion.div 
                   className={`w-8 text-center font-semibold soundVolume-value ${settings.soundVolume === 0 ? 'text-pink-500/50' : 'text-pink-400'}`}

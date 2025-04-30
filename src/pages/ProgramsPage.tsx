@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { ArrowRight, Users, Award, Clock, Target, Dumbbell } from 'lucide-react';
+import { ArrowRight, Users, Award, Clock, Target } from 'lucide-react';
 
 // Program type definition
 interface Program {
