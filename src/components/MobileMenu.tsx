@@ -80,36 +80,35 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
     const width = screenSize.width;
     const height = screenSize.height;
     
-    // Base styles
-    let containerWidth = '85%';
-    let maxWidth = '320px';
-    let padding = '20px';
-    let borderRadius = '16px';
-    let fontSize = '15px';
-    let maxHeight = '80vh';
-    let itemPadding = '12px 14px';
+    // Base styles - making everything smaller
+    let containerWidth = '75%';
+    let maxWidth = '280px';
+    let padding = '16px';
+    let borderRadius = '14px';
+    let fontSize = '14px';
+    let maxHeight = '100%'; // No need for max-height with compact design
+    let itemPadding = '10px 12px';
     
     // Small phones
     if (width < 350) {
-      containerWidth = '90%';
-      maxWidth = '280px';
-      padding = '16px';
-      borderRadius = '14px';
-      fontSize = '14px';
-      itemPadding = '10px 12px';
+      containerWidth = '85%';
+      maxWidth = '250px';
+      padding = '14px';
+      borderRadius = '12px';
+      fontSize = '13px';
+      itemPadding = '8px 10px';
     }
     
     // Very small phones in landscape
     if (height < 500) {
-      maxHeight = '90vh';
-      padding = '12px';
-      itemPadding = '8px 10px';
+      padding = '10px';
+      itemPadding = '6px 8px';
     }
     
     // Larger phones
     if (width >= 400) {
-      containerWidth = '80%';
-      maxWidth = '350px';
+      containerWidth = '70%';
+      maxWidth = '300px';
     }
     
     return {
@@ -159,10 +158,9 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
           marginLeft: 'auto',
           marginRight: 'auto',
           animation: 'scaleIn 0.3s ease-out',
-          maxHeight: styles.maxHeight,
-          overflowY: 'auto',
           position: 'relative',
-          isolation: 'isolate'
+          isolation: 'isolate',
+          overflowY: 'visible' // Ensure no scrollbars appear
         }}
       >
         {/* Golden gradient blur elements */}
@@ -197,9 +195,9 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
 
         <div
           style={{
-            marginBottom: '16px',
+            marginBottom: '10px', // Reduced from 16px
             textAlign: 'center',
-            paddingBottom: screenSize.height < 600 ? '10px' : '14px',
+            paddingBottom: screenSize.height < 600 ? '8px' : '10px', // Reduced
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             width: '100%'
           }}
@@ -209,10 +207,10 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: screenSize.width < 350 ? '10px' : '12px',
-              borderRadius: '12px',
+              padding: screenSize.width < 350 ? '8px' : '10px', // Reduced
+              borderRadius: '10px', // Reduced from 12px
               background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.05))',
-              marginBottom: screenSize.height < 600 ? '6px' : '10px',
+              marginBottom: screenSize.height < 600 ? '4px' : '6px', // Reduced
               boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)',
               backdropFilter: 'blur(10px)',
               border: '1px solid rgba(251, 191, 36, 0.2)'
@@ -222,15 +220,15 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               src="/icons/dumbbell-small.svg" 
               alt="YKFA" 
               style={{
-                width: screenSize.width < 350 ? '20px' : '24px',
-                height: screenSize.width < 350 ? '20px' : '24px',
+                width: screenSize.width < 350 ? '18px' : '20px', // Reduced
+                height: screenSize.width < 350 ? '18px' : '20px', // Reduced
               }}
             />
           </div>
           <div>
             <span
               style={{
-                fontSize: screenSize.width < 350 ? '16px' : '18px',
+                fontSize: screenSize.width < 350 ? '14px' : '16px', // Reduced
                 fontWeight: 'bold',
                 color: 'white',
                 letterSpacing: '0.5px',
@@ -252,11 +250,12 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: screenSize.height < 600 ? '4px' : '8px',
+            gap: screenSize.height < 600 ? '3px' : '6px', // Reduced
             width: '100%',
-            marginBottom: screenSize.height < 600 ? '12px' : '16px'
+            marginBottom: screenSize.height < 600 ? '8px' : '12px' // Reduced
           }}
         >
+          {/* Only show essential links to make menu more compact */}
           <Link
             to="/"
             style={{
@@ -265,41 +264,19 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               padding: styles.itemPadding,
               backgroundColor: 'rgba(255, 255, 255, 0.05)',
               color: 'white',
-              borderRadius: '10px',
+              borderRadius: '8px', // Reduced from 10px
               fontSize: styles.fontSize,
               textDecoration: 'none',
               transition: 'all 0.2s ease',
-              gap: '12px',
+              gap: '10px', // Reduced from 12px
               backdropFilter: 'blur(5px)',
               border: '1px solid rgba(255, 255, 255, 0.03)',
               boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
             }}
             onClick={onClose}
           >
-            <Home size={screenSize.width < 350 ? 14 : 16} style={{ color: '#f59e0b' }} />
+            <Home size={screenSize.width < 350 ? 12 : 14} style={{ color: '#f59e0b' }} />
             <span>Home</span>
-          </Link>
-          <Link
-            to="/about"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: styles.itemPadding,
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              color: 'white',
-              borderRadius: '10px',
-              fontSize: styles.fontSize,
-              textDecoration: 'none',
-              transition: 'all 0.2s ease',
-              gap: '12px',
-              backdropFilter: 'blur(5px)',
-              border: '1px solid rgba(255, 255, 255, 0.03)',
-              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
-            }}
-            onClick={onClose}
-          >
-            <Info size={screenSize.width < 350 ? 14 : 16} style={{ color: '#f59e0b' }} />
-            <span>About</span>
           </Link>
           <Link
             to="/programs"
@@ -309,18 +286,18 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               padding: styles.itemPadding,
               backgroundColor: 'rgba(255, 255, 255, 0.05)',
               color: 'white',
-              borderRadius: '10px',
+              borderRadius: '8px',
               fontSize: styles.fontSize,
               textDecoration: 'none',
               transition: 'all 0.2s ease',
-              gap: '12px',
+              gap: '10px',
               backdropFilter: 'blur(5px)',
               border: '1px solid rgba(255, 255, 255, 0.03)',
               boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
             }}
             onClick={onClose}
           >
-            <Dumbbell size={screenSize.width < 350 ? 14 : 16} style={{ color: '#f59e0b' }} />
+            <Dumbbell size={screenSize.width < 350 ? 12 : 14} style={{ color: '#f59e0b' }} />
             <span>Programs</span>
           </Link>
           <Link
@@ -331,18 +308,18 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               padding: styles.itemPadding,
               backgroundColor: 'rgba(255, 255, 255, 0.05)',
               color: 'white',
-              borderRadius: '10px',
+              borderRadius: '8px',
               fontSize: styles.fontSize,
               textDecoration: 'none',
               transition: 'all 0.2s ease',
-              gap: '12px',
+              gap: '10px',
               backdropFilter: 'blur(5px)',
               border: '1px solid rgba(255, 255, 255, 0.03)',
               boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
             }}
             onClick={onClose}
           >
-            <Users size={screenSize.width < 350 ? 14 : 16} style={{ color: '#f59e0b' }} />
+            <Users size={screenSize.width < 350 ? 12 : 14} style={{ color: '#f59e0b' }} />
             <span>Instructors</span>
           </Link>
           <Link
@@ -353,18 +330,18 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               padding: styles.itemPadding,
               backgroundColor: 'rgba(255, 255, 255, 0.05)',
               color: 'white',
-              borderRadius: '10px',
+              borderRadius: '8px',
               fontSize: styles.fontSize,
               textDecoration: 'none',
               transition: 'all 0.2s ease',
-              gap: '12px',
+              gap: '10px',
               backdropFilter: 'blur(5px)',
               border: '1px solid rgba(255, 255, 255, 0.03)',
               boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
             }}
             onClick={onClose}
           >
-            <CreditCard size={screenSize.width < 350 ? 14 : 16} style={{ color: '#f59e0b' }} />
+            <CreditCard size={screenSize.width < 350 ? 12 : 14} style={{ color: '#f59e0b' }} />
             <span>Membership</span>
           </Link>
           <Link
@@ -375,18 +352,18 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               padding: styles.itemPadding,
               backgroundColor: 'rgba(255, 255, 255, 0.05)',
               color: 'white',
-              borderRadius: '10px',
+              borderRadius: '8px',
               fontSize: styles.fontSize,
               textDecoration: 'none',
               transition: 'all 0.2s ease',
-              gap: '12px',
+              gap: '10px',
               backdropFilter: 'blur(5px)',
               border: '1px solid rgba(255, 255, 255, 0.03)',
               boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
             }}
             onClick={onClose}
           >
-            <Phone size={screenSize.width < 350 ? 14 : 16} style={{ color: '#f59e0b' }} />
+            <Phone size={screenSize.width < 350 ? 12 : 14} style={{ color: '#f59e0b' }} />
             <span>Contact</span>
           </Link>
         </nav>
@@ -394,7 +371,7 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
         <div
           style={{
             width: '100%',
-            paddingTop: screenSize.height < 600 ? '10px' : '14px',
+            paddingTop: screenSize.height < 600 ? '8px' : '10px', // Reduced
             borderTop: '1px solid rgba(255, 255, 255, 0.08)'
           }}
         >
@@ -403,13 +380,13 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
             style={{
               display: 'block',
               width: '100%',
-              padding: screenSize.height < 600 ? '10px' : '14px',
+              padding: screenSize.height < 600 ? '8px' : '12px', // Reduced
               background: 'linear-gradient(to right, #fbbf24, #f59e0b)',
               color: '#151515',
-              fontSize: screenSize.width < 350 ? '14px' : '15px',
+              fontSize: screenSize.width < 350 ? '13px' : '14px', // Reduced
               fontWeight: 'bold',
               textAlign: 'center',
-              borderRadius: '10px',
+              borderRadius: '8px', // Reduced
               textDecoration: 'none',
               transition: 'all 0.3s ease',
               boxShadow: '0 4px 15px rgba(245, 158, 11, 0.25)',
