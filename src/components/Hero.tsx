@@ -69,14 +69,24 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-[90vh] md:min-h-screen flex items-center bg-black">
-      {/* Background image with overlay */}
-      <div className="absolute inset-0 z-0 bg-black">
-        <div 
-          className="absolute inset-0 bg-center bg-cover opacity-50"
-          style={{ 
-            backgroundImage: "url('https://images.pexels.com/photos/4761352/pexels-photo-4761352.jpeg?auto=compress&cs=tinysrgb&w=1920')" 
-          }}
-        ></div>
+      {/* Background video with overlay */}
+      <div className="absolute inset-0 z-0 bg-black overflow-hidden">
+        <video 
+          className="absolute inset-0 w-full h-full object-cover opacity-50"
+          autoPlay 
+          muted 
+          loop 
+          playsInline
+          poster="https://images.pexels.com/photos/4761352/pexels-photo-4761352.jpeg?auto=compress&cs=tinysrgb&w=1920"
+        >
+          <source src="/sounds/video1.mp4" type="video/mp4" />
+          {/* Fallback for browsers that don't support video */}
+          <img 
+            src="https://images.pexels.com/photos/4761352/pexels-photo-4761352.jpeg?auto=compress&cs=tinysrgb&w=1920" 
+            alt="Martial arts training"
+            className="absolute inset-0 w-full h-full object-cover opacity-50"
+          />
+        </video>
         <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/40 to-black"></div>
       </div>
 

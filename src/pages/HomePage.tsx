@@ -77,29 +77,43 @@ const FloatingButtons = () => {
           {/* BMI Calculator Widget */}
           <div className="relative group">
             <div 
-              className={`fixed bottom-8 sm:bottom-12 right-16 sm:right-16 bg-gradient-to-br from-dark-800/95 to-dark-900/95 backdrop-blur-xl rounded-2xl shadow-xl w-[calc(100vw-32px)] sm:w-72 max-w-[280px] overflow-hidden transition-all duration-500 ease-out border border-white/10
+              className={`fixed bottom-8 sm:bottom-12 right-14 sm:right-16 bg-gradient-to-br from-dark-800/95 to-dark-900/95 backdrop-blur-xl rounded-2xl shadow-xl w-[calc(100vw-32px)] sm:w-72 max-w-[280px] overflow-hidden transition-all duration-500 ease-out border border-white/10
                 ${showBMICalculator 
-                  ? 'opacity-100 translate-x-0 scale-100' 
-                  : 'opacity-0 translate-x-16 scale-95 pointer-events-none'}`}
+                  ? 'opacity-100 translate-y-0 scale-100 rotate-0' 
+                  : 'opacity-0 translate-y-8 translate-x-8 scale-95 rotate-3 pointer-events-none'}`}
               style={{ 
                 boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
                 maxHeight: bmiResult !== null ? 'calc(100vh - 250px)' : 'auto',
                 height: bmiResult !== null ? 'auto' : 'fit-content',
-                transition: 'max-height 0.5s ease-out, height 0.5s ease-out',
+                transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
                 zIndex: 50,
                 top: 'auto',
                 bottom: '2rem',
-                transform: 'none'
+                transform: 'none',
+                transformOrigin: 'bottom right'
               }}
             >
-              <div className="bg-gradient-to-r from-amber-400/20 to-amber-500/20 border-b border-amber-400/20 p-2.5 sm:p-3">
+              <div 
+                className={`bg-gradient-to-r from-amber-400/20 to-amber-500/20 border-b border-amber-400/20 p-2.5 sm:p-3 transition-all duration-500 ${showBMICalculator ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}
+                style={{ transitionDelay: showBMICalculator ? '0.1s' : '0s' }}
+              >
                 <div className="flex items-center gap-2">
                   <div className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 rounded-xl bg-amber-400/20 flex items-center justify-center">
-                    <Calculator className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+                    <Calculator className={`w-4 h-4 sm:w-5 sm:h-5 text-amber-400 transition-all duration-500 ${showBMICalculator ? 'opacity-100 rotate-0 scale-100' : 'opacity-0 -rotate-90 scale-50'}`} 
+                      style={{ transitionDelay: showBMICalculator ? '0.2s' : '0s' }}
+                    />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-semibold text-xs sm:text-sm truncate text-white">BMI Calculator</h3>
-                    <p className="text-[10px] text-gray-400">Calculate your Body Mass Index</p>
+                    <h3 className={`font-semibold text-xs sm:text-sm truncate text-white transition-all duration-500 ${showBMICalculator ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}
+                      style={{ transitionDelay: showBMICalculator ? '0.25s' : '0s' }}
+                    >
+                      BMI Calculator
+                    </h3>
+                    <p className={`text-[10px] text-gray-400 transition-all duration-500 ${showBMICalculator ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4'}`}
+                      style={{ transitionDelay: showBMICalculator ? '0.3s' : '0s' }}
+                    >
+                      Calculate your Body Mass Index
+                    </p>
                   </div>
                 </div>
               </div>
@@ -108,7 +122,9 @@ const FloatingButtons = () => {
                 transition: 'max-height 0.5s ease-out'
               }}>
                 <div className="space-y-2.5 sm:space-y-3">
-                  <div className="space-y-1.5">
+                  <div className={`space-y-1.5 transition-all duration-500 ${showBMICalculator ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                    style={{ transitionDelay: showBMICalculator ? '0.35s' : '0s' }}
+                  >
                     <label className="block text-xs font-medium text-gray-300">Weight (kg)</label>
                     <input
                       type="number"
@@ -118,7 +134,9 @@ const FloatingButtons = () => {
                       placeholder="Enter weight"
                     />
                   </div>
-                  <div className="space-y-1.5">
+                  <div className={`space-y-1.5 transition-all duration-500 ${showBMICalculator ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                    style={{ transitionDelay: showBMICalculator ? '0.4s' : '0s' }}
+                  >
                     <label className="block text-xs font-medium text-gray-300">Height (cm)</label>
                     <input
                       type="number"
@@ -130,7 +148,8 @@ const FloatingButtons = () => {
                   </div>
                   <button
                     onClick={calculateBMI}
-                    className="w-full bg-gradient-to-r from-amber-400/20 to-amber-500/20 hover:from-amber-400/30 hover:to-amber-500/30 text-amber-400 font-medium py-2 rounded-lg transition-all duration-200 text-xs sm:text-sm border border-amber-400/20 hover:border-amber-400/30"
+                    className={`w-full bg-gradient-to-r from-amber-400/20 to-amber-500/20 hover:from-amber-400/30 hover:to-amber-500/30 text-amber-400 font-medium py-2 rounded-lg transition-all duration-500 text-xs sm:text-sm border border-amber-400/20 hover:border-amber-400/30 ${showBMICalculator ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
+                    style={{ transitionDelay: showBMICalculator ? '0.45s' : '0s' }}
                   >
                     Calculate BMI
                   </button>
@@ -162,7 +181,7 @@ const FloatingButtons = () => {
               className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg hover:bg-white/20 transition-all group relative"
               style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
             >
-              <Calculator className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400 group-hover:scale-110 transition-transform duration-300" />
+              <Calculator className={`w-5 h-5 sm:w-6 sm:h-6 text-amber-400 group-hover:scale-110 transition-transform duration-300 ${showBMICalculator ? 'rotate-180' : 'rotate-0'}`} />
             </button>
           </div>
 
@@ -352,6 +371,32 @@ const ProgramCard = ({
 
 const HomePage = () => {
   const [selectedTab, setSelectedTab] = useState<'all' | 'karate' | 'fitness' | 'kickboxing'>('all');
+  const [showTestimonialTooltip, setShowTestimonialTooltip] = useState(false);
+  const [hasSwipedCards, setHasSwipedCards] = useState(false);
+  const testimonialSectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (testimonialSectionRef.current && !hasSwipedCards) {
+        const rect = testimonialSectionRef.current.getBoundingClientRect();
+        const isVisible = rect.top < window.innerHeight && rect.bottom >= 0;
+        
+        if (isVisible) {
+          setShowTestimonialTooltip(true);
+        } else {
+          setShowTestimonialTooltip(false);
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [hasSwipedCards]);
+
+  const handleCardSwipe = () => {
+    setShowTestimonialTooltip(false);
+    setHasSwipedCards(true);
+  };
 
   const programs = [
     {
@@ -490,7 +535,7 @@ const HomePage = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="section py-12 sm:py-16 relative overflow-hidden">
+      <section ref={testimonialSectionRef} className="section py-12 sm:py-16 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-black via-dark-800 to-amber-900/20 opacity-90"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.1),transparent_70%)]"></div>
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
@@ -504,8 +549,17 @@ const HomePage = () => {
             </p>
           </div>
 
-          <div className="flex justify-center items-center w-full py-6 sm:py-10">
-            <ShuffleCards />
+          <div className="flex justify-center items-center w-full py-6 sm:py-10 relative">
+            {/* Swipe tooltip - positioned over the cards */}
+            {showTestimonialTooltip && (
+              <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 z-40 bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1.5 rounded-lg shadow-lg transition-all duration-500 animate-bounce-slow whitespace-nowrap text-xs inline-flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-amber-500 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l-4-4m0 0l4-4m-4 4h18" />
+                </svg>
+                <span className="font-medium">Swipe left for more</span>
+              </div>
+            )}
+            <ShuffleCards onSwipe={handleCardSwipe} />
           </div>
         </div>
       </section>
