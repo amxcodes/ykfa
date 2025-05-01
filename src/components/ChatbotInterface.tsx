@@ -25,6 +25,8 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
   const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isClosing, setIsClosing] = useState(false);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -33,6 +35,28 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Handle mobile keyboard visibility
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.visualViewport) {
+        const isKeyboard = window.visualViewport.height < window.innerHeight;
+        setIsKeyboardVisible(isKeyboard);
+      }
+    };
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+      window.visualViewport.addEventListener('scroll', handleResize);
+    }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleResize);
+        window.visualViewport.removeEventListener('scroll', handleResize);
+      }
+    };
+  }, []);
 
   const handleClose = () => {
     setIsClosing(true);
@@ -73,10 +97,17 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
 
   return (
     <div className="fixed inset-0 z-50 pointer-events-none">
-      <div className="absolute bottom-20 sm:bottom-24 right-2 sm:right-4 w-[calc(100%-16px)] sm:w-[380px] max-w-[380px] pointer-events-auto">
+      <div 
+        className={`absolute right-2 sm:right-4 w-[calc(100%-16px)] sm:w-[380px] max-w-[380px] pointer-events-auto transition-all duration-300
+          ${isKeyboardVisible 
+            ? 'bottom-[var(--keyboard-height,0px)]' 
+            : 'bottom-20 sm:bottom-24'}`}
+      >
         <div 
-          className={`bg-dark-800/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl transition-all duration-300 transform
-            ${isClosing ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}
+          className={`bg-dark-800/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl transition-all duration-500 transform origin-bottom-right
+            ${isClosing 
+              ? 'scale-95 opacity-0' 
+              : 'scale-100 opacity-100 animate-apple-pop'}`}
         >
           {/* Header */}
           <div className="p-3 sm:p-4 border-b border-white/10 flex items-center justify-between bg-gradient-to-r from-amber-400/10 to-amber-500/10">
@@ -125,6 +156,7 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
           <form onSubmit={handleSubmit} className="p-3 sm:p-4 border-t border-white/10 bg-dark-700/50">
             <div className="flex gap-2">
               <input
+                ref={inputRef}
                 type="text"
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}

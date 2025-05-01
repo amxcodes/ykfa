@@ -25,7 +25,7 @@ const FloatingButtons = () => {
     <>
       {/* Initial Tooltip with enhanced animation */}
       <div 
-        className={`fixed bottom-28 right-28 z-50 bg-white/90 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-lg shadow-lg transition-all duration-500 max-w-[200px] sm:max-w-none hidden sm:block
+        className={`fixed bottom-24 sm:bottom-28 right-20 sm:right-28 z-50 bg-white/90 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-lg shadow-lg transition-all duration-500 max-w-[200px] sm:max-w-none
           ${showInitialTooltip && !isExpanded 
             ? 'opacity-100 translate-y-0 scale-100' 
             : 'opacity-0 translate-y-4 scale-95 pointer-events-none'}`}
@@ -41,7 +41,7 @@ const FloatingButtons = () => {
             Talk to our AI Assistant
           </li>
         </ul>
-        <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-r-[16px] border-r-white/90 border-b-8 border-b-transparent"></div>
+        <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-l-[16px] border-l-white/90 border-b-8 border-b-transparent"></div>
       </div>
 
       <div className="fixed bottom-24 sm:bottom-28 right-4 sm:right-8 z-50 flex flex-col gap-4">
