@@ -1,7 +1,7 @@
 import { ArrowRight, Timer, MessageCircle, Bot } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Hero from '../components/Hero';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 // Add an icon for the floating button (you can use any icon you prefer)
 // Import the ShuffleCards component
 import { ShuffleCards } from '../components/ui/shuffle-cards';
@@ -23,11 +23,12 @@ const FloatingButtons = () => {
 
   return (
     <>
-      {/* Initial Tooltip */}
+      {/* Initial Tooltip with enhanced animation */}
       <div 
-        className={`fixed bottom-28 right-28 z-50 bg-white/90 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-lg shadow-lg transition-all duration-300 max-w-[200px] sm:max-w-none hidden sm:block ${
-          showInitialTooltip && !isExpanded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'
-        }`}
+        className={`fixed bottom-28 right-28 z-50 bg-white/90 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-lg shadow-lg transition-all duration-500 max-w-[200px] sm:max-w-none hidden sm:block
+          ${showInitialTooltip && !isExpanded 
+            ? 'opacity-100 translate-y-0 scale-100' 
+            : 'opacity-0 translate-y-4 scale-95 pointer-events-none'}`}
       >
         <p className="text-sm">Need help? Click + to:</p>
         <ul className="mt-1 text-xs space-y-1">
@@ -44,15 +45,18 @@ const FloatingButtons = () => {
       </div>
 
       <div className="fixed bottom-24 sm:bottom-28 right-4 sm:right-8 z-50 flex flex-col gap-4">
-        <div className={`flex flex-col gap-4 transition-all duration-300 ${isExpanded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
+        <div className={`flex flex-col gap-4 transition-all duration-500 ease-out
+          ${isExpanded 
+            ? 'opacity-100 translate-y-0 scale-100' 
+            : 'opacity-0 translate-y-16 scale-90 pointer-events-none'}`}>
+          
+          {/* WhatsApp Widget Container */}
           <div className="relative group">
-            {/* WhatsApp Widget */}
             <div 
-              className={`absolute bottom-0 right-12 sm:right-16 bg-white rounded-lg shadow-xl w-[calc(100vw-32px)] sm:w-80 max-w-[320px] overflow-hidden transition-all duration-300 ${
-                showWhatsAppWidget 
-                ? 'opacity-100 translate-x-0' 
-                : 'opacity-0 translate-x-10 pointer-events-none'
-              }`}
+              className={`absolute bottom-0 right-0 sm:right-16 bg-white rounded-lg shadow-xl w-[calc(100vw-24px)] sm:w-80 max-w-[320px] overflow-hidden transition-all duration-500 ease-out
+                ${showWhatsAppWidget 
+                  ? 'opacity-100 translate-x-0 scale-100' 
+                  : 'opacity-0 translate-x-16 scale-95 pointer-events-none'}`}
               style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
             >
               <div className="bg-[#25D366] text-white p-2.5 sm:p-4">
@@ -62,7 +66,7 @@ const FloatingButtons = () => {
                       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
                     </svg>
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <h3 className="font-semibold text-sm sm:text-base truncate">How may we Help you?</h3>
                     <p className="text-[10px] sm:text-xs opacity-90">Hit Click below to chat on WhatsApp</p>
                   </div>
@@ -92,25 +96,29 @@ const FloatingButtons = () => {
               </div>
             </div>
 
-            {/* WhatsApp Button */}
+            {/* WhatsApp Button with pulse animation */}
             <button
               onClick={() => setShowWhatsAppWidget(!showWhatsAppWidget)}
-              className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg hover:bg-white/20 transition-all group"
+              className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg hover:bg-white/20 transition-all group relative"
               style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
             >
-              <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 group-hover:scale-110 transition-transform" />
+              <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 group-hover:scale-110 transition-transform duration-300" />
+              <div className="absolute inset-0 rounded-full border-2 border-green-400/50 animate-ping" />
             </button>
           </div>
 
+          {/* Chatbot Button with pulse animation */}
           <button
             onClick={() => setShowChatbot(!showChatbot)}
-            className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg hover:bg-white/20 transition-all group"
+            className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg hover:bg-white/20 transition-all group relative"
             style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
           >
-            <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 group-hover:scale-110 transition-transform" />
+            <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 group-hover:scale-110 transition-transform duration-300" />
+            <div className="absolute inset-0 rounded-full border-2 border-blue-400/50 animate-ping" />
           </button>
         </div>
 
+        {/* Main Toggle Button with enhanced animation */}
         <button
           onClick={() => {
             setIsExpanded(!isExpanded);
@@ -118,11 +126,12 @@ const FloatingButtons = () => {
               setShowInitialTooltip(false);
             }
           }}
-          className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-md border border-white/20 shadow-lg hover:from-purple-500/30 hover:to-pink-500/30 transition-all group"
+          className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-md border border-white/20 shadow-lg hover:from-purple-500/30 hover:to-pink-500/30 transition-all group relative overflow-hidden"
           style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
         >
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 group-hover:scale-150 transition-transform duration-700 ease-out" />
           <div className="relative w-5 h-5 sm:w-6 sm:h-6">
-            <div className={`absolute inset-0 transition-all duration-300 ${isExpanded ? 'rotate-180' : 'rotate-0'}`}>
+            <div className={`absolute inset-0 transition-all duration-500 ${isExpanded ? 'rotate-180 scale-110' : 'rotate-0'}`}>
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -132,8 +141,8 @@ const FloatingButtons = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <path d="M12 5v14M5 12h14" className={`transition-all duration-300 ${isExpanded ? 'opacity-0' : 'opacity-100'}`} />
-                <path d="M5 5l14 14M19 5L5 19" className={`transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0'}`} />
+                <path d="M12 5v14M5 12h14" className={`transition-all duration-500 ${isExpanded ? 'opacity-0' : 'opacity-100'}`} />
+                <path d="M5 5l14 14M19 5L5 19" className={`transition-all duration-500 ${isExpanded ? 'opacity-100' : 'opacity-0'}`} />
               </svg>
             </div>
           </div>
@@ -150,30 +159,78 @@ const ProgramCard = ({
   title, 
   description, 
   image, 
-  link 
+  link,
+  index 
 }: { 
   title: string; 
   description: string; 
   image: string; 
-  link: string; 
+  link: string;
+  index: number;
 }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => {
+      if (cardRef.current) {
+        observer.unobserve(cardRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <div className="card group hover:bg-dark-700 hover:shadow-gold overflow-hidden animate-fade-up">
-      <div className="h-64 overflow-hidden rounded-xl mb-4">
+    <div 
+      ref={cardRef}
+      className={`card group hover:bg-dark-700 hover:shadow-gold overflow-hidden
+        transform transition-all duration-1000 ease-out
+        hover:scale-[1.02] hover:rotate-1
+        ${isVisible 
+          ? 'opacity-100 translate-y-0 scale-100 rotate-0' 
+          : 'opacity-0 translate-y-16 scale-90 -rotate-3'
+        }`}
+      style={{
+        transitionDelay: `${index * 200}ms`,
+        transformOrigin: 'center'
+      }}
+    >
+      <div className="h-64 overflow-hidden rounded-xl mb-4 relative">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
         <img 
           src={image} 
           alt={title} 
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover object-center transform transition-transform duration-700 group-hover:scale-110"
         />
+        <div className="absolute bottom-0 left-0 right-0 p-4 z-20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+          <Link 
+            to={link} 
+            className="inline-flex items-center text-white bg-amber-400/90 hover:bg-amber-400 px-4 py-2 rounded-lg transition-colors"
+          >
+            Learn more <ArrowRight className="ml-2 w-4 h-4" />
+          </Link>
+        </div>
       </div>
-      <h3 className="text-xl font-bold mb-2">{title}</h3>
-      <p className="text-gray-400 mb-4">{description}</p>
-      <Link 
-        to={link} 
-        className="inline-flex items-center text-amber-400 hover:text-amber-300"
-      >
-        Learn more <ArrowRight className="ml-2 w-4 h-4" />
-      </Link>
+      <div className="p-4">
+        <h3 className="text-xl font-bold mb-2 transform transition-transform duration-500 group-hover:translate-x-2">{title}</h3>
+        <p className="text-gray-400 mb-4 transform transition-transform duration-500 group-hover:translate-x-2">{description}</p>
+      </div>
     </div>
   );
 };
@@ -298,13 +355,14 @@ const HomePage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredPrograms.map((program) => (
+            {filteredPrograms.map((program, index) => (
               <ProgramCard 
                 key={program.id}
                 title={program.title}
                 description={program.description}
                 image={program.image}
                 link={program.link}
+                index={index}
               />
             ))}
           </div>
@@ -317,7 +375,27 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Call to Action */}
+      {/* Testimonials Section */}
+      <section className="section py-12 sm:py-16 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-dark-800 to-amber-900/20 opacity-90"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.1),transparent_70%)]"></div>
+        <div className="container mx-auto px-4 sm:px-6 relative z-10">
+          <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12 animate-fade-up">
+            <div className="inline-block mb-4 py-1 px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
+              <p className="text-amber-400 font-medium text-sm">Testimonials</p>
+            </div>
+            <h2 className="mb-4">What Our <span className="text-transparent bg-clip-text bg-gold-gradient">Members</span> Say</h2>
+            <p className="text-gray-300">
+              Hear from our community about their experiences and transformations at YKFA.
+            </p>
+          </div>
+
+          <div className="flex justify-center items-center w-full py-6 sm:py-10">
+            <ShuffleCards />
+          </div>
+        </div>
+      </section>
+
       <section className="py-24 relative">
         <div className="absolute inset-0 z-0">
           <div 
@@ -342,31 +420,6 @@ const HomePage = () => {
                 Contact Us
               </Link>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="section bg-dark-800 py-12 sm:py-16">
-        <div className="container mx-auto px-4 sm:px-6">
-          <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12 animate-fade-up">
-            <div className="inline-block mb-4 py-1 px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
-              <p className="text-amber-400 font-medium text-sm">Testimonials</p>
-            </div>
-            <h2 className="mb-4">What Our <span className="text-transparent bg-clip-text bg-gold-gradient">Members</span> Say</h2>
-            <p className="text-gray-300">
-              Hear from our community about their experiences and transformations at YKFA.
-            </p>
-          </div>
-
-          <div className="flex justify-center items-center w-full py-6 sm:py-10">
-            <ShuffleCards />
-          </div>
-          
-          <div className="text-center mt-6 sm:mt-8 animate-fade-up">
-            <Link to="/membership" className="btn btn-outline">
-              Join Our Community
-            </Link>
           </div>
         </div>
       </section>

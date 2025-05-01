@@ -1,5 +1,3 @@
-import { ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
 const Hero = () => {
   return (
@@ -23,15 +21,7 @@ const Hero = () => {
           <p className="text-base sm:text-lg md:text-xl mb-8 text-gray-300 max-w-2xl">
             Premium training facilities with expert coaches dedicated to your transformation through karate and fitness excellence.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link to="/membership" className="btn btn-primary">
-              Start Your Journey
-              <ChevronRight className="ml-2 w-5 h-5" />
-            </Link>
-            <Link to="/programs" className="btn btn-outline">
-              Explore Programs
-            </Link>
-          </div>
+          
 
           <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
             <div className="text-center p-4 bg-dark-800/50 backdrop-blur-sm rounded-lg">
