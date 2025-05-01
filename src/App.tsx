@@ -8,6 +8,7 @@ import InstructorsPage from './pages/InstructorsPage';
 import MembershipPage from './pages/MembershipPage';
 import ContactPage from './pages/ContactPage';
 import TimerPage from './pages/TimerPage';
+import StorePage from './pages/StorePage';
 import { TimerProvider } from './context/TimerContext';
 
 function App() {
@@ -67,6 +68,7 @@ function App() {
         <Route path="instructors" element={<InstructorsPage />} />
         <Route path="membership" element={<MembershipPage />} />
         <Route path="contact" element={<ContactPage />} />
+        <Route path="store" element={<StorePage />} />
         <Route 
           path="timer" 
           element={

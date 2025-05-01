@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { Home, Info, Dumbbell, Users, CreditCard, Phone } from 'lucide-react';
+import { Home, Info, Dumbbell, Users, CreditCard, Phone, ShoppingCart } from 'lucide-react';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -264,11 +264,11 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               padding: styles.itemPadding,
               backgroundColor: 'rgba(255, 255, 255, 0.05)',
               color: 'white',
-              borderRadius: '8px', // Reduced from 10px
+              borderRadius: '8px',
               fontSize: styles.fontSize,
               textDecoration: 'none',
               transition: 'all 0.2s ease',
-              gap: '10px', // Reduced from 12px
+              gap: '10px',
               backdropFilter: 'blur(5px)',
               border: '1px solid rgba(255, 255, 255, 0.03)',
               boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
@@ -299,6 +299,28 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
           >
             <Dumbbell size={screenSize.width < 350 ? 12 : 14} style={{ color: '#f59e0b' }} />
             <span>Programs</span>
+          </Link>
+          <Link
+            to="/store"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: styles.itemPadding,
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              color: 'white',
+              borderRadius: '8px',
+              fontSize: styles.fontSize,
+              textDecoration: 'none',
+              transition: 'all 0.2s ease',
+              gap: '10px',
+              backdropFilter: 'blur(5px)',
+              border: '1px solid rgba(255, 255, 255, 0.03)',
+              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
+            }}
+            onClick={onClose}
+          >
+            <ShoppingCart size={screenSize.width < 350 ? 12 : 14} style={{ color: '#f59e0b' }} />
+            <span>Store</span>
           </Link>
           <Link
             to="/instructors"

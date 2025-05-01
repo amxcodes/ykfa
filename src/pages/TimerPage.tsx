@@ -27,7 +27,7 @@ const TimerPage = () => {
   const { currentPhase, timerMode } = useTimerContext();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isTablet = useMediaQuery('(min-width: 769px) and (max-width: 1024px)');
-  
+
   // Use two background layers that we'll swap between
   const [bgLayers, setBgLayers] = useState({
     layer1: {
@@ -41,7 +41,7 @@ const TimerPage = () => {
       zIndex: 0
     }
   });
-  
+
   // Phase change handler with smoother transition
   useEffect(() => {
     // Get current gradient for this phase
@@ -89,7 +89,7 @@ const TimerPage = () => {
         [inactiveLayer]: {
           ...prev[inactiveLayer],
           zIndex: 1
-        }
+    }
       }));
     }, transitionDuration);
     
@@ -99,7 +99,7 @@ const TimerPage = () => {
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: { 
-      opacity: 1,
+      opacity: 1, 
       transition: { 
         duration: 0.5,
         staggerChildren: 0.1,
@@ -116,7 +116,7 @@ const TimerPage = () => {
       transition: { type: 'spring', stiffness: 50, damping: 10 }
     }
   };
-  
+
   // CSS for the gradient layers - no texture overlay
   const gradientLayerStyle = (layer: GradientLayer): CSSProperties => ({
     position: 'absolute',
@@ -139,7 +139,7 @@ const TimerPage = () => {
   
   // Full-screen running mode
   if (timerMode === 'running') {
-    return (
+  return (
       <AnimatePresence>
         <motion.div 
           key="running-mode"
@@ -160,7 +160,7 @@ const TimerPage = () => {
             marginBottom: '-400px',
             height: 'calc(100% + 400px)'
           }} />
-          
+
           {/* Visual enhancement - vignette only, no texture */}
           <div style={{
             ...vignetteStyle,
@@ -171,13 +171,13 @@ const TimerPage = () => {
           {/* Content - Push down on mobile with better spacing */}
           <div className="relative z-10 w-full h-full flex flex-col items-center justify-center mt-28 sm:mt-16 md:mt-0 mb-16 sm:mb-10 md:mb-0">
             <TimerDisplay fullscreen />
-          </div>
-          
+                </div>
+
           {/* Controls - High position on mobile/tablet, original position on desktop */}
           <div className="fixed bottom-64 sm:bottom-52 md:bottom-16 left-0 right-0 z-20">
             <TimerControls />
-          </div>
-        </motion.div>
+              </div>
+            </motion.div>
       </AnimatePresence>
     );
   }
@@ -209,7 +209,7 @@ const TimerPage = () => {
       {/* Content */}
       <div className="relative z-10">
         <div className="container mx-auto px-4 py-4 md:py-8 h-full">
-          <motion.div 
+            <motion.div
             className="max-w-6xl mx-auto h-full"
             variants={containerVariants}
             initial="hidden"
@@ -280,12 +280,12 @@ const TimerPage = () => {
                   {/* Controls in modal */}
                   <div className="py-2">
                     <TimerControls className="justify-center" />
-                  </div>
+              </div>
                 </motion.div>
               </motion.div>
             )}
-          </motion.div>
-        </div>
+            </motion.div>
+          </div>
       </div>
     </div>
   );
