@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ShoppingCart, Heart } from 'lucide-react';
+import { Phone, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface Product {
@@ -11,8 +11,6 @@ interface Product {
 }
 
 const StorePage = () => {
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 500 });
-
   const products: Product[] = [
     {
       id: 1,
@@ -86,40 +84,10 @@ const StorePage = () => {
       </section>
 
       {/* Store Content */}
-      <section className="section bg-dark-800">
+      <section className="py-16 bg-dark-800">
         <div className="container">
-          {/* Price Range Filter - Mobile Optimized */}
-          <div className="mb-8 px-4 sm:px-0">
-            <div className="bg-dark-700 rounded-xl p-4 sm:p-6">
-              <h2 className="text-xl font-semibold mb-4">Price Range</h2>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <div className="flex-1">
-                    <label className="text-sm text-gray-400">Min</label>
-                    <input
-                      type="number"
-                      value={priceRange.min}
-                      onChange={(e) => setPriceRange({ ...priceRange, min: Number(e.target.value) })}
-                      className="w-full bg-dark-800 border border-dark-600 rounded-lg p-2 text-white"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <label className="text-sm text-gray-400">Max</label>
-                    <input
-                      type="number"
-                      value={priceRange.max}
-                      onChange={(e) => setPriceRange({ ...priceRange, max: Number(e.target.value) })}
-                      className="w-full bg-dark-800 border border-dark-600 rounded-lg p-2 text-white"
-                    />
-                  </div>
-                </div>
-                <button className="btn btn-primary w-full">Apply Filter</button>
-              </div>
-            </div>
-          </div>
-
           {/* Products Grid - Mobile Optimized */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 px-4 sm:px-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((product) => (
               <div key={product.id} className="bg-dark-700 rounded-xl overflow-hidden group">
                 <div className="relative aspect-[4/3] overflow-hidden">
@@ -138,10 +106,10 @@ const StorePage = () => {
                   <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <span className="text-amber-400 font-semibold text-lg">${product.price}</span>
-                    <button className="btn btn-primary btn-sm w-full sm:w-auto">
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      Add to Cart
-                    </button>
+                    <Link to="/contact" className="btn btn-primary btn-sm w-full sm:w-auto">
+                      <Phone className="w-4 h-4 mr-2" />
+                      Contact and Buy
+                    </Link>
                   </div>
                 </div>
               </div>
