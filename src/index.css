@@ -176,6 +176,19 @@
     animation: apple-pop 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   }
 
+  @keyframes bounce-x {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(10px);
+    }
+  }
+
+  .animate-bounce-x {
+    animation: bounce-x 1s ease-in-out infinite;
+  }
+
   /* Mobile optimizations */
   @media (max-width: 640px) {
     .container {

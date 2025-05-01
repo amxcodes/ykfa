@@ -23,7 +23,11 @@ const testimonials = [
   }
 ];
 
-function ShuffleCards() {
+interface ShuffleCardsProps {
+  onSwipe?: () => void;
+}
+
+function ShuffleCards({ onSwipe }: ShuffleCardsProps) {
   const [positions, setPositions] = useState<("front" | "middle" | "back")[]>(["front", "middle", "back"]);
   const [isMobile, setIsMobile] = useState(false);
   
@@ -46,6 +50,8 @@ function ShuffleCards() {
     const newPositions = [...positions];
     newPositions.unshift(newPositions.pop() as "front" | "middle" | "back");
     setPositions(newPositions);
+    // Call onSwipe callback when shuffle happens
+    onSwipe?.();
   };
 
   return (

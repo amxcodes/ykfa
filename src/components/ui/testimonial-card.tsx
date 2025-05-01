@@ -22,7 +22,6 @@ export function TestimonialCard({
   image 
 }: TestimonialCardProps) {
   const dragRef = React.useRef(0);
-  const isFront = position === "front";
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -50,6 +49,48 @@ export function TestimonialCard({
     return isMobile ? "12.5%" : "37.5%";
   };
 
+  // Calculate scale based on position
+  const getScale = () => {
+    if (position === "front") return 1;
+    if (position === "middle") return 0.95;
+    return 0.9;
+  };
+
+  // Calculate opacity based on position
+  const getOpacity = () => {
+    if (position === "front") return 1;
+    if (position === "middle") return 0.9;
+    return 0.8;
+  };
+
+  // Calculate drag constraints based on position
+  const getDragConstraints = () => {
+    const baseConstraints = {
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0
+    };
+
+    // Add position-specific constraints
+    if (position === "middle") {
+      return {
+        ...baseConstraints,
+        left: -100,
+        right: 100
+      };
+    }
+    if (position === "back") {
+      return {
+        ...baseConstraints,
+        left: -50,
+        right: 50
+      };
+    }
+
+    return baseConstraints;
+  };
+
   return (
     <motion.div
       style={{
@@ -57,32 +98,30 @@ export function TestimonialCard({
       }}
       animate={{
         rotate: position === "front" ? "-6deg" : position === "middle" ? "0deg" : "6deg",
-        x: getXPosition()
+        x: getXPosition(),
+        scale: getScale(),
+        opacity: getOpacity()
       }}
-      drag={isFront}
+      drag
       dragElastic={0.35}
-      dragListener={isFront}
-      dragConstraints={{
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0
-      }}
+      dragListener={true}
+      dragConstraints={getDragConstraints()}
       onDragStart={(e) => {
-        if (isFront) {
           dragRef.current = e.clientX;
-        }
       }}
       onDragEnd={(e) => {
-        if (isFront && dragRef.current - e.clientX > 150) {
+        if (dragRef.current - e.clientX > 150) {
           handleShuffle();
         }
         dragRef.current = 0;
       }}
-      transition={{ duration: 0.35 }}
-      className={`absolute left-0 top-0 grid min-h-[300px] sm:min-h-[400px] md:min-h-[450px] w-[200px] sm:w-[320px] md:w-[350px] select-none place-content-center space-y-2 sm:space-y-4 md:space-y-6 rounded-2xl border border-amber-400/10 bg-dark-800/30 p-2 sm:p-5 md:p-8 shadow-xl backdrop-blur-md ${
-        isFront ? "cursor-grab active:cursor-grabbing" : ""
-      }`}
+      transition={{ 
+        duration: 0.5,
+        ease: [0.4, 0, 0.2, 1],
+        scale: { duration: 0.3 },
+        opacity: { duration: 0.3 }
+      }}
+      className={`absolute left-0 top-0 grid min-h-[300px] sm:min-h-[400px] md:min-h-[450px] w-[200px] sm:w-[320px] md:w-[350px] select-none place-content-center space-y-2 sm:space-y-4 md:space-y-6 rounded-2xl border border-amber-400/10 bg-dark-800/30 p-2 sm:p-5 md:p-8 shadow-xl backdrop-blur-md cursor-grab active:cursor-grabbing`}
     >
       <img
         src={imageUrl}

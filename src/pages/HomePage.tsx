@@ -1,4 +1,4 @@
-import { ArrowRight, Timer, MessageCircle, Bot } from 'lucide-react';
+import { ArrowRight, Timer, MessageCircle, Bot, Calculator } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Hero from '../components/Hero';
 import { useState, useEffect, useRef } from 'react';
@@ -12,6 +12,10 @@ const FloatingButtons = () => {
   const [showWhatsAppWidget, setShowWhatsAppWidget] = useState(false);
   const [showInitialTooltip, setShowInitialTooltip] = useState(true);
   const [showChatbot, setShowChatbot] = useState(false);
+  const [showBMICalculator, setShowBMICalculator] = useState(false);
+  const [weight, setWeight] = useState('');
+  const [height, setHeight] = useState('');
+  const [bmiResult, setBmiResult] = useState<number | null>(null);
 
   // Hide initial tooltip after 5 seconds
   useEffect(() => {
@@ -21,11 +25,27 @@ const FloatingButtons = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const calculateBMI = () => {
+    if (weight && height) {
+      const weightInKg = parseFloat(weight);
+      const heightInM = parseFloat(height) / 100; // Convert cm to m
+      const bmi = weightInKg / (heightInM * heightInM);
+      setBmiResult(parseFloat(bmi.toFixed(1)));
+    }
+  };
+
+  const getBMICategory = (bmi: number) => {
+    if (bmi < 18.5) return { category: 'Underweight', color: 'text-blue-400' };
+    if (bmi < 25) return { category: 'Normal weight', color: 'text-green-400' };
+    if (bmi < 30) return { category: 'Overweight', color: 'text-yellow-400' };
+    return { category: 'Obese', color: 'text-red-400' };
+  };
+
   return (
     <>
       {/* Initial Tooltip with enhanced animation */}
       <div 
-        className={`fixed bottom-24 sm:bottom-28 right-20 sm:right-28 z-50 bg-white/90 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-lg shadow-lg transition-all duration-500 max-w-[200px] sm:max-w-none
+        className={`fixed bottom-24 sm:bottom-28 right-20 sm:right-28 z-50 bg-white/90 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-lg shadow-lg transition-all duration-500 max-w-[220px] sm:max-w-none
           ${showInitialTooltip && !isExpanded 
             ? 'opacity-100 translate-y-0 scale-100' 
             : 'opacity-0 translate-y-4 scale-95 pointer-events-none'}`}
@@ -40,6 +60,10 @@ const FloatingButtons = () => {
             <Bot className="w-3 h-3 text-blue-500" />
             Talk to our AI Assistant
           </li>
+          <li className="flex items-center gap-1">
+            <Calculator className="w-3 h-3 text-amber-500" />
+            Calculate your BMI
+          </li>
         </ul>
         <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-l-[16px] border-l-white/90 border-b-8 border-b-transparent"></div>
       </div>
@@ -50,6 +74,98 @@ const FloatingButtons = () => {
             ? 'opacity-100 translate-y-0 scale-100' 
             : 'opacity-0 translate-y-16 scale-90 pointer-events-none'}`}>
           
+          {/* BMI Calculator Widget */}
+          <div className="relative group">
+            <div 
+              className={`fixed bottom-8 sm:bottom-12 right-16 sm:right-16 bg-gradient-to-br from-dark-800/95 to-dark-900/95 backdrop-blur-xl rounded-2xl shadow-xl w-[calc(100vw-32px)] sm:w-72 max-w-[280px] overflow-hidden transition-all duration-500 ease-out border border-white/10
+                ${showBMICalculator 
+                  ? 'opacity-100 translate-x-0 scale-100' 
+                  : 'opacity-0 translate-x-16 scale-95 pointer-events-none'}`}
+              style={{ 
+                boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
+                maxHeight: bmiResult !== null ? 'calc(100vh - 250px)' : 'auto',
+                height: bmiResult !== null ? 'auto' : 'fit-content',
+                transition: 'max-height 0.5s ease-out, height 0.5s ease-out',
+                zIndex: 50,
+                top: 'auto',
+                bottom: '2rem',
+                transform: 'none'
+              }}
+            >
+              <div className="bg-gradient-to-r from-amber-400/20 to-amber-500/20 border-b border-amber-400/20 p-2.5 sm:p-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 rounded-xl bg-amber-400/20 flex items-center justify-center">
+                    <Calculator className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-semibold text-xs sm:text-sm truncate text-white">BMI Calculator</h3>
+                    <p className="text-[10px] text-gray-400">Calculate your Body Mass Index</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-2.5 sm:p-3 overflow-y-auto" style={{ 
+                maxHeight: bmiResult !== null ? 'calc(100vh - 350px)' : 'auto',
+                transition: 'max-height 0.5s ease-out'
+              }}>
+                <div className="space-y-2.5 sm:space-y-3">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium text-gray-300">Weight (kg)</label>
+                    <input
+                      type="number"
+                      value={weight}
+                      onChange={(e) => setWeight(e.target.value)}
+                      className="w-full px-2.5 py-2 bg-dark-700/50 border border-white/10 rounded-lg focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400/50 text-white placeholder-gray-500 text-xs sm:text-sm transition-all duration-200"
+                      placeholder="Enter weight"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-medium text-gray-300">Height (cm)</label>
+                    <input
+                      type="number"
+                      value={height}
+                      onChange={(e) => setHeight(e.target.value)}
+                      className="w-full px-2.5 py-2 bg-dark-700/50 border border-white/10 rounded-lg focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400/50 text-white placeholder-gray-500 text-xs sm:text-sm transition-all duration-200"
+                      placeholder="Enter height"
+                    />
+                  </div>
+                  <button
+                    onClick={calculateBMI}
+                    className="w-full bg-gradient-to-r from-amber-400/20 to-amber-500/20 hover:from-amber-400/30 hover:to-amber-500/30 text-amber-400 font-medium py-2 rounded-lg transition-all duration-200 text-xs sm:text-sm border border-amber-400/20 hover:border-amber-400/30"
+                  >
+                    Calculate BMI
+                  </button>
+                  {bmiResult !== null && (
+                    <div className="mt-3 p-3 bg-gradient-to-br from-dark-700/50 to-dark-800/50 rounded-lg border border-white/5 animate-fade-in">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <p className="text-xs text-gray-400">Your BMI:</p>
+                        <p className="text-xl sm:text-2xl font-bold text-white">{bmiResult}</p>
+                      </div>
+                      <div className={`text-xs font-medium py-1 px-2.5 rounded-md bg-amber-400/10 border border-amber-400/20 ${getBMICategory(bmiResult).color}`}>
+                        {getBMICategory(bmiResult).category}
+                      </div>
+                      <div className="mt-2 pt-2 border-t border-white/5">
+                        <p className="text-[9px] sm:text-[10px] text-gray-400 leading-relaxed">
+                          {bmiResult < 18.5 ? 'Consider consulting a healthcare provider for guidance on healthy weight gain.' :
+                           bmiResult < 25 ? 'Your BMI is within the healthy range. Keep maintaining a balanced lifestyle!' :
+                           bmiResult < 30 ? 'Consider consulting a healthcare provider for guidance on healthy weight management.' :
+                           'Consider consulting a healthcare provider for guidance on weight management and overall health.'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowBMICalculator(!showBMICalculator)}
+              className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg hover:bg-white/20 transition-all group relative"
+              style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
+            >
+              <Calculator className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400 group-hover:scale-110 transition-transform duration-300" />
+            </button>
+          </div>
+
           {/* WhatsApp Widget Container */}
           <div className="relative group">
             <div 
@@ -103,7 +219,6 @@ const FloatingButtons = () => {
               style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
             >
               <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 group-hover:scale-110 transition-transform duration-300" />
-              <div className="absolute inset-0 rounded-full border-2 border-green-400/50 animate-ping" />
             </button>
           </div>
 
@@ -114,7 +229,6 @@ const FloatingButtons = () => {
             style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
           >
             <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 group-hover:scale-110 transition-transform duration-300" />
-            <div className="absolute inset-0 rounded-full border-2 border-blue-400/50 animate-ping" />
           </button>
         </div>
 
