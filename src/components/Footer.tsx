@@ -1,4 +1,4 @@
-import { Mail, MapPin, Phone, Facebook, Instagram, Twitter } from 'lucide-react';
+import { Mail, MapPin, Phone, Facebook, Instagram, Twitter, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
@@ -32,13 +32,13 @@ const Footer = () => {
               Elite training programs for all fitness levels. Join our community and transform your life through fitness and martial arts.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-amber-400 transition-colors" aria-label="Facebook">
+              <a href="#" className="text-gray-400 hover:text-amber-400 transition-colors rounded-full p-2 hover:bg-amber-400/10" aria-label="Facebook">
                 <Facebook className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-amber-400 transition-colors" aria-label="Instagram">
+              <a href="#" className="text-gray-400 hover:text-amber-400 transition-colors rounded-full p-2 hover:bg-amber-400/10" aria-label="Instagram">
                 <Instagram className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-amber-400 transition-colors" aria-label="Twitter">
+              <a href="#" className="text-gray-400 hover:text-amber-400 transition-colors rounded-full p-2 hover:bg-amber-400/10" aria-label="Twitter">
                 <Twitter className="w-5 h-5" />
               </a>
             </div>
@@ -47,27 +47,53 @@ const Footer = () => {
           {/* Quick Links */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-white">Quick Links</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <Link to="/" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Home</Link>
-              <Link to="/about" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">About</Link>
-              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Programs</Link>
-              <Link to="/instructors" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Instructors</Link>
-              <Link to="/store" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Store</Link>
-              <Link to="/membership" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Membership</Link>
-              <Link to="/contact" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Contact</Link>
+            <div className="grid gap-2">
+              <Link to="/" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Home
+              </Link>
+              <Link to="/about" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />About
+              </Link>
+              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Programs
+              </Link>
+              <Link to="/instructors" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Instructors
+              </Link>
+              <Link to="/store" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Store
+              </Link>
+              <Link to="/membership" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Membership
+              </Link>
+              <Link to="/contact" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Contact
+              </Link>
             </div>
           </div>
 
           {/* Programs */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-white">Programs</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Karate Training</Link>
-              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Strength & Conditioning</Link>
-              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Kids Martial Arts</Link>
-              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Fitness Classes</Link>
-              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Personal Training</Link>
-              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm">Self Defense</Link>
+            <div className="grid gap-2">
+              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Karate Training
+              </Link>
+              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Strength & Conditioning
+              </Link>
+              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Kids Martial Arts
+              </Link>
+              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Fitness Classes
+              </Link>
+              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Personal Training
+              </Link>
+              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Self Defense
+              </Link>
             </div>
           </div>
 
@@ -94,6 +120,7 @@ const Footer = () => {
         {/* Copyright */}
         <div className="mt-8 pt-6 border-t border-white/10 text-center">
           <p className="text-gray-500 text-sm">© {new Date().getFullYear()} Yaseen's YKFA. All rights reserved.</p>
+          <p className="text-gray-600 text-xs mt-1">Right-click anywhere for quick navigation</p>
         </div>
       </div>
     </footer>
