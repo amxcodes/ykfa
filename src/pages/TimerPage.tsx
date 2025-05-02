@@ -6,6 +6,7 @@ import TimerSettings from '../components/TimerSettings';
 import { useTimerContext } from '../context/TimerContext';
 import { useEffect, useState } from 'react';
 import { CSSProperties } from 'react';
+import { Timer, Activity, BadgeCheck } from 'lucide-react';
 
 // Phase color definitions with higher quality uneven gradient flow - no textures
 const PHASE_GRADIENTS = {
@@ -16,6 +17,9 @@ const PHASE_GRADIENTS = {
   complete: 'radial-gradient(circle at 50% 30%, rgba(168, 85, 247, 0.8) 0%, rgba(126, 34, 206, 0.6) 25%, rgba(107, 33, 168, 0.4) 50%, rgba(9, 17, 40, 0.95) 75%, rgba(0, 0, 0, 1) 100%)'
 };
 
+// Settings mode gradient - yellow and black
+const SETTINGS_GRADIENT = 'radial-gradient(circle at 50% 30%, rgba(245, 158, 11, 0.8) 0%, rgba(217, 119, 6, 0.6) 35%, rgba(180, 83, 9, 0.4) 60%, rgba(9, 17, 40, 0.95) 85%, rgba(0, 0, 0, 1) 100%)';
+
 // Define type for layer
 interface GradientLayer {
   gradient: string;
@@ -23,27 +27,223 @@ interface GradientLayer {
   zIndex: number;
 }
 
+// App loading component
+const TimerAppLoading = ({ onComplete }: { onComplete: () => void }) => {
+  const [progress, setProgress] = useState(0);
+  const [isAppReady, setIsAppReady] = useState(false);
+  const isMobile = useMediaQuery('(max-width: 640px)');
+  const [features, setFeatures] = useState<{icon: JSX.Element, text: string, loaded: boolean}[]>([
+    { 
+      icon: <Timer className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />, 
+      text: "Initializing timer core", 
+      loaded: false 
+    },
+    { 
+      icon: <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />, 
+      text: "Loading workout profiles", 
+      loaded: false 
+    },
+    { 
+      icon: <BadgeCheck className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />, 
+      text: "Ready to train!", 
+      loaded: false 
+    }
+  ]);
+
+  useEffect(() => {
+    // Simulate loading sequence for each feature
+    features.forEach((_, index) => {
+      // Adjust timing to be slightly faster on mobile for better UX
+      const baseDelay = isMobile ? 200 : 250;
+      const itemDelay = isMobile ? 250 : 300;
+      const delay = baseDelay + (index * itemDelay);
+      
+      setTimeout(() => {
+        setFeatures(prev => {
+          const newFeatures = [...prev];
+          newFeatures[index].loaded = true;
+          return newFeatures;
+        });
+        
+        // Update progress percentage based on completed features
+        setProgress(((index + 1) / features.length) * 100);
+        
+        // When all features are loaded
+        if (index === features.length - 1) {
+          setTimeout(() => {
+            setIsAppReady(true);
+            setTimeout(onComplete, isMobile ? 400 : 500); // Faster completion on mobile
+          }, isMobile ? 300 : 400);
+        }
+      }, delay);
+    });
+  }, [isMobile]);
+
+  return (
+    <motion.div 
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black px-4"
+      initial={{ opacity: 1 }}
+      animate={{ opacity: isAppReady ? 0 : 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+    >
+      {/* Decorative background elements - smaller on mobile */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-amber-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-amber-500/5 rounded-full blur-3xl"></div>
+      </div>
+      
+      {/* App logo - smaller on mobile */}
+      <motion.div 
+        className="relative flex items-center justify-center mb-8 sm:mb-12 w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+      >
+        <Timer className="w-10 h-10 sm:w-12 sm:h-12 text-black" />
+      </motion.div>
+      
+      {/* App name - adjusted text size for mobile */}
+      <motion.h1
+        className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8 text-white"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+      >
+        Yaseen's <span className="text-amber-400">Workout Timer</span>
+      </motion.h1>
+      
+      {/* Loading progress bar - fluid width on mobile */}
+      <motion.div 
+        className="w-full max-w-xs sm:max-w-sm h-1.5 bg-dark-700 rounded-full overflow-hidden mb-6 sm:mb-8 relative"
+        initial={{ width: 0, opacity: 0 }}
+        animate={{ width: "100%", opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+      >
+        <motion.div 
+          className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full absolute left-0 top-0"
+          initial={{ width: "0%" }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.3 }}
+        ></motion.div>
+      </motion.div>
+
+      {/* Loading features list - adjusted for mobile */}
+      <div className="space-y-2 sm:space-y-3 w-full max-w-xs sm:max-w-sm">
+        {features.map((feature, index) => (
+          <motion.div 
+            key={index}
+            className="flex items-center space-x-2 sm:space-x-3"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ 
+              opacity: feature.loaded ? 1 : 0.4, 
+              x: 0 
+            }}
+            transition={{ duration: 0.2, delay: 0.3 + (index * 0.05) }}
+          >
+            <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-colors ${feature.loaded ? 'bg-amber-500/20' : 'bg-gray-800'}`}>
+              {feature.icon}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs sm:text-sm text-gray-300 truncate">{feature.text}</div>
+              {index !== features.length - 1 && (
+                <div className="h-0.5 bg-dark-700 mt-1 relative overflow-hidden">
+                  {feature.loaded && (
+                    <motion.div 
+                      className="absolute inset-y-0 left-0 bg-amber-500/40"
+                      initial={{ width: "0%" }}
+                      animate={{ width: "100%" }}
+                      transition={{ duration: 0.3 }}
+                    ></motion.div>
+                  )}
+                </div>
+              )}
+            </div>
+            {feature.loaded && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0"
+              >
+                <BadgeCheck className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400" />
+              </motion.div>
+            )}
+          </motion.div>
+        ))}
+      </div>
+      
+      {/* Ready message when all features loaded - adjusted for mobile */}
+      <motion.div
+        className="mt-6 sm:mt-8 text-amber-400 text-sm sm:text-base font-medium"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: isAppReady ? 1 : 0, y: isAppReady ? 0 : 10 }}
+        transition={{ duration: 0.3 }}
+      >
+        Your workout session is ready!
+      </motion.div>
+    </motion.div>
+  );
+};
+
 const TimerPage = () => {
   const { currentPhase, timerMode } = useTimerContext();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isTablet = useMediaQuery('(min-width: 769px) and (max-width: 1024px)');
+  const [isLoading, setIsLoading] = useState(true);
 
   // Use two background layers that we'll swap between
   const [bgLayers, setBgLayers] = useState({
     layer1: {
-      gradient: PHASE_GRADIENTS[currentPhase],
+      gradient: timerMode === 'running' ? PHASE_GRADIENTS[currentPhase] : SETTINGS_GRADIENT,
       opacity: 1,
       zIndex: 1
     },
     layer2: {
-      gradient: PHASE_GRADIENTS[currentPhase],
+      gradient: timerMode === 'running' ? PHASE_GRADIENTS[currentPhase] : SETTINGS_GRADIENT,
       opacity: 0,
       zIndex: 0
     }
   });
 
-  // Phase change handler with smoother transition
+  // Update gradient when timer mode changes
   useEffect(() => {
+    // If we're not in running mode, use the settings gradient
+    if (timerMode !== 'running') {
+      setBgLayers({
+        layer1: {
+          gradient: SETTINGS_GRADIENT,
+          opacity: 1,
+          zIndex: 1
+        },
+        layer2: {
+          gradient: SETTINGS_GRADIENT,
+          opacity: 0,
+          zIndex: 0
+        }
+      });
+    } else {
+      // When starting the timer, set to the current phase gradient
+      setBgLayers({
+        layer1: {
+          gradient: PHASE_GRADIENTS[currentPhase],
+          opacity: 1,
+          zIndex: 1
+        },
+        layer2: {
+          gradient: PHASE_GRADIENTS[currentPhase],
+          opacity: 0,
+          zIndex: 0
+        }
+      });
+    }
+  }, [timerMode]);
+
+  // Phase change handler with smoother transition (only used when timer is running)
+  useEffect(() => {
+    // Only update gradients while timer is running
+    if (timerMode !== 'running') return;
+    
     // Get current gradient for this phase
     const targetGradient = PHASE_GRADIENTS[currentPhase];
     
@@ -93,7 +293,7 @@ const TimerPage = () => {
       }));
     }, transitionDuration);
     
-  }, [currentPhase]);
+  }, [currentPhase, timerMode]);
   
   // Animation variants
   const containerVariants = {
@@ -136,6 +336,18 @@ const TimerPage = () => {
     pointerEvents: 'none',
     zIndex: 2,
   };
+
+  // Handle loading complete
+  const handleLoadingComplete = () => {
+    // Scroll to top of page
+    window.scrollTo(0, 0);
+    setIsLoading(false);
+  };
+  
+  // Show app loading screen
+  if (isLoading) {
+    return <TimerAppLoading onComplete={handleLoadingComplete} />;
+  }
   
   // Full-screen running mode
   if (timerMode === 'running') {
@@ -182,19 +394,14 @@ const TimerPage = () => {
     );
   }
 
-  // Setup mode
+  // Setup mode with yellow and black gradient
   return (
     <div 
       className="min-h-screen pt-16 md:pt-20 pb-20 backdrop-blur-[10px] relative overflow-hidden"
     >
-      {/* Gradient background layers */}
-      <div style={{
-        ...gradientLayerStyle(bgLayers.layer1),
-        marginBottom: '-100px',
-        height: 'calc(100% + 100px)'
-      }} />
-      <div style={{
-        ...gradientLayerStyle(bgLayers.layer2),
+      {/* Settings mode: Fixed yellow and black gradient background */}
+      <div className="absolute inset-0 z-0" style={{
+        background: SETTINGS_GRADIENT,
         marginBottom: '-100px',
         height: 'calc(100% + 100px)'
       }} />
@@ -215,13 +422,6 @@ const TimerPage = () => {
             initial="hidden"
             animate="visible"
           >
-            <motion.h1 
-              className="text-center text-3xl md:text-4xl font-bold mb-8 text-amber-400"
-              variants={itemVariants}
-            >
-              Workout Timer
-            </motion.h1>
-            
             {/* Mobile Layout */}
             {isMobile && (
               <div className="flex flex-col items-center gap-8">

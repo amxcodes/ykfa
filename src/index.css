@@ -53,6 +53,60 @@
   p {
     @apply leading-relaxed;
   }
+  
+  /* Custom Scrollbar Styling */
+  @media (min-width: 1024px) {
+    /* For Webkit browsers (Chrome, Safari, Edge) */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: rgba(251, 191, 36, 0.3);
+      border-radius: 10px;
+      border: 2px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(251, 191, 36, 0.5);
+    }
+    
+    /* Special styling for textarea scrollbar */
+    textarea::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    textarea::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+    }
+    
+    textarea::-webkit-scrollbar-thumb {
+      background: rgba(251, 191, 36, 0.2);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    textarea::-webkit-scrollbar-thumb:hover {
+      background: rgba(251, 191, 36, 0.4);
+    }
+    
+    /* For Firefox */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(251, 191, 36, 0.3) rgba(255, 255, 255, 0.05);
+    }
+    
+    textarea {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(251, 191, 36, 0.2) rgba(255, 255, 255, 0.03);
+    }
+  }
 }
 
 @layer components {
@@ -223,5 +277,15 @@
       transform: translateY(0);
       animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
     }
+  }
+
+  /* Hide scrollbar but allow scrolling */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
   }
 }

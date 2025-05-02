@@ -1,35 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import Loader from './Loader';
 
 const Layout = () => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const location = useLocation();
-
-  // Handle initial page load animation
-  useEffect(() => {
-    if (isInitialLoad) {
-      const timer = setTimeout(() => {
-        setIsInitialLoad(false);
-      }, 800);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [isInitialLoad]);
-
-  // Reset initial load animation when route changes
-  useEffect(() => {
-    setIsInitialLoad(true);
-    
-    const timer = setTimeout(() => {
-      setIsInitialLoad(false);
-    }, 800);
-    
-    return () => clearTimeout(timer);
-  }, [location.pathname]);
 
   // Handle scroll to show/hide navbar background
   useEffect(() => {
@@ -47,7 +23,8 @@ const Layout = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-dark-900">
-      {isInitialLoad && <Loader />}
+      {/* Loader is self-managing and only shows on home page */}
+      <Loader />
       
       <Navbar isScrolled={isScrolled} />
       

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Phone, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

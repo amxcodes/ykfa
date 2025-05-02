@@ -1,0 +1,367 @@
+import { useRef, useEffect, useState } from 'react';
+import { X, Download } from 'lucide-react';
+
+interface AppStoreWidgetProps {
+  isOpen: boolean;
+  onClose: () => void;
+  buttonRef?: React.RefObject<HTMLAnchorElement>;
+}
+
+const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => {
+  const widgetRef = useRef<HTMLDivElement>(null);
+  const defaultButtonRef = useRef<HTMLAnchorElement>(null);
+  const [position, setPosition] = useState({ top: 0, right: 0 });
+  const [isVisible, setIsVisible] = useState(false);
+  const [isContentVisible, setIsContentVisible] = useState(false);
+  
+  // Use provided buttonRef or fallback to default position
+  const actualButtonRef = buttonRef || defaultButtonRef;
+
+  // Calculate position based on button location
+  useEffect(() => {
+    if (isOpen) {
+      if (actualButtonRef.current) {
+        const rect = actualButtonRef.current.getBoundingClientRect();
+        const navbarHeight = 70; // Approximate navbar height
+
+        setPosition({
+          // Align with the bottom of the navbar
+          top: navbarHeight,
+          right: window.innerWidth - rect.right
+        });
+      } else {
+        // Fallback position if there's no button reference
+        setPosition({
+          top: 70, // Navbar height
+          right: 20
+        });
+      }
+      
+      // Show the widget container first
+      setIsVisible(true);
+      
+      // Then reveal the content with a slight delay
+      setTimeout(() => {
+        setIsContentVisible(true);
+      }, 100);
+    } else {
+      // Hide content first
+      setIsContentVisible(false);
+      
+      // Then hide container after animation completes
+      setTimeout(() => {
+        setIsVisible(false);
+      }, 300);
+    }
+  }, [isOpen, actualButtonRef]);
+
+  // Close widget when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        widgetRef.current && 
+        !widgetRef.current.contains(event.target as Node) &&
+        (!actualButtonRef.current || !actualButtonRef.current.contains(event.target as Node))
+      ) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose, actualButtonRef]);
+
+  // Close widget on escape key
+  useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      window.addEventListener('keydown', handleEsc);
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen && !isVisible) return null;
+
+  return (
+    <>
+      {/* Backdrop overlay with radial gradient */}
+      <div 
+        className="fixed inset-0 z-[199] pointer-events-none transition-opacity duration-300"
+        style={{
+          background: `radial-gradient(circle at ${position.right + 20}px ${position.top - 20}px, rgba(251, 191, 36, 0.08) 0%, transparent 70%)`,
+          opacity: isContentVisible ? 1 : 0
+        }}
+      />
+      
+      {/* Widget container */}
+      <div 
+        ref={widgetRef}
+        className="fixed z-[200] w-72 rounded-xl overflow-hidden widget-glass"
+        style={{ 
+          top: `${position.top}px`, 
+          right: `${position.right}px`,
+          transform: isContentVisible 
+            ? 'translateY(0) perspective(600px) rotateX(0) scale(1)' 
+            : 'translateY(-20px) perspective(600px) rotateX(5deg) scale(0.98)',
+          opacity: isContentVisible ? 1 : 0,
+          boxShadow: isContentVisible 
+            ? '0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(251, 191, 36, 0.15)' 
+            : '0 0 0 rgba(0, 0, 0, 0)',
+          transition: 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s ease, box-shadow 0.4s ease'
+        }}
+      >
+        {/* Widget inner with blur glass effect */}
+        <div className="relative bg-dark-850/90 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden h-full">
+          {/* Top light effect */}
+          <div 
+            className="absolute inset-x-0 top-0 h-24 pointer-events-none transition-opacity duration-500 delay-300"
+            style={{
+              background: 'linear-gradient(to bottom, rgba(251, 191, 36, 0.08), transparent)',
+              opacity: isContentVisible ? 1 : 0
+            }}
+          />
+          
+          {/* Container for all content */}
+          <div className="relative">
+            {/* Header */}
+            <div 
+              className="p-4 flex gap-3 border-b border-white/10"
+              style={{
+                transform: isContentVisible ? 'translateY(0)' : 'translateY(-10px)',
+                opacity: isContentVisible ? 1 : 0,
+                transition: 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease',
+                transitionDelay: '0.1s'
+              }}
+            >
+              {/* App icon - static version */}
+              <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/10 shadow-lg flex-shrink-0">
+                <div className="w-full h-full bg-gradient-to-br from-amber-400 to-amber-600">
+                  <img 
+                    src="/icons/dumbbell-small.svg" 
+                    alt="YKFA Warriors" 
+                    className="w-full h-full p-1.5" 
+                  />
+                </div>
+              </div>
+
+              {/* App details */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <h3 
+                    className="text-base font-bold text-white truncate"
+                    style={{
+                      transform: isContentVisible ? 'translateY(0)' : 'translateY(-5px)',
+                      opacity: isContentVisible ? 1 : 0,
+                      transition: 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.4s ease',
+                      transitionDelay: '0.2s'
+                    }}
+                  >
+                    YKFA Warriors
+                  </h3>
+                  <button 
+                    onClick={onClose} 
+                    className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:rotate-90"
+                  >
+                    <X size={12} className="text-gray-300" />
+                  </button>
+                </div>
+                <p 
+                  className="text-amber-400 text-xs"
+                  style={{
+                    transform: isContentVisible ? 'translateY(0)' : 'translateY(-5px)',
+                    opacity: isContentVisible ? 1 : 0,
+                    transition: 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.4s ease',
+                    transitionDelay: '0.25s'
+                  }}
+                >
+                  YourDigitalLift
+                </p>
+              </div>
+            </div>
+
+            {/* Brief Description */}
+            <div 
+              className="p-3 border-b border-white/10"
+              style={{
+                transform: isContentVisible ? 'translateY(0)' : 'translateY(10px)',
+                opacity: isContentVisible ? 1 : 0,
+                transition: 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease',
+                transitionDelay: '0.3s'
+              }}
+            >
+              <p className="text-gray-300 text-xs leading-relaxed">
+                Track exercise, diet, water intake, BMI, and connect with the YKFA community.
+              </p>
+            </div>
+
+            {/* CTA Button */}
+            <div 
+              className="p-3"
+              style={{
+                transform: isContentVisible ? 'translateY(0)' : 'translateY(10px)',
+                opacity: isContentVisible ? 1 : 0,
+                transition: 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease',
+                transitionDelay: '0.35s'
+              }}
+            >
+              <div className="widget-button-container">
+                <a 
+                  href="https://play.google.com/store/apps/details?id=com.ydl.yaseensykfawarriors&pcampaignid=web_share"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="widget-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClose();
+                  }}
+                >
+                  <div className="widget-button-bg"></div>
+                  <div className="widget-button-content">
+                    <Download size={15} />
+                    <span>Install App</span>
+                  </div>
+                </a>
+              </div>
+            </div>
+
+            {/* Arrow pointing to button */}
+            <div 
+              className="absolute w-3 h-3 bg-dark-850/90 border-t border-r border-white/10 rotate-[-45deg] widget-arrow"
+              style={{ 
+                top: '-1.5px', 
+                right: '28px',
+                transform: isContentVisible ? 'translateY(0) rotate(-45deg) scale(1)' : 'translateY(-5px) rotate(-45deg) scale(0)',
+                opacity: isContentVisible ? 1 : 0,
+                transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease',
+                transitionDelay: '0.1s'
+              }}
+            ></div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+// Add custom styles
+const style = document.createElement('style');
+style.textContent = `
+  .widget-glass {
+    backdrop-filter: blur(12px);
+  }
+    
+  /* Button styles */
+  .widget-button-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 8px;
+    z-index: 1;
+  }
+  
+  .widget-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 8px 12px;
+    position: relative;
+    text-align: center;
+    color: #000;
+    font-weight: 500;
+    font-size: 14px;
+    overflow: hidden;
+    z-index: 1;
+    border-radius: 8px;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  
+  .widget-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px -5px rgba(245, 158, 11, 0.4);
+  }
+  
+  .widget-button:active {
+    transform: translateY(0);
+  }
+  
+  .widget-button-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(45deg, #f59e0b, #fbbf24, #f59e0b);
+    background-size: 200% 200%;
+    animation: widget-button-gradient 3s ease infinite;
+    z-index: -1;
+  }
+  
+  .widget-button-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .widget-button::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 0;
+    pointer-events: none;
+  }
+  
+  .widget-button:hover::before {
+    opacity: 1;
+    animation: widget-button-shine 1.5s ease-out infinite;
+  }
+  
+  @keyframes widget-button-gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  @keyframes widget-button-shine {
+    0% {
+      transform: translate(-50%, -50%) scale(0);
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 0.3;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(2);
+      opacity: 0;
+    }
+  }
+`;
+document.head.appendChild(style);
+
+export default AppStoreWidget; 

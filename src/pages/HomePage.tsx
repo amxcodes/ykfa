@@ -1,75 +1,14 @@
-import { ArrowRight, Timer, MessageCircle, Bot, Calculator, Phone, Calendar, Info, Home, User, LogIn } from 'lucide-react';
+import { ArrowRight, Timer, MessageCircle, Bot, Calculator } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Hero from '../components/Hero';
-import { useState, useEffect, useRef, MouseEvent as ReactMouseEvent } from 'react';
+import { useState, useEffect, useRef, useContext } from 'react';
 // Add an icon for the floating button (you can use any icon you prefer)
 // Import the ShuffleCards component
 import { ShuffleCards } from '../components/ui/shuffle-cards';
 import ChatbotInterface from '../components/ChatbotInterface';
+import { WidgetContext } from '../App';
 
-// Custom Context Menu Component
-interface ContextMenuProps {
-  x: number;
-  y: number;
-  onClose: () => void;
-}
 
-const ContextMenu = ({ x, y, onClose }: ContextMenuProps) => {
-  const menuRef = useRef<HTMLDivElement>(null);
-  
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        onClose();
-      }
-    };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [onClose]);
-
-  const menuOptions = [
-    { icon: <Home size={16} />, label: 'Home', link: '/' },
-    { icon: <Calendar size={16} />, label: 'Book a Class', link: '/booking' },
-    { icon: <User size={16} />, label: 'Membership', link: '/membership' },
-    { icon: <Phone size={16} />, label: 'Contact Us', link: '/contact' },
-    { icon: <Info size={16} />, label: 'About YKFA', link: '/about' },
-    { icon: <LogIn size={16} />, label: 'Login', link: '/login' },
-  ];
-
-  // Style adjustments to keep menu in viewport
-  const position = {
-    left: Math.min(x, window.innerWidth - 200), // Prevent menu from going off right edge
-    top: Math.min(y, window.innerHeight - menuOptions.length * 36 - 16), // Prevent menu from going off bottom
-  };
-
-  return (
-    <div 
-      ref={menuRef}
-      className="fixed z-[100] bg-dark-800/95 backdrop-blur-lg border border-amber-400/20 rounded-lg shadow-2xl overflow-hidden w-48 py-1"
-      style={position}
-    >
-      <div className="p-2 border-b border-gray-700/50 mb-1">
-        <p className="text-xs text-amber-400 font-medium">Yaseen's YKFA</p>
-      </div>
-      <div>
-        {menuOptions.map((option, index) => (
-          <Link 
-            key={index} 
-            to={option.link}
-            className="flex items-center gap-2.5 px-3 py-2 text-sm text-gray-200 hover:bg-amber-400/20 transition-colors"
-            onClick={onClose}
-          >
-            <span className="text-amber-400">{option.icon}</span>
-            {option.label}
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
-};
 
 const FloatingButtons = () => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -80,6 +19,7 @@ const FloatingButtons = () => {
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
   const [bmiResult, setBmiResult] = useState<number | null>(null);
+  const { activeWidget, setActiveWidget } = useContext(WidgetContext);
 
   // Hide initial tooltip after 5 seconds
   useEffect(() => {
@@ -88,6 +28,39 @@ const FloatingButtons = () => {
     }, 5000);
     return () => clearTimeout(timer);
   }, []);
+
+  // Listen for active widget changes from context menu
+  useEffect(() => {
+    if (activeWidget) {
+      // Expand the floating button menu
+      setIsExpanded(true);
+      
+      // Hide the initial tooltip if it's showing
+      setShowInitialTooltip(false);
+      
+      // Open the appropriate widget
+      switch (activeWidget) {
+        case 'whatsapp':
+          setShowWhatsAppWidget(true);
+          setShowChatbot(false);
+          setShowBMICalculator(false);
+          break;
+        case 'chatbot':
+          setShowWhatsAppWidget(false);
+          setShowChatbot(true);
+          setShowBMICalculator(false);
+          break;
+        case 'bmi':
+          setShowWhatsAppWidget(false);
+          setShowChatbot(false);
+          setShowBMICalculator(true);
+          break;
+      }
+      
+      // Reset the active widget in context to avoid reopening on component remounts
+      setActiveWidget(null);
+    }
+  }, [activeWidget, setActiveWidget]);
 
   // Toggle widget visibility and ensure only one is open at a time
   const toggleWidget = (widgetName: 'whatsapp' | 'chatbot' | 'bmi') => {

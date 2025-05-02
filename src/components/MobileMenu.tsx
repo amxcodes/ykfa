@@ -1,7 +1,14 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { Home, Info, Dumbbell, Users, CreditCard, Phone, ShoppingCart } from 'lucide-react';
+import { Home, Dumbbell, Users, CreditCard, Phone, ShoppingCart } from 'lucide-react';
+
+// Google Play Store SVG icon component
+const PlayStoreIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M3.609 1.814L13.792 12 3.609 22.186c-.181.181-.29.435-.29.71 0 .528.435.964.963.964.253 0 .477-.1.652-.261L15.147 12.964c.159-.158.256-.377.256-.619 0-.241-.097-.46-.256-.618L4.934 1.104A.957.957 0 004.282.844a.969.969 0 00-.963.962c0 .302.142.56.326.72l-.036-.712zm4.349.793l9.383 9.383L7.958 22.373c-.283.284-.284.722-.059 1.015.224.292.626.36.945.128l14.043-8.107c.246-.142.443-.38.443-.664 0-.282-.197-.522-.443-.664L8.86.583c-.315-.234-.714-.171-.947.121-.23.292-.228.727.045 1.014v.889z"></path>
+  </svg>
+);
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -332,10 +339,14 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
             animationDelay: '0.8s'
           }}
         >
-          <Link
-            to="/membership"
+          <a
+            href="https://play.google.com/store/apps/details?id=com.ydl.yaseensykfawarriors&pcampaignid=web_share"
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
-              display: 'block',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               width: '100%',
               padding: screenSize.height < 600 ? '8px' : '12px',
               background: 'linear-gradient(to right, #fbbf24, #f59e0b)',
@@ -349,12 +360,14 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               boxShadow: '0 4px 15px rgba(245, 158, 11, 0.25)',
               border: '1px solid rgba(251, 191, 36, 0.5)',
               position: 'relative',
-              overflow: 'hidden'
+              overflow: 'hidden',
+              gap: '8px'
             }}
             onClick={onClose}
           >
-            Join Now
-          </Link>
+            <PlayStoreIcon />
+            <span>Download App</span>
+          </a>
         </div>
       </div>
     </div>,
