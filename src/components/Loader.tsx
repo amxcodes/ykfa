@@ -1,56 +1,50 @@
 import { useEffect, useState, memo } from 'react';
 import { useLocation } from 'react-router-dom';
 
-const Loader = () => {
+interface LoaderProps {
+  loadingComplete: boolean;
+}
+
+const Loader = ({ loadingComplete }: LoaderProps) => {
   const [progress, setProgress] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const location = useLocation();
   
   // Only show loader on home page
   const isHomePage = location.pathname === '/';
-  
+
+  // Animate progress bar (simulate loading)
   useEffect(() => {
     if (!isHomePage) {
       setIsVisible(false);
       return;
     }
-    
-    // Optimized animation sequence with requestAnimationFrame
+    if (loadingComplete) {
+      setProgress(100);
+      setTimeout(() => setIsVisible(false), 300);
+      return;
+    }
     let startTime: number;
     let animationFrameId: number;
-    
     const animateLoader = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const elapsedTime = timestamp - startTime;
-      
-      // Faster initial progress then slows down (easeOut effect)
-      const newProgress = Math.min(100, (elapsedTime / 800) * 100);
+      // Simulate progress up to 95% until loadingComplete is true
+      const maxProgress = 95;
+      const newProgress = Math.min(maxProgress, (elapsedTime / 800) * 100);
       setProgress(newProgress);
-      
-      if (newProgress < 100) {
+      if (newProgress < maxProgress && !loadingComplete) {
         animationFrameId = requestAnimationFrame(animateLoader);
-      } else {
-        // Fade out loader after progress completes
-        setTimeout(() => {
-          setIsVisible(false);
-        }, 200);
       }
     };
-    
-    // Start animation
     animationFrameId = requestAnimationFrame(animateLoader);
-    
     return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
-  }, [isHomePage]);
-  
-  // Don't render anything if not on home page or animation is complete
-  if (!isHomePage || !isVisible) {
-    return null;
-  }
+  }, [isHomePage, loadingComplete]);
+
+  // Hide loader when not on home or when loading is done
+  if (!isHomePage || !isVisible) return null;
 
   return (
     <div 
@@ -58,7 +52,7 @@ const Loader = () => {
       style={{
         opacity: progress === 100 ? 0 : 1,
         transition: 'opacity 0.3s ease-out',
-        willChange: 'opacity', // Performance hint for browsers
+        willChange: 'opacity',
       }}
     >
       {/* Decorative elements - using transform for better performance */}
@@ -78,10 +72,9 @@ const Loader = () => {
           }}
         ></div>
       </div>
-      
       {/* Logo with optimized animation */}
       <div 
-        className="relative flex items-center justify-center mb-8 w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg shadow-amber-400/20"
+        className="relative flex items-center justify-center mb-6 w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg shadow-amber-400/20"
         style={{
           transform: `scale(${0.9 + (progress * 0.001)})`,
           willChange: 'transform',
@@ -90,19 +83,18 @@ const Loader = () => {
         <img 
           src="/icons/dumbbell-small.svg" 
           alt="YKFA" 
-          width="64"
-          height="64"
-          className="w-16 h-16 text-black z-10"
+          width="80"
+          height="80"
+          className="w-20 h-20 text-black z-10"
           style={{ 
             filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))',
             animation: 'pulse 1.5s ease-in-out infinite',
           }}
         />
       </div>
-      
-      {/* Loading text with staggered fade-in */}
+      {/* Welcome message */}
       <h2 
-        className="text-xl font-bold font-spaceGrotesk tracking-wide text-white mb-4"
+        className="text-2xl font-bold font-spaceGrotesk tracking-wide text-white mb-2 text-center"
         style={{
           opacity: progress > 10 ? 1 : 0,
           transform: `translateY(${progress > 10 ? 0 : 10}px)`,
@@ -110,11 +102,21 @@ const Loader = () => {
           willChange: 'opacity, transform',
         }}
       >
-        Yaseen's <span className="text-amber-400">YKFA</span>
+        Welcome!
       </h2>
-      
+      <p
+        className="text-base text-amber-400 mb-4 text-center"
+        style={{
+          opacity: progress > 15 ? 1 : 0,
+          transform: `translateY(${progress > 15 ? 0 : 10}px)`,
+          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
+          willChange: 'opacity, transform',
+        }}
+      >
+        Please wait while all resources load.
+      </p>
       {/* Progress bar */}
-      <div className="w-64 h-1.5 bg-dark-700 rounded-full overflow-hidden relative">
+      <div className="w-64 h-2 bg-dark-700 rounded-full overflow-hidden relative mb-2">
         <div 
           className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full"
           style={{ 
@@ -124,10 +126,9 @@ const Loader = () => {
           }}
         ></div>
       </div>
-      
       {/* Loading message with delayed fade-in */}
       <p 
-        className="mt-3 text-sm text-gray-400"
+        className="mt-1 text-sm text-gray-400 text-center"
         style={{
           opacity: progress > 20 ? 1 : 0,
           transition: 'opacity 0.3s ease-out',
@@ -136,7 +137,6 @@ const Loader = () => {
       >
         Loading experience...
       </p>
-      
       {/* Add CSS keyframes for animations */}
       <style>{`
         @keyframes pulse {
@@ -149,5 +149,4 @@ const Loader = () => {
   );
 };
 
-// Memoize component to prevent unnecessary re-renders
 export default memo(Loader); 
