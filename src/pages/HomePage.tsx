@@ -1,4 +1,4 @@
-import { ArrowRight, Timer, MessageCircle, Bot, Calculator } from 'lucide-react';
+import { ArrowRight, Timer, MessageCircle, Bot, Calculator, X, ChevronRight, Calendar, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Hero from '../components/Hero';
 import { useState, useEffect, useRef, useContext } from 'react';
@@ -7,8 +7,11 @@ import { useState, useEffect, useRef, useContext } from 'react';
 import { ShuffleCards } from '../components/ui/shuffle-cards';
 import ChatbotInterface from '../components/ChatbotInterface';
 import { WidgetContext } from '../App';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-
+// Register GSAP plugins
+gsap.registerPlugin(ScrollTrigger);
 
 const FloatingButtons = () => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -377,28 +380,434 @@ const FloatingButtons = () => {
   );
 };
 
+// Program details modal component
+const ProgramDetailsModal = ({
+  program,
+  isOpen,
+  onClose
+}: {
+  program: any;
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  
+  // Generate details for each program based on MembershipPage.tsx data
+  const getProgramDetails = () => {
+    const details = {
+      price: {
+        monthly: program.title === "GYM ONLY" ? "₹2,500" : 
+                program.title === "MMA ONLY" ? "₹2,500" : 
+                program.title === "GROUP FITNESS" ? "₹2,500" : 
+                program.title === "KARATE" ? "₹1,000" : "₹3,500",
+        quarterly: program.title === "GYM ONLY" ? "₹5,500" : 
+                   program.title === "MMA ONLY" ? "₹5,500" : 
+                   program.title === "GROUP FITNESS" ? "₹5,500" : 
+                   program.title === "KARATE" ? "Monthly only" : "₹9,500",
+        annual: program.title === "GYM ONLY" ? "₹15,000" : 
+                program.title === "MMA ONLY" ? "₹15,000" : 
+                program.title === "GROUP FITNESS" ? "₹15,000" : 
+                program.title === "KARATE" ? "Monthly only" : "₹25,000",
+      },
+      schedule: program.title === "MMA + GYM" ? "24/7 gym access, 3 martial arts classes per week" :
+                program.title === "MMA ONLY" ? "3 martial arts classes per week" :
+                program.title === "GROUP FITNESS" ? "2 days cardio, 4 days strength training" :
+                program.title === "KARATE" ? "2 classes per week" : "24/7 access",
+      trainer: program.title === "MMA + GYM" ? "Yaseen & Team" :
+               program.title === "MMA ONLY" ? "Yaseen" :
+               program.title === "GROUP FITNESS" ? "Fitness Coach" :
+               program.title === "KARATE" ? "Master Yaseen" : "Self-guided with assistance",
+      features: program.title === "MMA + GYM" ? [
+                  "Access to gym", 
+                  "3 martial arts classes per week", 
+                  "Basic fitness assessment", 
+                  "Access to gym app", 
+                  "All MMA disciplines included"
+                ] :
+                program.title === "MMA ONLY" ? [
+                  "3 martial arts classes per week", 
+                  "Boxing, Kickboxing, Muay Thai", 
+                  "Wrestling, Judo, BJJ", 
+                  "Technical sessions", 
+                  "Sparring sessions"
+                ] :
+                program.title === "GROUP FITNESS" ? [
+                  "Group cardio sessions with coach", 
+                  "Access to gym app", 
+                  "2 days cardio and HIIT", 
+                  "4 days strength training", 
+                  "Personalized fitness guidance"
+                ] :
+                program.title === "KARATE" ? [
+                  "2 classes per week", 
+                  "Belt progression system", 
+                  "Kata and kumite practice", 
+                  "Self-defense techniques", 
+                  "Mental discipline focus"
+                ] : [
+                  "Access to gym", 
+                  "Access to gym app", 
+                  "Full range of equipment", 
+                  "Free weights and machines", 
+                  "Cardio section"
+                ]
+    };
+    return details;
+  };
+  
+  const details = getProgramDetails();
+  
+  // Animation for modal open/close
+  useEffect(() => {
+    if (!modalRef.current || !contentRef.current) return;
+    
+    if (isOpen) {
+      // Animate backdrop
+      gsap.to(modalRef.current, {
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        backdropFilter: 'blur(8px)',
+        duration: 0.4,
+        ease: 'power2.out'
+      });
+      
+      // Animate content
+      gsap.fromTo(contentRef.current,
+        {
+          opacity: 0,
+          y: 30,
+          scale: 0.95
+        },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.5,
+          ease: 'back.out(1.7)'
+        }
+      );
+      
+      // Lock body scroll
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Animate out
+      gsap.to(modalRef.current, {
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        backdropFilter: 'blur(0px)',
+        duration: 0.3,
+        ease: 'power2.in'
+      });
+      
+      gsap.to(contentRef.current, {
+        opacity: 0,
+        y: 20,
+        scale: 0.95,
+        duration: 0.3,
+        ease: 'power2.in'
+      });
+      
+      // Restore body scroll
+      document.body.style.overflow = '';
+    }
+    
+    // Cleanup
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+  
+  // Close on escape key
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        console.log('Escape key pressed - closing modal');
+        onClose();
+      }
+    };
+    
+    if (isOpen) {
+      window.addEventListener('keydown', handleEsc);
+    }
+    
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+    };
+  }, [isOpen, onClose]);
+  
+  // Simple close handler
+  const closeModal = () => {
+    console.log('Close modal called');
+    onClose();
+  };
+  
+  if (!isOpen) return null;
+  
+  return (
+    <div 
+      ref={modalRef}
+      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-2 pt-16 sm:p-4 bg-black/0 backdrop-blur-0 transition-all"
+    >
+      {/* Backdrop for catching outside clicks */}
+      <div 
+        className="absolute inset-0 z-0" 
+        onClick={closeModal}
+      ></div>
+      
+      <div 
+        ref={contentRef}
+        className="relative w-full max-w-3xl bg-dark-800/80 backdrop-blur-lg border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl z-10"
+        style={{ 
+          opacity: 0,
+          maxHeight: 'calc(100vh - 90px)',
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch' // For smooth scrolling on iOS
+        }}
+      >
+        {/* Close button */}
+        <button 
+          type="button"
+          onClick={closeModal}
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-dark-800/90 hover:bg-dark-700 text-white border border-white/20 shadow-lg transition-all duration-300"
+          aria-label="Close modal"
+        >
+          <X size={16} className="text-amber-400 sm:hidden" />
+          <X size={20} className="text-amber-400 hidden sm:block" />
+        </button>
+        
+        {/* Hero section - smaller on mobile */}
+        <div className="relative h-40 sm:h-56 md:h-72 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-t from-dark-800 to-transparent z-10"></div>
+          <img 
+            src={program.image} 
+            alt={program.title} 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-6 z-10">
+            <div className="inline-block mb-1 sm:mb-3 py-1 px-2 sm:px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
+              <p className="text-amber-400 font-medium text-[10px] sm:text-xs">{program.category.toUpperCase()}</p>
+            </div>
+            <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-white">{program.title}</h2>
+          </div>
+        </div>
+        
+        {/* Content - more compact on mobile */}
+        <div className="p-3 sm:p-6">
+          {/* Description */}
+          <div id="program-description" className="mb-3 sm:mb-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-1.5 sm:mb-3 text-white">Description</h3>
+            <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">{program.description}</p>
+          </div>
+          
+          {/* Features */}
+          <div id="program-features" className="mb-3 sm:mb-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-1.5 sm:mb-3 text-white">What's Included</h3>
+            <ul className="grid grid-cols-1 sm:grid-cols-1 gap-x-2 gap-y-1 sm:space-y-2">
+              {details.features.map((feature, index) => (
+                <li key={index} className="flex items-start gap-1.5 sm:gap-2 text-gray-300 text-xs sm:text-sm">
+                  <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          
+          {/* Details grid */}
+          <div id="program-details" className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-6">
+            <div className="bg-dark-700/50 border border-white/5 rounded-lg sm:rounded-xl p-2.5 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-amber-400/20 flex items-center justify-center">
+                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400" />
+                </div>
+                <h4 className="font-medium text-xs sm:text-base text-white">Schedule</h4>
+              </div>
+              <p className="text-gray-300 text-xs sm:text-sm pl-8 sm:pl-11">{details.schedule}</p>
+            </div>
+            
+            <div className="bg-dark-700/50 border border-white/5 rounded-lg sm:rounded-xl p-2.5 sm:p-4">
+              <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-amber-400/20 flex items-center justify-center">
+                  <Users className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400" />
+                </div>
+                <h4 className="font-medium text-xs sm:text-base text-white">Trainer</h4>
+              </div>
+              <p className="text-gray-300 text-xs sm:text-sm pl-8 sm:pl-11">{details.trainer}</p>
+            </div>
+          </div>
+          
+          {/* Pricing */}
+          <div id="program-pricing" className="mb-3 sm:mb-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-1.5 sm:mb-3 text-white">Pricing Options</h3>
+            <div className="grid grid-cols-3 sm:grid-cols-3 gap-1.5 sm:gap-3">
+              <div className="bg-dark-700/50 border border-white/5 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center">
+                <h4 className="text-gray-300 text-[10px] sm:text-sm mb-0.5 sm:mb-1">Monthly</h4>
+                <p className="text-base sm:text-xl font-bold text-white">{details.price.monthly}</p>
+                <p className="text-[8px] sm:text-xs text-gray-400">Per month</p>
+              </div>
+              
+              <div className="bg-dark-700/50 border border-white/5 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center relative overflow-hidden">
+                <div className="absolute -right-6 -top-1 rotate-45 bg-amber-400/80 text-black text-[7px] sm:text-[10px] font-bold py-0.5 px-6">
+                  POPULAR
+                </div>
+                <h4 className="text-gray-300 text-[10px] sm:text-sm mb-0.5 sm:mb-1">Quarterly</h4>
+                <p className="text-base sm:text-xl font-bold text-white">{details.price.quarterly}</p>
+                <p className="text-[8px] sm:text-xs text-gray-400">3 months</p>
+              </div>
+              
+              <div className="bg-dark-700/50 border border-white/5 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center">
+                <h4 className="text-gray-300 text-[10px] sm:text-sm mb-0.5 sm:mb-1">Annual</h4>
+                <p className="text-base sm:text-xl font-bold text-white">{details.price.annual}</p>
+                <p className="text-[8px] sm:text-xs text-gray-400">Best value</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* CTA buttons */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <a 
+              href={`/contact?program=membership&type=${program.title.toLowerCase().replace(' ', '_')}`}
+              className="flex-1 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-medium py-2 sm:py-3 px-4 sm:px-6 rounded-lg sm:rounded-xl text-center transition-all text-xs sm:text-base"
+            >
+              Join Now
+            </a>
+            
+            <a 
+              href="/contact" 
+              className="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-medium py-2 sm:py-3 px-4 sm:px-6 rounded-lg sm:rounded-xl text-center transition-all text-xs sm:text-base"
+            >
+              Request Information
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ProgramCard = ({ 
   title, 
   description, 
   image, 
-  link,
-  index 
+  index,
+  compact,
+  program,
+  onDetailsClick
 }: { 
   title: string; 
   description: string; 
   image: string; 
   link: string;
   index: number;
+  compact?: boolean;
+  program: any;
+  onDetailsClick: (program: any) => void;
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
+  // Check for mobile device and reduced motion preference
   useEffect(() => {
+    // Check if device is mobile
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768 || 
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobile(mobile);
+    };
+    
+    // Check if user prefers reduced motion
+    const checkReducedMotion = () => {
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      setPrefersReducedMotion(prefersReduced);
+    };
+    
+    checkMobile();
+    checkReducedMotion();
+    
+    window.addEventListener('resize', checkMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
+
+  // Set up GSAP animations when card becomes visible
+  useEffect(() => {
+    // IntersectionObserver to detect when card is in view
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry.isIntersecting && !isVisible) {
           setIsVisible(true);
           observer.unobserve(entry.target);
+          
+          // Start animations once visible
+          if (cardRef.current) {
+            // Different animation settings based on device and preferences
+            const duration = isMobile || prefersReducedMotion ? 0.8 : 1.2;
+            const delay = (isMobile ? index * 0.08 : index * 0.15) + (prefersReducedMotion ? 0 : 0);
+            const easing = prefersReducedMotion ? "power2.out" : "elastic.out(1, 0.75)";
+            
+            // Use simpler animation for mobile or reduced motion
+            if (isMobile || prefersReducedMotion) {
+              // Simpler animation for mobile/reduced motion
+              gsap.fromTo(cardRef.current,
+                { 
+                  y: 30, 
+                  opacity: 0
+                },
+                { 
+                  y: 0, 
+                  opacity: 1,
+                  duration: duration,
+                  delay: delay,
+                  ease: "power2.out",
+                  clearProps: "transform"
+                }
+              );
+            } else {
+              // Full animation for desktop
+              gsap.fromTo(cardRef.current,
+                { 
+                  y: 60, 
+                  opacity: 0, 
+                  scale: 0.9, 
+                  rotationX: 5, 
+                  rotationY: -5
+                },
+                { 
+                  y: 0, 
+                  opacity: 1, 
+                  scale: 1, 
+                  rotationX: 0, 
+                  rotationY: 0,
+                  duration: duration,
+                  delay: delay,
+                  ease: easing,
+                  transformOrigin: "center bottom",
+                  clearProps: "transform" // Clear transform after animation
+                }
+              );
+            }
+            
+            // Staggered animation for card contents - simplified for mobile
+            const content = cardRef.current.querySelectorAll('.animate-item');
+            gsap.fromTo(content,
+              { 
+                y: isMobile ? 15 : 30, 
+                opacity: 0 
+              },
+              { 
+                y: 0, 
+                opacity: 1, 
+                stagger: isMobile ? 0.05 : 0.1,
+                duration: isMobile ? 0.5 : 0.8,
+                delay: 0.1 + delay,
+                ease: "power3.out"
+              }
+            );
+          }
         }
       },
       {
@@ -411,59 +820,120 @@ const ProgramCard = ({
       observer.observe(cardRef.current);
     }
 
+    // Set up hover/touch animation - only if not reduced motion
+    if (!prefersReducedMotion) {
+      const card = cardRef.current;
+      const image = imageRef.current;
+      
+      if (card && image) {
+        // Create hover animation timeline - lighter on mobile
+        const hoverTl = gsap.timeline({ paused: true });
+        
+        hoverTl
+          .to(card, { 
+            y: isMobile ? -4 : -8, 
+            scale: isMobile ? 1.01 : 1.02, 
+            boxShadow: isMobile ? "0 10px 25px rgba(0, 0, 0, 0.2)" : "0 20px 40px rgba(0, 0, 0, 0.3)",
+            duration: isMobile ? 0.3 : 0.4,
+            ease: "power2.out"
+          })
+          .to(image, { 
+            scale: isMobile ? 1.05 : 1.1, 
+            duration: isMobile ? 0.4 : 0.6, 
+            ease: "power1.out" 
+          }, 0);
+        
+        // Desktop: mouse events
+        if (!isMobile) {
+          card.addEventListener("mouseenter", () => hoverTl.play());
+          card.addEventListener("mouseleave", () => hoverTl.reverse());
+        } 
+        // Mobile: touch events with proper handling
+        else {
+          // For touch devices, play on touch and reverse on card blur
+          let touchTimeout: number;
+          
+          const handleTouch = () => {
+            clearTimeout(touchTimeout);
+            hoverTl.play();
+            
+            // Auto-reverse after delay (simulates "touch away")
+            touchTimeout = window.setTimeout(() => {
+              hoverTl.reverse();
+            }, 2000);
+          };
+          
+          const handleTouchStart = (e: TouchEvent) => {
+            // Only handle single touch
+            if (e.touches.length !== 1) return;
+            handleTouch();
+          };
+          
+          card.addEventListener("touchstart", handleTouchStart, { passive: true });
+          
+          // Clean up
     return () => {
-      if (cardRef.current) {
-        observer.unobserve(cardRef.current);
+            observer.disconnect();
+            if (!isMobile) {
+              card.removeEventListener("mouseenter", () => hoverTl.play());
+              card.removeEventListener("mouseleave", () => hoverTl.reverse());
+            } else {
+              card.removeEventListener("touchstart", handleTouchStart);
+              clearTimeout(touchTimeout);
       }
+          };
+        }
+      }
+    }
+    
+    return () => {
+      observer.disconnect();
     };
-  }, []);
+  }, [index, isVisible, isMobile, prefersReducedMotion]);
 
   return (
     <div 
       ref={cardRef}
-      className={`card group relative overflow-hidden backdrop-blur-sm border border-transparent
-        transform transition-all duration-700 ease-out
-        hover:border-white/10 hover:bg-dark-700/90 hover:backdrop-blur-lg
-        hover:scale-[1.02] hover:-translate-y-1
-        ${isVisible 
-          ? 'opacity-100 translate-y-0 scale-100 rotate-0' 
-          : 'opacity-0 translate-y-16 scale-90 -rotate-3'
-        }`}
+      className={`card group relative overflow-hidden backdrop-blur-sm border border-transparent will-change-transform
+        ${compact ? 'p-2' : 'p-2 md:p-4'}
+      `}
       style={{
-        transitionDelay: `${index * 200}ms`,
-        transformOrigin: 'center'
+        minWidth: compact ? 0 : undefined,
+        maxWidth: compact ? '100%' : undefined,
+        opacity: 0 // Start invisible, GSAP will handle visibility
       }}
     >
       {/* Gradient border effect on hover */}
       <div className="absolute inset-0 bg-gradient-to-br from-amber-400/30 via-amber-500/30 to-dark-600/50 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-2xl -z-10"></div>
       
-      <div className="h-64 overflow-hidden rounded-xl mb-4 relative">
+      <div className={`overflow-hidden rounded-xl mb-2 relative ${compact ? 'h-52 sm:h-48 md:h-36' : 'h-64 md:h-64'}`}> 
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
         <img 
+          ref={imageRef}
           src={image} 
           alt={title} 
-          className="w-full h-full object-cover object-center transform transition-transform duration-700 group-hover:scale-110"
+          className={`w-full h-full object-cover object-center ${compact ? 'rounded-xl' : ''} animate-item`}
+          loading="lazy"
         />
-        <div className="absolute bottom-0 left-0 right-0 p-4 z-20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-          <Link 
-            to={link} 
-            className="inline-flex items-center text-black bg-gradient-to-r from-amber-400/90 to-amber-500/90 hover:from-amber-400 hover:to-amber-500 px-4 py-2 rounded-lg transition-all"
+        <div className="absolute bottom-0 left-0 right-0 p-2 z-20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+          <button 
+            onClick={() => onDetailsClick(program)}
+            className="inline-flex items-center text-black bg-gradient-to-r from-amber-400/90 to-amber-500/90 hover:from-amber-400 hover:to-amber-500 px-2 py-1 rounded-lg transition-all text-xs animate-item"
+            aria-label={`Learn more about ${title}`}
           >
-            Learn more <ArrowRight className="ml-2 w-4 h-4" />
-          </Link>
+            Learn more <ArrowRight className="ml-1 w-3 h-3" />
+          </button>
         </div>
       </div>
-      <div className="p-4">
-        <h3 className="text-xl font-bold mb-2 transform transition-transform duration-500 group-hover:translate-x-2">{title}</h3>
-        <p className="text-gray-400 mb-4 transform transition-transform duration-500 group-hover:translate-x-2">{description}</p>
+      <div ref={contentRef} className="p-0 mb-2">
+        <h3 className={`font-bold mb-1 animate-item ${compact ? 'text-sm md:text-base' : 'text-base md:text-xl'}`}>{title}</h3>
+        <p className={`text-gray-400 mb-2 animate-item ${compact ? 'text-xs' : 'text-xs md:text-sm'} line-clamp-3`}>{description}</p>
       </div>
     </div>
   );
 };
 
-
 const HomePage = () => {
-  const [selectedTab, setSelectedTab] = useState<'all' | 'karate' | 'fitness' | 'kickboxing'>('all');
   const [showTestimonialTooltip, setShowTestimonialTooltip] = useState(false);
   const [hasSwipedCards, setHasSwipedCards] = useState(false);
   const testimonialSectionRef = useRef<HTMLElement>(null);
@@ -486,6 +956,21 @@ const HomePage = () => {
   const scrollLockRef = useRef(false);
   const hasPassedLockedSectionRef = useRef(false);
   
+  // Add state for program details modal
+  const [selectedProgram, setSelectedProgram] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Handle opening modal with program details
+  const handleProgramDetailsClick = (program: any) => {
+    setSelectedProgram(program);
+    setIsModalOpen(true);
+  };
+  
+  // Handle closing modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
   // Check if device is mobile
   useEffect(() => {
     const checkMobile = () => {
@@ -814,41 +1299,46 @@ const HomePage = () => {
   const programs = [
     {
       id: 1,
-      title: "Traditional Karate",
-      description: "Master the ancient art of Karate with our traditional training program focused on technique, discipline and respect.",
-      image: "https://images.pexels.com/photos/7045573/pexels-photo-7045573.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      title: "MMA + GYM",
+      description: "Complete package with access to all MMA classes and gym facilities.",
+      image: "https://images.pexels.com/photos/4761798/pexels-photo-4761798.jpeg?auto=compress&fit=crop&w=800&q=80",
       link: "/programs",
-      category: "karate"
+      category: "mma"
     },
     {
       id: 2,
-      title: "Strength & Conditioning",
-      description: "Build functional strength, endurance, and power with our comprehensive strength and conditioning program.",
-      image: "https://images.pexels.com/photos/1229356/pexels-photo-1229356.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      title: "MMA ONLY",
+      description: "Access to all MMA classes including boxing, kickboxing, and grappling.",
+      image: "https://images.pexels.com/photos/4761797/pexels-photo-4761797.jpeg?auto=compress&fit=crop&w=800&q=80",
+      link: "/programs",
+      category: "mma"
+    },
+    {
+      id: 3,
+      title: "GROUP FITNESS",
+      description: "High-energy group fitness sessions for improved strength and endurance.",
+      image: "https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&fit=crop&w=800&q=80",
       link: "/programs",
       category: "fitness"
     },
     {
-      id: 3,
-      title: "Kickboxing",
-      description: "High-energy cardio workouts that combine martial arts techniques with heart-pumping exercise.",
-      image: "https://images.pexels.com/photos/8611871/pexels-photo-8611871.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      link: "/programs",
-      category: "kickboxing"
-    },
-    {
       id: 4,
-      title: "Kids Martial Arts",
-      description: "Age-appropriate martial arts training that builds confidence, focus, and respect in children.",
-      image: "https://images.pexels.com/photos/7045660/pexels-photo-7045660.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      title: "KARATE",
+      description: "Traditional Karate training with belt progression system.",
+      image: "https://images.pexels.com/photos/7045573/pexels-photo-7045573.jpeg?auto=compress&fit=crop&w=800&q=80",
       link: "/programs",
       category: "karate"
+    },
+    {
+      id: 5,
+      title: "GYM ONLY",
+      description: "Unlimited access to our modern gym with top-tier equipment.",
+      image: "https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&fit=crop&w=800&q=80",
+      link: "/programs",
+      category: "fitness"
     }
   ];
 
-  const filteredPrograms = selectedTab === 'all' 
-    ? programs 
-    : programs.filter(program => program.category === selectedTab);
 
   return (
     <>
@@ -928,6 +1418,30 @@ const HomePage = () => {
                 loading="eager"
               />
               
+              {/* Navigation Buttons - Only visible after scroll lock completion */}
+              {wheelCountRef.current >= 3 && (
+                <>
+                  <button 
+                    onClick={() => setAboutImageIndex(prev => (prev - 1 + aboutImages.length) % aboutImages.length)}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-black/60 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-300 hover:scale-110 border border-white/10 shadow-lg"
+                    aria-label="Previous image"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M15 18l-6-6 6-6" />
+                    </svg>
+                  </button>
+                  <button 
+                    onClick={() => setAboutImageIndex(prev => (prev + 1) % aboutImages.length)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-black/60 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-300 hover:scale-110 border border-white/10 shadow-lg"
+                    aria-label="Next image"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
+                  </button>
+                </>
+              )}
+              
               {/* Progress indicator dots */}
               <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-20">
                 {aboutImages.map((_, index) => (
@@ -959,36 +1473,8 @@ const HomePage = () => {
             </p>
           </div>
 
-          {/* Program Tabs */}
-          <div className="flex flex-wrap justify-center gap-2 mb-8 animate-fade-up">
-            <button 
-              className={`px-4 py-2 rounded-full transition-all ${selectedTab === 'all' ? 'bg-amber-400 text-black' : 'bg-dark-700 text-gray-300 hover:bg-dark-600'}`}
-              onClick={() => setSelectedTab('all')}
-            >
-              All Programs
-            </button>
-            <button 
-              className={`px-4 py-2 rounded-full transition-all ${selectedTab === 'karate' ? 'bg-amber-400 text-black' : 'bg-dark-700 text-gray-300 hover:bg-dark-600'}`}
-              onClick={() => setSelectedTab('karate')}
-            >
-              Karate
-            </button>
-            <button 
-              className={`px-4 py-2 rounded-full transition-all ${selectedTab === 'fitness' ? 'bg-amber-400 text-black' : 'bg-dark-700 text-gray-300 hover:bg-dark-600'}`}
-              onClick={() => setSelectedTab('fitness')}
-            >
-              Fitness
-            </button>
-            <button 
-              className={`px-4 py-2 rounded-full transition-all ${selectedTab === 'kickboxing' ? 'bg-amber-400 text-black' : 'bg-dark-700 text-gray-300 hover:bg-dark-600'}`}
-              onClick={() => setSelectedTab('kickboxing')}
-            >
-              Kickboxing
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredPrograms.map((program, index) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            {programs.map((program, index) => (
               <ProgramCard 
                 key={program.id}
                 title={program.title}
@@ -996,15 +1482,14 @@ const HomePage = () => {
                 image={program.image}
                 link={program.link}
                 index={index}
+                compact
+                program={program}
+                onDetailsClick={handleProgramDetailsClick}
               />
             ))}
           </div>
 
-          <div className="text-center mt-10 animate-fade-up">
-            <Link to="/programs" className="btn btn-outline">
-              View All Programs
-            </Link>
-          </div>
+         
         </div>
       </section>
 
@@ -1078,6 +1563,15 @@ const HomePage = () => {
       >
         <Timer className="w-5 h-5 sm:w-7 sm:h-7 group-hover:scale-110 transition-transform" />
       </Link>
+
+      {/* Program Details Modal */}
+      {selectedProgram && (
+        <ProgramDetailsModal
+          program={selectedProgram}
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+        />
+      )}
     </>
   );
 };

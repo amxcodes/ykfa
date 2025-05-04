@@ -1,403 +1,378 @@
-import { Link } from 'react-router-dom';
-import { useState } from 'react';
-import { ArrowRight, Users, Award, Clock, Target } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-// Program type definition
-interface Program {
-  id: number;
-  title: string;
-  description: string;
-  image: string;
-  category: 'karate' | 'fitness' | 'kickboxing' | 'self-defense';
-  duration: string;
-  level: 'Beginner' | 'Intermediate' | 'Advanced' | 'All Levels';
-  groupSize: string;
-  benefits: string[];
-}
+gsap.registerPlugin(ScrollTrigger);
 
-const ProgramCard = ({ program }: { program: Program }) => {
-  return (
-    <div className="card group hover:bg-dark-700 hover:shadow-gold overflow-hidden animate-fade-up">
-      <div className="h-64 overflow-hidden rounded-xl mb-4">
-        <img 
-          src={program.image} 
-          alt={program.title} 
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-        />
-      </div>
-      <div className="mb-4 flex flex-wrap gap-2">
-        <span className="bg-dark-700 text-amber-400 text-xs font-medium px-2.5 py-1 rounded">
-          {program.category.charAt(0).toUpperCase() + program.category.slice(1)}
-        </span>
-        <span className="bg-dark-700 text-gray-300 text-xs font-medium px-2.5 py-1 rounded flex items-center">
-          <Clock className="w-3 h-3 mr-1" /> {program.duration}
-        </span>
-        <span className="bg-dark-700 text-gray-300 text-xs font-medium px-2.5 py-1 rounded flex items-center">
-          <Award className="w-3 h-3 mr-1" /> {program.level}
-        </span>
-      </div>
-      <h3 className="text-xl font-bold mb-2">{program.title}</h3>
-      <p className="text-gray-400 mb-4">{program.description}</p>
-      <Link 
-        to={`/contact?program=${encodeURIComponent(program.title)}`} 
-        className="inline-flex items-center text-amber-400 hover:text-amber-300"
-      >
-        Learn more <ArrowRight className="ml-2 w-4 h-4" />
-      </Link>
-    </div>
-  );
-};
+const galleryImages = [
+  {
+    src: "https://images.pexels.com/photos/7045573/pexels-photo-7045573.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    title: "Traditional Karate",
+    category: "Martial Arts",
+    description: "Master the ancient art of karate with our expert instructors"
+  },
+  {
+    src: "https://images.pexels.com/photos/1229356/pexels-photo-1229356.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    title: "Strength & Conditioning",
+    category: "Fitness",
+    description: "Build strength and endurance with our specialized training programs"
+  },
+  {
+    src: "https://images.pexels.com/photos/8611871/pexels-photo-8611871.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    title: "Kickboxing",
+    category: "Martial Arts",
+    description: "Learn powerful striking techniques and improve your fitness"
+  },
+  {
+    src: "https://images.pexels.com/photos/7045660/pexels-photo-7045660.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    title: "Kids Martial Arts",
+    category: "Kids",
+    description: "Fun and engaging martial arts training for young warriors"
+  },
+  {
+    src: "https://images.pexels.com/photos/6456300/pexels-photo-6456300.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    title: "HIIT Fitness",
+    category: "Fitness",
+    description: "High-intensity interval training for maximum results"
+  },
+  {
+    src: "https://images.pexels.com/photos/7045596/pexels-photo-7045596.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    title: "Self-Defense Essentials",
+    category: "Self-Defense",
+    description: "Practical self-defense techniques for real-world situations"
+  },
+  {
+    src: "https://images.pexels.com/photos/7045439/pexels-photo-7045439.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    title: "Advanced Karate",
+    category: "Martial Arts",
+    description: "Take your karate skills to the next level"
+  },
+  {
+    src: "https://images.pexels.com/photos/4754146/pexels-photo-4754146.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    title: "Fitness Boxing",
+    category: "Fitness",
+    description: "Cardio boxing workouts for strength and endurance"
+  }
+];
 
-const ProgramDetail = ({ program }: { program: Program }) => {
-  return (
-    <div className="grid md:grid-cols-2 gap-8 animate-fade-up">
-      <div className="rounded-2xl overflow-hidden">
-        <img 
-          src={program.image} 
-          alt={program.title} 
-          className="w-full h-full object-cover"
-        />
-      </div>
-      <div>
-        <div className="flex flex-wrap gap-2 mb-4">
-          <span className="bg-amber-400/20 border border-amber-400/30 text-amber-400 text-xs font-medium px-2.5 py-1 rounded">
-            {program.category.charAt(0).toUpperCase() + program.category.slice(1)}
-          </span>
-          <span className="bg-dark-700 text-gray-300 text-xs font-medium px-2.5 py-1 rounded flex items-center">
-            <Clock className="w-3 h-3 mr-1" /> {program.duration}
-          </span>
-          <span className="bg-dark-700 text-gray-300 text-xs font-medium px-2.5 py-1 rounded flex items-center">
-            <Award className="w-3 h-3 mr-1" /> {program.level}
-          </span>
-          <span className="bg-dark-700 text-gray-300 text-xs font-medium px-2.5 py-1 rounded flex items-center">
-            <Users className="w-3 h-3 mr-1" /> {program.groupSize}
-          </span>
-        </div>
-        <h3 className="text-2xl font-bold mb-4">{program.title}</h3>
-        <p className="text-gray-300 mb-6">{program.description}</p>
-        
-        <h4 className="text-lg font-semibold mb-3 flex items-center">
-          <Target className="w-5 h-5 mr-2 text-amber-400" /> Benefits
-        </h4>
-        <ul className="space-y-2 mb-8">
-          {program.benefits.map((benefit, index) => (
-            <li key={index} className="flex items-start">
-              <span className="text-amber-400 mr-2">•</span>
-              <span className="text-gray-400">{benefit}</span>
-            </li>
-          ))}
-        </ul>
-        
-        <div className="flex flex-wrap gap-4">
-          <Link to="/contact" className="btn btn-primary">
-            Inquire Now
-          </Link>
-          <Link to="/membership" className="btn btn-outline">
-            View Membership Options
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-};
+const GalleryPage = () => {
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [isLoading, setIsLoading] = useState(true);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const progressRef = useRef<HTMLDivElement>(null);
+  const categories = ['all', ...new Set(galleryImages.map(img => img.category))];
 
-const ProgramsPage = () => {
-  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  
-  // Program data
-  const programs: Program[] = [
-    {
-      id: 1,
-      title: "Traditional Karate",
-      description: "Master the ancient art of Karate with our traditional training program focused on technique, discipline and respect.",
-      image: "https://images.pexels.com/photos/7045573/pexels-photo-7045573.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      category: "karate",
-      duration: "60 min sessions",
-      level: "All Levels",
-      groupSize: "Max 20 students",
-      benefits: [
-        "Learn authentic karate techniques from expert instructors",
-        "Develop discipline, focus, and mental clarity",
-        "Improve overall physical fitness and coordination",
-        "Build confidence and self-defense capabilities",
-        "Practice in a respectful, traditional environment"
-      ]
-    },
-    {
-      id: 2,
-      title: "Strength & Conditioning",
-      description: "Build functional strength, endurance, and power with our comprehensive strength and conditioning program.",
-      image: "https://images.pexels.com/photos/1229356/pexels-photo-1229356.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      category: "fitness",
-      duration: "45 min sessions",
-      level: "All Levels",
-      groupSize: "Max 15 students",
-      benefits: [
-        "Increase overall strength and muscle mass",
-        "Improve cardiovascular endurance and stamina",
-        "Develop functional fitness for everyday activities",
-        "Enhance athletic performance for other sports",
-        "Train in a supportive, motivating environment"
-      ]
-    },
-    {
-      id: 3,
-      title: "Kickboxing",
-      description: "High-energy cardio workouts that combine martial arts techniques with heart-pumping exercise.",
-      image: "https://images.pexels.com/photos/8611871/pexels-photo-8611871.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      category: "kickboxing",
-      duration: "50 min sessions",
-      level: "All Levels",
-      groupSize: "Max 15 students",
-      benefits: [
-        "Burn calories with intense cardio workouts",
-        "Learn proper striking techniques for punches and kicks",
-        "Develop coordination and reflexes",
-        "Relieve stress in a controlled environment",
-        "Build confidence and physical conditioning"
-      ]
-    },
-    {
-      id: 4,
-      title: "Kids Martial Arts",
-      description: "Age-appropriate martial arts training that builds confidence, focus, and respect in children.",
-      image: "https://images.pexels.com/photos/7045660/pexels-photo-7045660.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      category: "karate",
-      duration: "45 min sessions",
-      level: "Beginner",
-      groupSize: "Max 12 students",
-      benefits: [
-        "Develop discipline, respect, and focus from an early age",
-        "Learn basic self-defense and personal safety",
-        "Improve motor skills and physical coordination",
-        "Build confidence and social skills",
-        "Have fun while learning valuable life skills"
-      ]
-    },
-    {
-      id: 5,
-      title: "HIIT Fitness",
-      description: "High-Intensity Interval Training for maximum calorie burn and conditioning in minimal time.",
-      image: "https://images.pexels.com/photos/6456300/pexels-photo-6456300.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      category: "fitness",
-      duration: "30 min sessions",
-      level: "Intermediate",
-      groupSize: "Max 12 students",
-      benefits: [
-        "Maximize calorie burn in shorter workout sessions",
-        "Boost metabolism for hours after training",
-        "Improve cardiovascular and muscular endurance",
-        "Train in a high-energy, motivating environment",
-        "Achieve visible results in less time"
-      ]
-    },
-    {
-      id: 6,
-      title: "Self-Defense Essentials",
-      description: "Practical self-defense techniques and strategies for real-world situations.",
-      image: "https://images.pexels.com/photos/7045596/pexels-photo-7045596.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      category: "self-defense",
-      duration: "60 min sessions",
-      level: "All Levels",
-      groupSize: "Max 15 students",
-      benefits: [
-        "Learn practical techniques for real-world situations",
-        "Develop situational awareness and threat assessment skills",
-        "Build confidence in your ability to protect yourself",
-        "Improve reaction time and physical readiness",
-        "Train in a safe, supportive environment"
-      ]
-    },
-    {
-      id: 7,
-      title: "Advanced Karate",
-      description: "Intensive training for experienced karate practitioners looking to refine technique and advance in rank.",
-      image: "https://images.pexels.com/photos/7045439/pexels-photo-7045439.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      category: "karate",
-      duration: "90 min sessions",
-      level: "Advanced",
-      groupSize: "Max 10 students",
-      benefits: [
-        "Refine advanced techniques and kata",
-        "Prepare for high-level rank examinations",
-        "Deepen understanding of karate philosophy and principles",
-        "Receive personalized feedback from master instructors",
-        "Train alongside dedicated practitioners"
-      ]
-    },
-    {
-      id: 8,
-      title: "Fitness Boxing",
-      description: "Non-contact boxing training for fitness, focusing on technique, cardio, and core strength.",
-      image: "https://images.pexels.com/photos/4754146/pexels-photo-4754146.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      category: "fitness",
-      duration: "45 min sessions",
-      level: "All Levels",
-      groupSize: "Max 15 students",
-      benefits: [
-        "Learn proper boxing techniques without contact",
-        "Improve cardiovascular endurance and stamina",
-        "Develop upper body strength and core stability",
-        "Relieve stress through intense physical activity",
-        "Build confidence and physical coordination"
-      ]
+  // Preload images for better performance
+  useEffect(() => {
+    const preloadImages = async () => {
+      const imagePromises = galleryImages.map(img => {
+        return new Promise((resolve, reject) => {
+          const image = new Image();
+          image.src = img.src;
+          image.onload = resolve;
+          image.onerror = reject;
+        });
+      });
+
+      try {
+        await Promise.all(imagePromises);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error preloading images:', error);
+        setIsLoading(false);
+      }
+    };
+
+    preloadImages();
+  }, []);
+
+  // Optimized animation setup
+  const setupAnimations = useCallback(() => {
+    if (!heroRef.current || !gridRef.current) return;
+
+    // Hero animations
+    const hero = heroRef.current;
+    const heroElements = {
+      title: hero.querySelector('h1'),
+      subtitle: hero.querySelector('p'),
+      button: hero.querySelector('button'),
+      overlay: hero.querySelector('.hero-overlay')
+    };
+
+    const heroTimeline = gsap.timeline();
+    heroTimeline
+      .fromTo(heroElements.overlay, 
+        { opacity: 0 },
+        { opacity: 1, duration: 1, ease: 'power2.inOut' }
+      )
+      .fromTo([heroElements.title, heroElements.subtitle, heroElements.button],
+        { opacity: 0, y: 40 },
+        { 
+          opacity: 1, 
+          y: 0, 
+          stagger: 0.2, 
+          duration: 0.8, 
+          ease: 'power3.out' 
+        },
+        '-=0.5'
+      );
+
+    // Parallax effect
+    gsap.to(hero, {
+      backgroundPosition: '50% 100%',
+      ease: 'none',
+      scrollTrigger: {
+        trigger: hero,
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 1,
+        invalidateOnRefresh: true
+      }
+    });
+
+    // Grid animations
+    const items = gridRef.current.querySelectorAll('.gallery-img-item');
+    items.forEach((item, i) => {
+      const img = item.querySelector('img');
+      const overlay = item.querySelector('.gallery-overlay');
+      const content = item.querySelector('.gallery-content');
+
+      // Initial animation
+      gsap.fromTo(item,
+        { opacity: 0, y: 60, scale: 0.95 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.7,
+          delay: 0.2 + i * 0.08,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: item,
+            start: 'top 90%',
+            toggleActions: 'play none none none',
+            once: true
+          }
+        }
+      );
+
+      // Hover animation
+      const hoverTimeline = gsap.timeline({ paused: true });
+      hoverTimeline
+        .to([img, overlay], {
+          scale: 1.05,
+          duration: 0.3,
+          ease: 'power2.out'
+        })
+        .to(content, {
+          y: 0,
+          opacity: 1,
+          duration: 0.3,
+          ease: 'power2.out'
+        }, '-=0.2');
+
+      item.addEventListener('mouseenter', () => hoverTimeline.play());
+      item.addEventListener('mouseleave', () => hoverTimeline.reverse());
+    });
+
+    // Scroll progress bar
+    gsap.to(progressRef.current, {
+      scaleX: 1,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: document.documentElement,
+        start: 'top top',
+        end: 'bottom bottom',
+        scrub: 0.3
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setupAnimations();
     }
-  ];
+  }, [isLoading, setupAnimations]);
 
-  const filteredPrograms = selectedCategory === 'all' 
-    ? programs 
-    : programs.filter(program => program.category === selectedCategory);
+  // Enhanced modal animation
+  const openModal = useCallback((idx: number) => {
+    setSelectedIdx(idx);
+    if (modalRef.current) {
+      const modal = modalRef.current;
+      const img = modal.querySelector('img');
+      const content = modal.querySelector('.modal-content');
+
+      const modalTimeline = gsap.timeline();
+      modalTimeline
+        .fromTo(modal,
+          { opacity: 0, scale: 0.92 },
+          { 
+            opacity: 1, 
+            scale: 1, 
+            duration: 0.4, 
+            ease: 'power3.out' 
+          }
+        )
+        .fromTo(img,
+          { scale: 0.8, opacity: 0 },
+          { 
+            scale: 1, 
+            opacity: 1, 
+            duration: 0.5, 
+            ease: 'power3.out' 
+          },
+          '-=0.2'
+        )
+        .fromTo(content,
+          { y: 30, opacity: 0 },
+          { 
+            y: 0, 
+            opacity: 1, 
+            duration: 0.4, 
+            ease: 'power2.out' 
+          },
+          '-=0.3'
+        );
+    }
+  }, []);
+
+  const filteredImages = activeCategory === 'all' 
+    ? galleryImages 
+    : galleryImages.filter(img => img.category === activeCategory);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-dark-900">
+        <div className="w-16 h-16 border-4 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
-    <>
+    <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-black">
+      {/* Scroll Progress Bar */}
+      <div 
+        ref={progressRef}
+        className="fixed top-0 left-0 w-full h-1 bg-amber-400 origin-left scale-x-0 z-50"
+      />
+
       {/* Hero Section */}
-      <section className="relative pt-32 pb-16 md:pt-40 md:pb-24 bg-black">
-        <div className="absolute inset-0 z-0 bg-black">
-          <div 
-            className="absolute inset-0 bg-center bg-cover opacity-40"
-            style={{ 
-              backgroundImage: "url('https://images.pexels.com/photos/2628207/pexels-photo-2628207.jpeg?auto=compress&cs=tinysrgb&w=1920')" 
-            }}
-          ></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/70 to-black"></div>
-        </div>
+      <div
+        ref={heroRef}
+        className="relative flex flex-col items-center justify-center h-screen text-center"
+        style={{
+          background: 'url(/your-hero-image.jpg) center/cover no-repeat fixed',
+        }}
+      >
+        <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-transparent"></div>
+        <h1 className="text-8xl font-extrabold text-white drop-shadow-lg mb-6 relative z-10">
+          <span className="text-amber-400">YKFA</span> Gallery
+        </h1>
+        <p className="text-3xl text-amber-300 mb-12 max-w-2xl mx-auto relative z-10">
+          Explore our world of fitness, martial arts, and community.
+        </p>
+        <button
+          className="px-10 py-5 bg-amber-400 text-black font-bold rounded-full shadow-lg hover:bg-amber-500 transition-all duration-300 hover:scale-105 relative z-10"
+          onClick={() => window.scrollTo({ top: gridRef.current?.offsetTop || 0, behavior: 'smooth' })}
+        >
+          View Gallery
+        </button>
+      </div>
 
-        <div className="container relative z-10">
-          <div className="max-w-3xl animate-fade-up">
-            <div className="inline-block mb-4 py-1 px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
-              <p className="text-amber-400 font-medium text-sm">Our Programs</p>
-            </div>
-            <h1 className="mb-6">Training for <span className="text-transparent bg-clip-text bg-gold-gradient">Body</span> and <span className="text-transparent bg-clip-text bg-gold-gradient">Mind</span></h1>
-            <p className="text-lg md:text-xl mb-8 text-gray-300 max-w-2xl">
-              Explore our diverse range of martial arts and fitness programs designed to help you achieve your goals.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Programs */}
-      <section className="section bg-dark-800">
-        <div className="container">
-          {selectedProgram ? (
-            <>
-              <button 
-                onClick={() => setSelectedProgram(null)}
-                className="mb-8 inline-flex items-center text-amber-400 hover:text-amber-300"
+      {/* Category Filter */}
+      <div className="sticky top-0 z-40 bg-dark-900/80 backdrop-blur-md py-4 mb-12">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex flex-wrap justify-center gap-4">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  activeCategory === category
+                    ? 'bg-amber-400 text-black shadow-lg'
+                    : 'bg-dark-700 text-white hover:bg-dark-600'
+                }`}
               >
-                <ArrowRight className="mr-2 w-4 h-4 rotate-180" /> Back to all programs
+                {category.charAt(0).toUpperCase() + category.slice(1)}
               </button>
-              <ProgramDetail program={selectedProgram} />
-            </>
-          ) : (
-            <>
-              {/* Program Tabs */}
-              <div className="flex flex-wrap justify-center gap-2 mb-12 animate-fade-up">
-                <button 
-                  className={`px-4 py-2 rounded-full transition-all ${selectedCategory === 'all' ? 'bg-amber-400 text-black' : 'bg-dark-700 text-gray-300 hover:bg-dark-600'}`}
-                  onClick={() => setSelectedCategory('all')}
-                >
-                  All Programs
-                </button>
-                <button 
-                  className={`px-4 py-2 rounded-full transition-all ${selectedCategory === 'karate' ? 'bg-amber-400 text-black' : 'bg-dark-700 text-gray-300 hover:bg-dark-600'}`}
-                  onClick={() => setSelectedCategory('karate')}
-                >
-                  Karate
-                </button>
-                <button 
-                  className={`px-4 py-2 rounded-full transition-all ${selectedCategory === 'fitness' ? 'bg-amber-400 text-black' : 'bg-dark-700 text-gray-300 hover:bg-dark-600'}`}
-                  onClick={() => setSelectedCategory('fitness')}
-                >
-                  Fitness
-                </button>
-                <button 
-                  className={`px-4 py-2 rounded-full transition-all ${selectedCategory === 'kickboxing' ? 'bg-amber-400 text-black' : 'bg-dark-700 text-gray-300 hover:bg-dark-600'}`}
-                  onClick={() => setSelectedCategory('kickboxing')}
-                >
-                  Kickboxing
-                </button>
-                <button 
-                  className={`px-4 py-2 rounded-full transition-all ${selectedCategory === 'self-defense' ? 'bg-amber-400 text-black' : 'bg-dark-700 text-gray-300 hover:bg-dark-600'}`}
-                  onClick={() => setSelectedCategory('self-defense')}
-                >
-                  Self Defense
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                {filteredPrograms.map(program => (
-                  <div key={program.id} onClick={() => setSelectedProgram(program)} className="cursor-pointer">
-                    <ProgramCard program={program} />
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+            ))}
+          </div>
         </div>
-      </section>
+      </div>
 
-      {/* Training Philosophy */}
-      <section className="section bg-dark-900">
-        <div className="container">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="relative animate-fade-up order-2 md:order-1">
-              <div className="absolute -top-6 -left-6 w-64 h-64 rounded-full bg-amber-400/20 blur-3xl"></div>
-              <img 
-                src="https://images.pexels.com/photos/4164758/pexels-photo-4164758.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
-                alt="YKFA Training Philosophy" 
-                className="w-full h-auto rounded-2xl shadow-lg relative z-10"
-              />
+      {/* Gallery Grid */}
+      <div 
+        ref={gridRef} 
+        className="max-w-7xl mx-auto px-4 columns-1 sm:columns-2 lg:columns-3 gap-8 space-y-8 pb-24"
+      >
+        {filteredImages.map((img, idx) => (
+          <div
+            key={idx}
+            className="gallery-img-item mb-8 break-inside-avoid rounded-2xl overflow-hidden shadow-2xl group cursor-pointer relative"
+            onClick={() => openModal(idx)}
+          >
+            <img
+              src={img.src}
+              alt={img.title}
+              className="w-full h-auto object-cover object-center transition-transform duration-500"
+              style={{ aspectRatio: '4/3' }}
+              loading="lazy"
+            />
+            <div className="gallery-overlay absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="gallery-content absolute bottom-0 left-0 right-0 p-8 transform translate-y-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
+              <span className="text-amber-400 text-sm font-medium mb-2 block">{img.category}</span>
+              <h3 className="text-2xl font-bold text-white mb-2">{img.title}</h3>
+              <p className="text-white/80 text-sm">{img.description}</p>
             </div>
-            <div className="animate-fade-up order-1 md:order-2">
-              <div className="inline-block mb-4 py-1 px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
-                <p className="text-amber-400 font-medium text-sm">Our Approach</p>
-              </div>
-              <h2 className="mb-6">Training <span className="text-transparent bg-clip-text bg-gold-gradient">Philosophy</span></h2>
-              <p className="text-gray-300 mb-6">
-                At YKFA, we believe in a holistic approach to training that integrates both body and mind. Our programs are designed to not only improve physical fitness but also to develop mental focus, emotional resilience, and spiritual balance.
-              </p>
-              <p className="text-gray-300 mb-6">
-                We combine traditional training methodologies with modern fitness science to create programs that are both authentic and effective. Every class is structured to provide a challenging yet supportive environment where members can push their limits safely.
-              </p>
-              <p className="text-gray-300">
-                Our instructors are dedicated to helping each member progress at their own pace while maintaining the highest standards of technical excellence and personal growth.
+          </div>
+        ))}
+      </div>
+
+      {/* Modal */}
+      {selectedIdx !== null && (
+        <div
+          ref={modalRef}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl"
+          onClick={() => setSelectedIdx(null)}
+        >
+          <button
+            className="absolute top-6 right-8 text-4xl text-white/80 hover:text-amber-400 transition-colors z-50"
+            onClick={() => setSelectedIdx(null)}
+            aria-label="Close"
+          >
+            &times;
+          </button>
+          <div className="max-w-5xl w-full p-4 relative">
+            <img
+              src={galleryImages[selectedIdx].src}
+              alt={galleryImages[selectedIdx].title}
+              className="w-full h-auto rounded-2xl shadow-2xl border-4 border-amber-400/20"
+            />
+            <div className="modal-content mt-8 text-center">
+              <span className="text-amber-400 text-lg font-medium mb-2 block">
+                {galleryImages[selectedIdx].category}
+              </span>
+              <h2 className="text-4xl font-bold text-white mb-4">
+                {galleryImages[selectedIdx].title}
+              </h2>
+              <p className="text-white/80 text-lg max-w-2xl mx-auto">
+                {galleryImages[selectedIdx].description}
               </p>
             </div>
           </div>
         </div>
-      </section>
+      )}
 
-      {/* Call to Action */}
-      <section className="py-24 relative">
-        <div className="absolute inset-0 z-0">
-          <div 
-            className="absolute inset-0 bg-center bg-cover opacity-30"
-            style={{ 
-              backgroundImage: "url('https://images.pexels.com/photos/8611887/pexels-photo-8611887.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2')" 
-            }}
-          ></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/70"></div>
-        </div>
-        <div className="container relative z-10">
-          <div className="max-w-3xl mx-auto text-center animate-fade-up">
-            <h2 className="mb-6">Start Your <span className="text-transparent bg-clip-text bg-gold-gradient">Journey</span> Today</h2>
-            <p className="text-xl text-gray-300 mb-8">
-              Experience our training programs firsthand with a free introductory class.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link to="/contact" className="btn btn-primary">
-                Book a Free Class
-              </Link>
-              <Link to="/membership" className="btn btn-outline">
-                View Membership Options
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-    </>
+      {/* Background Decoration */}
+      <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-0">
+        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-amber-400/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+      </div>
+    </div>
   );
 };
 
-export default ProgramsPage;
+export default GalleryPage;

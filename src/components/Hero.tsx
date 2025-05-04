@@ -131,7 +131,7 @@ const Hero = () => {
             Discover Your <span className="animated-gradient-text font-bold">Strength</span> and <span className="animated-gradient-text font-bold">Discipline</span> at YKFA
           </h1>
           <p className="text-base sm:text-lg md:text-xl mb-8 text-gray-300 max-w-2xl">
-            Premium training facilities with expert coaches dedicated to your transformation through karate and fitness excellence.
+            Premium training facilities with expert coaches dedicated to your transformation through mma, karate, and fitness excellence.
           </p>
           
 

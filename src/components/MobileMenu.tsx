@@ -10,6 +10,13 @@ const PlayStoreIcon = () => (
   </svg>
 );
 
+// Apple App Store SVG icon component
+const AppleStoreIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M14.94 5.19A4.38 4.38 0 0 0 16 2a4.44 4.44 0 0 0-3 1.52 4.17 4.17 0 0 0-1 3.09 3.69 3.69 0 0 0 2.94-1.42Zm2.52 7.44a4.51 4.51 0 0 1 2.16-3.81 4.66 4.66 0 0 0-3.66-2c-1.56-.16-3 .91-3.83.91s-2-.89-3.3-.87a4.92 4.92 0 0 0-4.14 2.53C2.93 12.45 4.24 17 6 19.47c.8 1.21 1.8 2.58 3.12 2.53s1.75-.82 3.28-.82 2 .82 3.3.79 2.22-1.23 3.06-2.45a11 11 0 0 0 1.38-2.85 4.41 4.41 0 0 1-2.68-4.04Z"></path>
+  </svg>
+);
+
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
@@ -336,7 +343,10 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
             opacity: 0,
             transform: 'translateY(10px)',
             animation: 'fadeInUp 0.5s ease-out forwards',
-            animationDelay: '0.8s'
+            animationDelay: '0.8s',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px'
           }}
         >
           <a
@@ -366,7 +376,36 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
             onClick={onClose}
           >
             <PlayStoreIcon />
-            <span>Download App</span>
+            <span>Google Play</span>
+          </a>
+          <a
+            href="https://apps.apple.com/in/app/yaseens-ykfa-warriors/id6742874298"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%',
+              padding: screenSize.height < 600 ? '8px' : '12px',
+              background: 'linear-gradient(to right, #fbbf24, #f59e0b)',
+              color: '#151515',
+              fontSize: screenSize.width < 350 ? '13px' : '14px',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 15px rgba(245, 158, 11, 0.25)',
+              border: '1px solid rgba(251, 191, 36, 0.5)',
+              position: 'relative',
+              overflow: 'hidden',
+              gap: '8px'
+            }}
+            onClick={onClose}
+          >
+            <AppleStoreIcon />
+            <span>App Store</span>
           </a>
         </div>
       </div>

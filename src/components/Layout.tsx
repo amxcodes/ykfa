@@ -9,6 +9,11 @@ const Layout = () => {
   const [loadingComplete, setLoadingComplete] = useState(false);
   const location = useLocation();
 
+  // Always scroll to top on route change or refresh
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   // Handle scroll to show/hide navbar background
   useEffect(() => {
     const handleScroll = () => {
@@ -42,13 +47,13 @@ const Layout = () => {
         setLoadingComplete(true);
       }
     };
-    // Timeout fallback (4 seconds)
+    // Timeout fallback (2 seconds)
     const timeoutId = setTimeout(() => {
       if (!finished) {
         finished = true;
         setLoadingComplete(true);
       }
-    }, 4000);
+    }, 2000);
     resources.forEach((el) => {
       if ((el as HTMLImageElement).complete || (el as HTMLVideoElement).readyState === 4) {
         checkLoaded();

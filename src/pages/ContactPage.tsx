@@ -144,7 +144,7 @@ ${formData.message}
                   </div>
                   <div>
                     <h3 className="font-medium text-white">Our Location</h3>
-                    <p className="text-sm">123 Fitness Street, City Center, NY 10001</p>
+                    <p className="text-sm">Y&Y Arcade, Vp Marakkar Road, Edappally Po, Kochi 682024</p>
                   </div>
                 </div>
                 
@@ -154,7 +154,7 @@ ${formData.message}
                   </div>
                   <div>
                     <h3 className="font-medium text-white">Phone Number</h3>
-                    <p className="text-sm">+1 (555) 123-4567</p>
+                    <p className="text-sm">+91 7736488858</p>
                   </div>
                 </div>
                 
@@ -164,7 +164,7 @@ ${formData.message}
                   </div>
                   <div>
                     <h3 className="font-medium text-white">Email Address</h3>
-                    <p className="text-sm">info@yaseensykfa.com</p>
+                    <p className="text-sm">yaseenkfa@gmail.com</p>
                   </div>
                 </div>
                 
@@ -174,9 +174,9 @@ ${formData.message}
                   </div>
                   <div>
                     <h3 className="font-medium text-white">Hours of Operation</h3>
-                    <p className="text-sm">Monday - Friday: 6:00 AM - 10:00 PM<br />
-                    Saturday: 8:00 AM - 8:00 PM<br />
-                    Sunday: 9:00 AM - 6:00 PM</p>
+                    <p className="text-sm">Monday - Saturday: 6:00 AM - 10:00 PM<br />
+                   
+                    Sunday: Closed</p>
                   </div>
                 </div>
               </div>
@@ -293,13 +293,13 @@ ${formData.message}
                             className="w-full appearance-none bg-white/5 border border-white/10 rounded-lg p-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-amber-400/50 hover:border-amber-400/30 group-hover:bg-white/[0.07] transition-all"
                           >
                             <option value="General Inquiry">General Inquiry</option>
-                            <option value="Membership">Membership</option>
+                            <option value="MMA + GYM">MMA + GYM</option>
+                            <option value="MMA ONLY">MMA ONLY</option>
+                            <option value="GROUP FITNESS">GROUP FITNESS</option>
+                            <option value="KARATE">KARATE</option>
+                            <option value="GYM ONLY">GYM ONLY</option>
+                            <option value="PERSONAL TRAINING">PERSONAL TRAINING</option>
                             <option value="Trial Class">Trial Class</option>
-                            <option value="Karate Training">Karate Training</option>
-                            <option value="Fitness Classes">Fitness Classes</option>
-                            <option value="Kickboxing">Kickboxing</option>
-                            <option value="Kids Program">Kids Program</option>
-                            <option value="Personal Training">Personal Training</option>
                           </select>
                           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-amber-400 group-hover:text-amber-300 transition-colors">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -351,19 +351,40 @@ ${formData.message}
         
         {/* Map Section */}
         <div className="mt-16">
-          <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-            <div className="aspect-[16/9] w-full">
+          <h2 className="text-xl md:text-2xl font-bold mb-6 text-center">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">Find Us</span> Here
+          </h2>
+          <div className="backdrop-blur-md bg-white/5 border border-amber-400/20 rounded-2xl overflow-hidden shadow-[0_0_25px_rgba(251,191,36,0.1)] transition-all hover:shadow-[0_0_35px_rgba(251,191,36,0.15)]">
+            <div className="aspect-[16/9] w-full p-1">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d387193.30596552044!2d-74.25986763304324!3d40.69714941680757!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2s!4v1663852894296!5m2!1sen!2s" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3928.799007875132!2d76.30706187478484!3d10.033438272459017!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b080db13c8a2ebb%3A0x5d160de4e8d3440f!2sYaseen%E2%80%99s%20Karate%20%26%20Fitness%20Academy%20-%20YKFA%20(Since%202014)!5e0!3m2!1sen!2sin!4v1746354479225!5m2!1sen!2sin" 
                 width="100%" 
                 height="100%" 
-                style={{ border: 0 }} 
-                allowFullScreen={false} 
+                style={{ border: 0, borderRadius: '12px' }} 
+                allowFullScreen={true} 
                 loading="lazy" 
                 referrerPolicy="no-referrer-when-downgrade"
-                title="YKFA Location"
+                title="Yaseen's Karate & Fitness Academy - YKFA (Since 2014) - Edappally, Kochi"
+                className="rounded-xl shadow-lg"
               ></iframe>
             </div>
+          </div>
+          <div className="flex justify-center mt-4">
+            <a 
+              href="https://maps.app.goo.gl/iQtxQtAiXhDihKpc6" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors text-sm"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                <line x1="6" y1="1" x2="6" y2="4"></line>
+                <line x1="10" y1="1" x2="10" y2="4"></line>
+                <line x1="14" y1="1" x2="14" y2="4"></line>
+              </svg>
+              Get Directions
+            </a>
           </div>
         </div>
       </div>

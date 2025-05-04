@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
-import { X, Download } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface AppStoreWidgetProps {
   isOpen: boolean;
@@ -207,9 +207,9 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
               </p>
             </div>
 
-            {/* CTA Button */}
+            {/* CTA Buttons */}
             <div 
-              className="p-3"
+              className="p-3 flex gap-3"
               style={{
                 transform: isContentVisible ? 'translateY(0)' : 'translateY(10px)',
                 opacity: isContentVisible ? 1 : 0,
@@ -217,7 +217,7 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
                 transitionDelay: '0.35s'
               }}
             >
-              <div className="widget-button-container">
+              <div className="widget-button-container flex-1">
                 <a 
                   href="https://play.google.com/store/apps/details?id=com.ydl.yaseensykfawarriors&pcampaignid=web_share"
                   target="_blank"
@@ -230,8 +230,27 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
                 >
                   <div className="widget-button-bg"></div>
                   <div className="widget-button-content">
-                    <Download size={15} />
-                    <span>Install App</span>
+                    <img src="/icons/google-play.svg" alt="Google Play" className="w-4 h-4 flex-shrink-0" />
+                    <span className="whitespace-nowrap">Google Play</span>
+                  </div>
+                </a>
+              </div>
+
+              <div className="widget-button-container flex-1">
+                <a 
+                  href="https://apps.apple.com/in/app/yaseens-ykfa-warriors/id6742874298"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="widget-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClose();
+                  }}
+                >
+                  <div className="widget-button-bg"></div>
+                  <div className="widget-button-content">
+                    <img src="/icons/apple.svg" alt="App Store" className="w-4 h-4 flex-shrink-0" />
+                    <span className="whitespace-nowrap">App Store</span>
                   </div>
                 </a>
               </div>
