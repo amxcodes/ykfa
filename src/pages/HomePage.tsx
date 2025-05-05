@@ -9,6 +9,7 @@ import ChatbotInterface from '../components/ChatbotInterface';
 import { WidgetContext } from '../App';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { PROGRAM_SELECTED_EVENT } from '../components/Footer';
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
@@ -545,7 +546,10 @@ const ProgramDetailsModal = ({
   return (
     <div 
       ref={modalRef}
-      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-2 pt-16 sm:p-4 bg-black/0 backdrop-blur-0 transition-all"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 pt-0 sm:p-4 bg-black/0 backdrop-blur-0 transition-all"
+      style={{
+        paddingTop: 'env(safe-area-inset-top, 0px)'
+      }}
     >
       {/* Backdrop for catching outside clicks */}
       <div 
@@ -558,16 +562,19 @@ const ProgramDetailsModal = ({
         className="relative w-full max-w-3xl bg-dark-800/80 backdrop-blur-lg border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl z-10"
         style={{ 
           opacity: 0,
-          maxHeight: 'calc(100vh - 90px)',
+          maxHeight: 'calc(100vh - 84px)', // Account for navbar height + safe area
+          marginTop: '60px', // Add top margin to account for navbar
           overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch' // For smooth scrolling on iOS
+          WebkitOverflowScrolling: 'touch', // For smooth scrolling on iOS
+          msOverflowStyle: '-ms-autohiding-scrollbar', // Improved scrolling on Edge
+          paddingBottom: 'env(safe-area-inset-bottom, 16px)' // iOS safe area bottom padding
         }}
       >
-        {/* Close button */}
+        {/* Close button - fixed position on mobile, absolute on desktop */}
         <button 
           type="button"
           onClick={closeModal}
-          className="absolute top-3 right-3 sm:top-4 sm:right-4 z-20 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-dark-800/90 hover:bg-dark-700 text-white border border-white/20 shadow-lg transition-all duration-300"
+          className="fixed top-3 right-3 sm:absolute sm:top-4 sm:right-4 z-20 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-dark-800/90 hover:bg-dark-700 text-white border border-white/20 shadow-lg transition-all duration-300"
           aria-label="Close modal"
         >
           <X size={16} className="text-amber-400 sm:hidden" />
@@ -581,6 +588,12 @@ const ProgramDetailsModal = ({
             src={program.image} 
             alt={program.title} 
             className="w-full h-full object-cover"
+            loading="eager" // Prioritize loading for better UX
+            width="800"
+            height="450"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "https://images.pexels.com/photos/4761352/pexels-photo-4761352.jpeg?auto=compress&cs=tinysrgb&w=800";
+            }}
           />
           <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-6 z-10">
             <div className="inline-block mb-1 sm:mb-3 py-1 px-2 sm:px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
@@ -662,7 +675,7 @@ const ProgramDetailsModal = ({
           </div>
           
           {/* CTA buttons */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pb-6 sm:pb-4">
             <a 
               href={`/contact?program=membership&type=${program.title.toLowerCase().replace(' ', '_')}`}
               className="flex-1 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-medium py-2 sm:py-3 px-4 sm:px-6 rounded-lg sm:rounded-xl text-center transition-all text-xs sm:text-base"
@@ -956,6 +969,19 @@ const HomePage = () => {
   const scrollLockRef = useRef(false);
   const hasPassedLockedSectionRef = useRef(false);
   
+  // Force faster loading for loader
+  const [forceComplete, setForceComplete] = useState(false);
+  
+  // Reduce loading time to 1 second
+  useEffect(() => {
+    // Force complete after 1000ms (1 second)
+    const timer = setTimeout(() => {
+      setForceComplete(true);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
   // Add state for program details modal
   const [selectedProgram, setSelectedProgram] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -970,6 +996,96 @@ const HomePage = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
+
+  // Check localStorage for a selected program on component mount
+  useEffect(() => {
+    // Skip auto-opening modals on page refresh
+    // We detect refresh by checking the navigation type from the Performance API
+    const navigationEntries = performance.getEntriesByType('navigation');
+    const isRefresh = navigationEntries.length > 0 && 
+      (navigationEntries[0] as PerformanceNavigationTiming).type === 'reload';
+    
+    if (isRefresh) {
+      // Clear any stored program on refresh to prevent auto-opening
+      localStorage.removeItem('selectedProgram');
+      console.log("Page was refreshed, not opening modal");
+      return;
+    }
+    
+    const storedProgram = localStorage.getItem('selectedProgram');
+    if (storedProgram) {
+      const programTitle = storedProgram;
+      
+      // Find the program by title or create a synthetic one if needed for "PERSONAL TRAINING"
+      let matchingProgram;
+      
+      if (programTitle === "PERSONAL TRAINING") {
+        // Create a synthetic program object for Personal Training
+        matchingProgram = {
+          id: 6,
+          title: "PERSONAL TRAINING",
+          description: "One-on-one personalized coaching with expert trainers.",
+          image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=compress&q=80&w=1200",
+          link: "/programs",
+          category: "fitness"
+        };
+      } else {
+        // For other programs, find in the programs array
+        matchingProgram = programs.find(p => p.title === programTitle);
+      }
+      
+      console.log("Found matching program:", matchingProgram);
+      
+      if (matchingProgram) {
+        // Open the modal with this program
+        setSelectedProgram(matchingProgram);
+        setIsModalOpen(true);
+        
+        // Clear localStorage so it doesn't reopen on refresh
+        localStorage.removeItem('selectedProgram');
+      }
+    }
+  }, []);
+
+  // Listen for custom program selection event (when already on home page)
+  useEffect(() => {
+    const handleProgramSelected = (event: CustomEvent) => {
+      const { programName } = event.detail;
+      console.log("Received program selected event:", programName);
+      
+      // Find the program by title or create a synthetic one if needed for "PERSONAL TRAINING"
+      let matchingProgram;
+      
+      if (programName === "PERSONAL TRAINING") {
+        // Create a synthetic program object for Personal Training
+        matchingProgram = {
+          id: 6,
+          title: "PERSONAL TRAINING",
+          description: "One-on-one personalized coaching with expert trainers.",
+          image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=compress&q=80&w=1200",
+          link: "/programs",
+          category: "fitness"
+        };
+      } else {
+        // For other programs, find in the programs array
+        matchingProgram = programs.find(p => p.title === programName);
+      }
+      
+      if (matchingProgram) {
+        // Open the modal with this program
+        setSelectedProgram(matchingProgram);
+        setIsModalOpen(true);
+      }
+    };
+    
+    // Add event listener
+    window.addEventListener(PROGRAM_SELECTED_EVENT, handleProgramSelected as EventListener);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener(PROGRAM_SELECTED_EVENT, handleProgramSelected as EventListener);
+    };
+  }, []);
 
   // Check if device is mobile
   useEffect(() => {
@@ -1342,7 +1458,7 @@ const HomePage = () => {
 
   return (
     <>
-      <Hero />
+      <Hero loadingComplete={forceComplete} />
       
       {/* About Section */}
       <section ref={aboutSectionRef} className="section bg-dark-900">

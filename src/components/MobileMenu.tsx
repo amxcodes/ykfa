@@ -298,7 +298,7 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
         >
           {[
             { to: '/', icon: Home, label: 'Home' },
-            { to: '/programs', icon: Dumbbell, label: 'Programs' },
+            { to: '/programs', icon: Dumbbell, label: 'Gallery' },
             { to: '/store', icon: ShoppingCart, label: 'Store' },
             { to: '/instructors', icon: Users, label: 'Instructors' },
             { to: '/membership', icon: CreditCard, label: 'Membership' },

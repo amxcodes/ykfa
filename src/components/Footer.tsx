@@ -1,7 +1,35 @@
 import { Mail, MapPin, Phone, Facebook, Instagram, Twitter, ChevronRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+
+// Program types that match the HomePage.tsx program data
+
+// Create a custom event for program selection
+export const PROGRAM_SELECTED_EVENT = 'programSelected';
 
 const Footer = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Function to handle program link clicks
+  const handleProgramClick = (programName: string) => {
+    // Store the program in localStorage to retrieve in HomePage
+    localStorage.setItem('selectedProgram', programName);
+    console.log("Stored program in localStorage:", programName);
+    
+    // Check if we're already on the home page
+    if (location.pathname === '/') {
+      // If we're already on the home page, dispatch a custom event
+      const event = new CustomEvent(PROGRAM_SELECTED_EVENT, { 
+        detail: { programName } 
+      });
+      window.dispatchEvent(event);
+      console.log("Dispatched event for:", programName);
+    } else {
+      // Navigate to home page - the modal will be opened by HomePage useEffect
+      navigate('/');
+    }
+  };
+  
   return (
     <footer className="relative bg-black/40 backdrop-blur-xl border-t border-white/10">
       {/* Decorative gradient elements */}
@@ -55,7 +83,7 @@ const Footer = () => {
                 <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />About
               </Link>
               <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
-                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Programs
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Gallery
               </Link>
               <Link to="/instructors" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
                 <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Instructors
@@ -76,24 +104,42 @@ const Footer = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-white">Programs</h3>
             <div className="grid gap-2">
-              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
+              <button 
+                onClick={() => handleProgramClick('KARATE')}
+                className="text-left text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center"
+              >
                 <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Karate Training
-              </Link>
-              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
-                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Strength & Conditioning
-              </Link>
-              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
-                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Kids Martial Arts
-              </Link>
-              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
-                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Fitness Classes
-              </Link>
-              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
+              </button>
+              <button 
+                onClick={() => handleProgramClick('MMA + GYM')}
+                className="text-left text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center"
+              >
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />MMA + GYM
+              </button>
+              <button 
+                onClick={() => handleProgramClick('MMA ONLY')}
+                className="text-left text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center"
+              >
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />MMA Training
+              </button>
+              <button 
+                onClick={() => handleProgramClick('GROUP FITNESS')}
+                className="text-left text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center"
+              >
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Group Fitness
+              </button>
+              <button 
+                onClick={() => handleProgramClick('GYM ONLY')}
+                className="text-left text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center"
+              >
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Gym Access
+              </button>
+              <button 
+                onClick={() => handleProgramClick('PERSONAL TRAINING')}
+                className="text-left text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center"
+              >
                 <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Personal Training
-              </Link>
-              <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
-                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Self Defense
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -103,15 +149,15 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-                <span className="text-gray-400 text-sm">123 Fitness Street, City Center, NY 10001</span>
+                <span className="text-gray-400 text-sm">Y&Y Arcade, Vp Marakkar Road, Edappally Po, Kochi 682024</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-amber-400 flex-shrink-0" />
-                <span className="text-gray-400 text-sm">+1 (555) 123-4567</span>
+                <span className="text-gray-400 text-sm">+91 7736488858</span>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-amber-400 flex-shrink-0" />
-                <span className="text-gray-400 text-sm">info@yaseensykfa.com</span>
+                <span className="text-gray-400 text-sm">yaseenkfa@gmail.com</span>
               </li>
             </ul>
           </div>

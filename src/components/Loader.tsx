@@ -13,7 +13,7 @@ const Loader = ({ loadingComplete }: LoaderProps) => {
   // Only show loader on home page
   const isHomePage = location.pathname === '/';
 
-  // Animate progress bar (simulate loading)
+  // Animate progress bar (simulate loading) - reduced to 1 second total
   useEffect(() => {
     if (!isHomePage) {
       setIsVisible(false);
@@ -21,7 +21,7 @@ const Loader = ({ loadingComplete }: LoaderProps) => {
     }
     if (loadingComplete) {
       setProgress(100);
-      setTimeout(() => setIsVisible(false), 300);
+      setTimeout(() => setIsVisible(false), 200); // Faster fade-out
       return;
     }
     let startTime: number;
@@ -29,9 +29,9 @@ const Loader = ({ loadingComplete }: LoaderProps) => {
     const animateLoader = (timestamp: number) => {
       if (!startTime) startTime = timestamp;
       const elapsedTime = timestamp - startTime;
-      // Simulate progress up to 95% until loadingComplete is true
-      const maxProgress = 95;
-      const newProgress = Math.min(maxProgress, (elapsedTime / 800) * 100);
+      // Simulate progress within 1 second
+      const maxProgress = 98;
+      const newProgress = Math.min(maxProgress, (elapsedTime / 500) * 100);
       setProgress(newProgress);
       if (newProgress < maxProgress && !loadingComplete) {
         animationFrameId = requestAnimationFrame(animateLoader);
@@ -48,101 +48,231 @@ const Loader = ({ loadingComplete }: LoaderProps) => {
 
   return (
     <div 
-      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-dark-900"
+      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black"
       style={{
         opacity: progress === 100 ? 0 : 1,
         transition: 'opacity 0.3s ease-out',
         willChange: 'opacity',
       }}
     >
-      {/* Decorative elements - using transform for better performance */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div 
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-400/5 rounded-full blur-3xl"
-          style={{
-            transform: `scale(${0.8 + (progress * 0.003)})`,
-            willChange: 'transform',
-          }}
-        ></div>
-        <div 
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-400/5 rounded-full blur-3xl"
-          style={{
-            transform: `scale(${0.9 + (progress * 0.002)})`,
-            willChange: 'transform',
-          }}
-        ></div>
+      {/* Particle effects */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute opacity-25"
+            style={{
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              width: `${Math.random() * 2 + 1}px`,
+              height: `${Math.random() * 2 + 1}px`,
+              backgroundColor: 'rgba(245, 158, 11, 0.5)',
+              borderRadius: '50%',
+              boxShadow: '0 0 2px rgba(245, 158, 11, 0.3)',
+              transform: `scale(${0.5 + Math.sin(progress * 0.03 + i) * 0.5})`,
+              transition: 'transform 1s ease-out',
+            }}
+          />
+        ))}
       </div>
-      {/* Logo with optimized animation */}
+
+      {/* Main loader element */}
       <div 
-        className="relative flex items-center justify-center mb-6 w-20 h-20 rounded-2xl overflow-hidden bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg shadow-amber-400/20"
+        className="relative"
         style={{
-          transform: `scale(${0.9 + (progress * 0.001)})`,
-          willChange: 'transform',
+          width: '170px',
+          height: '170px',
         }}
       >
-        <img 
-          src="/icons/dumbbell-small.svg" 
-          alt="YKFA" 
-          width="80"
-          height="80"
-          className="w-20 h-20 text-black z-10"
-          style={{ 
-            filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))',
-            animation: 'pulse 1.5s ease-in-out infinite',
+        {/* Outer spinning ring - slower */}
+        <svg 
+          className="absolute inset-0 z-10 animate-spin-reverse"
+          viewBox="0 0 100 100"
+          style={{
+            animationDuration: '30s',
           }}
-        />
-      </div>
-      {/* Welcome message */}
-      <h2 
-        className="text-2xl font-bold font-spaceGrotesk tracking-wide text-white mb-2 text-center"
-        style={{
-          opacity: progress > 10 ? 1 : 0,
-          transform: `translateY(${progress > 10 ? 0 : 10}px)`,
-          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
-          willChange: 'opacity, transform',
-        }}
-      >
-        Welcome!
-      </h2>
-      <p
-        className="text-base text-amber-400 mb-4 text-center"
-        style={{
-          opacity: progress > 15 ? 1 : 0,
-          transform: `translateY(${progress > 15 ? 0 : 10}px)`,
-          transition: 'opacity 0.3s ease-out, transform 0.3s ease-out',
-          willChange: 'opacity, transform',
-        }}
-      >
-        Please wait while all resources load.
-      </p>
-      {/* Progress bar */}
-      <div className="w-64 h-2 bg-dark-700 rounded-full overflow-hidden relative mb-2">
+        >
+          <defs>
+            <linearGradient id="outerRingGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="rgba(245, 158, 11, 0.08)" />
+              <stop offset="50%" stopColor="rgba(245, 158, 11, 0.15)" />
+              <stop offset="100%" stopColor="rgba(245, 158, 11, 0.08)" />
+            </linearGradient>
+          </defs>
+          <circle
+            cx="50"
+            cy="50"
+            r="49"
+            fill="none"
+            strokeWidth="0.5"
+            stroke="url(#outerRingGradient)"
+            strokeDasharray="3,17"
+          />
+        </svg>
+        
+        {/* Middle spinning ring - faster rotation */}
+        <svg 
+          className="absolute inset-0 z-10 animate-spin-slow"
+          viewBox="0 0 100 100"
+          style={{
+            animationDuration: '20s',
+          }}
+        >
+          <defs>
+            <linearGradient id="middleRingGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="rgba(245, 158, 11, 0.05)" />
+              <stop offset="50%" stopColor="rgba(245, 158, 11, 0.12)" />
+              <stop offset="100%" stopColor="rgba(245, 158, 11, 0.05)" />
+            </linearGradient>
+          </defs>
+          <circle
+            cx="50"
+            cy="50"
+            r="44"
+            fill="none"
+            strokeWidth="0.5"
+            stroke="url(#middleRingGradient)"
+            strokeDasharray="5,15"
+          />
+        </svg>
+        
+        {/* Logo in center with subtle float animation */}
         <div 
-          className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full"
-          style={{ 
-            width: `${progress}%`,
-            transition: 'width 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-            willChange: 'width',
+          className="absolute inset-0 flex items-center justify-center z-20"
+          style={{
+            opacity: progress > 10 ? 1 : 0,
+            transition: 'opacity 0.4s ease-out',
           }}
-        ></div>
+        >
+          <div className="animate-float">
+            <img 
+              src="/icons/dumbbell-small.svg" 
+              alt="YKFA" 
+              width="60"
+              height="60"
+              className="w-14 h-14 text-amber-400"
+              style={{ filter: 'drop-shadow(0 0 8px rgba(245, 158, 11, 0.3))' }}
+            />
+          </div>
+        </div>
+        
+        {/* Main progress circle */}
+        <svg 
+          className="absolute inset-0 z-10"
+          viewBox="0 0 100 100"
+          style={{
+            transform: 'rotate(-90deg)',
+            overflow: 'visible',
+          }}
+        >
+          {/* Background circle */}
+          <circle
+            cx="50"
+            cy="50"
+            r="40"
+            fill="none"
+            strokeWidth="1"
+            stroke="rgba(255, 255, 255, 0.05)"
+          />
+          
+          {/* Secondary progress circle (glow effect) */}
+          <circle
+            cx="50"
+            cy="50"
+            r="40"
+            fill="none"
+            strokeWidth="1.5"
+            stroke="rgba(245, 158, 11, 0.15)"
+            strokeDasharray="251.2"
+            strokeDashoffset={251.2 - (251.2 * progress / 100 * 1.05)}
+            strokeLinecap="round"
+            style={{
+              transition: 'stroke-dashoffset 0.6s ease-out',
+              filter: 'blur(4px)',
+            }}
+          />
+          
+          {/* Main progress arc with gradient */}
+          <defs>
+            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#f59e0b" />
+              <stop offset="50%" stopColor="#fbbf24" />
+              <stop offset="100%" stopColor="#f59e0b" />
+            </linearGradient>
+          </defs>
+          
+          <circle
+            cx="50"
+            cy="50"
+            r="40"
+            fill="none"
+            strokeWidth="2"
+            stroke="url(#progressGradient)"
+            strokeDasharray="251.2"
+            strokeDashoffset={251.2 - (251.2 * progress / 100)}
+            strokeLinecap="round"
+            style={{
+              transition: 'stroke-dashoffset 0.5s ease-out',
+              filter: 'drop-shadow(0 0 2px rgba(245, 158, 11, 0.6))'
+            }}
+          />
+          
+          {/* Progress indicators */}
+          <circle
+            cx="50"
+            cy="10"
+            r="2"
+            fill="#f59e0b"
+            transform={`rotate(${progress * 3.6}, 50, 50)`}
+            style={{
+              transition: 'transform 0.2s ease-out',
+              filter: 'drop-shadow(0 0 2px rgba(245, 158, 11, 0.5))',
+            }}
+          />
+          
+          <circle
+            cx="50"
+            cy="10"
+            r="1"
+            fill="#fbbf24"
+            transform={`rotate(${progress * 3.6 + 10}, 50, 50)`}
+            style={{
+              transition: 'transform 0.2s ease-out',
+              opacity: 0.7,
+            }}
+          />
+        </svg>
       </div>
-      {/* Loading message with delayed fade-in */}
-      <p 
-        className="mt-1 text-sm text-gray-400 text-center"
-        style={{
-          opacity: progress > 20 ? 1 : 0,
-          transition: 'opacity 0.3s ease-out',
-          willChange: 'opacity',
-        }}
-      >
-        Loading experience...
-      </p>
-      {/* Add CSS keyframes for animations */}
+      
+      {/* Add animations */}
       <style>{`
-        @keyframes pulse {
-          0% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-          100% { transform: scale(1); }
+        @keyframes spin-slow {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        
+        .animate-spin-slow {
+          animation: spin-slow 20s linear infinite;
+        }
+        
+        @keyframes spin-reverse {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(-360deg); }
+        }
+        
+        .animate-spin-reverse {
+          animation: spin-reverse 25s linear infinite;
+        }
+        
+        @keyframes float {
+          0%, 100% { transform: translate(0, 0); }
+          25% { transform: translate(-2px, 2px); }
+          50% { transform: translate(0, -2px); }
+          75% { transform: translate(2px, 1px); }
+        }
+        
+        .animate-float {
+          animation: float 3s ease-in-out infinite;
         }
       `}</style>
     </div>

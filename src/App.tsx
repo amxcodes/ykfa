@@ -11,6 +11,7 @@ import ContactPage from './pages/ContactPage';
 import TimerPage from './pages/TimerPage';
 import StorePage from './pages/StorePage';
 import { TimerProvider } from './context/TimerContext';
+import CustomCursor from './components/CustomCursor';
 
 // Define widget types
 export type WidgetType = 'whatsapp' | 'chatbot' | 'bmi' | null;
@@ -197,6 +198,7 @@ function App() {
   return (
     <WidgetContext.Provider value={{ activeWidget, setActiveWidget }}>
       <div onContextMenu={handleContextMenu}>
+        <CustomCursor />
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />

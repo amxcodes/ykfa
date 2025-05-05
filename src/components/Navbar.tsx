@@ -126,7 +126,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
               <NavLink to="/programs" className={({ isActive }) => 
                 `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-white/5 backdrop-blur-md shadow-sm' : 'text-white hover:text-amber-400 hover:bg-white/5'}`
               }>
-                Programs
+                Gallery
               </NavLink>
               
               <NavLink to="/store" className={({ isActive }) => 

@@ -1,6 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 
-const Hero = () => {
+interface HeroProps {
+  loadingComplete?: boolean;
+}
+
+const Hero = ({ loadingComplete = false }: HeroProps) => {
   const [animatedNumbers, setAnimatedNumbers] = useState({
     trainers: 0,
     programs: 0,
@@ -10,6 +14,14 @@ const Hero = () => {
 
   const statsRef = useRef(null);
   const hasAnimated = useRef(false);
+
+  // Start animations earlier if loading is marked complete
+  useEffect(() => {
+    if (loadingComplete && !hasAnimated.current) {
+      hasAnimated.current = true;
+      animateNumbers();
+    }
+  }, [loadingComplete]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -40,10 +52,10 @@ const Hero = () => {
     const interval = duration / steps;
 
     const targetNumbers = {
-      trainers: 10,
-      programs: 15,
-      members: 1000,
-      years: 8
+      trainers: 5,
+      programs: 10,
+      members: 500,
+      years: 20
     };
 
     let currentStep = 0;
@@ -68,7 +80,7 @@ const Hero = () => {
   };
 
   return (
-    <section className="relative min-h-[90vh] md:min-h-screen flex items-center bg-black">
+    <section className="hero-section relative min-h-[90vh] md:min-h-screen flex items-center bg-black">
       {/* Background video with overlay */}
       <div className="absolute inset-0 z-0 bg-black overflow-hidden">
         <video 
@@ -85,6 +97,7 @@ const Hero = () => {
             src="https://images.pexels.com/photos/4761352/pexels-photo-4761352.jpeg?auto=compress&cs=tinysrgb&w=1920" 
             alt="Martial arts training"
             className="absolute inset-0 w-full h-full object-cover opacity-50"
+            loading="eager"
           />
         </video>
         <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/40 to-black"></div>

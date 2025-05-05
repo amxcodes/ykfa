@@ -1,378 +1,529 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X, Camera, Share2, ChevronLeft, ChevronRight, Info, Play } from 'lucide-react';
+import { cursorProps } from '../types/cursor';
 
-gsap.registerPlugin(ScrollTrigger);
+// Define types for better TypeScript support
+interface GalleryImage {
+  id: number;
+  src: string;
+  fallbackSrc: string;
+  title: string;
+  description: string;
+  featured?: boolean;
+  aspectRatio: string;
+  size: 'small' | 'medium' | 'large' | 'wide' | 'tall' | 'full';
+  type?: 'image' | 'video';
+  videoUrl?: string;
+}
 
-const galleryImages = [
+// Add fallback images array
+const fallbackImages = [
+  "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&auto=format&fit=crop&q=80", // Boxing gym
+  "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800&auto=format&fit=crop&q=80", // MMA training
+  "https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=800&auto=format&fit=crop&q=80", // Martial arts dojo
+  "https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?w=800&auto=format&fit=crop&q=80", // Kickboxing
+  "https://images.unsplash.com/photo-1605296867424-35c82a8b402e?w=800&auto=format&fit=crop&q=80", // Gym equipment
+  "https://images.unsplash.com/photo-1591117207239-788bf8de6c3b?w=800&auto=format&fit=crop&q=80"  // Training area
+];
+
+// Add function to get random fallback image
+const getRandomFallbackImage = (): string => {
+  const randomIndex = Math.floor(Math.random() * fallbackImages.length);
+  return fallbackImages[randomIndex];
+};
+
+// Gallery images with fallbacks
+const galleryImages: GalleryImage[] = [
   {
-    src: "https://images.pexels.com/photos/7045573/pexels-photo-7045573.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    title: "Traditional Karate",
-    category: "Martial Arts",
-    description: "Master the ancient art of karate with our expert instructors"
+    id: 1,
+    src: "https://i.postimg.cc/jdRQXCw0/image1.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "Martial Arts Training",
+    description: "Professional martial arts training and fitness programs",
+    featured: true,
+    aspectRatio: "4/3",
+    size: "wide",
+    type: "image"
   },
   {
-    src: "https://images.pexels.com/photos/1229356/pexels-photo-1229356.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    title: "Strength & Conditioning",
-    category: "Fitness",
-    description: "Build strength and endurance with our specialized training programs"
+    id: 2,
+    src: "https://i.postimg.cc/cCvZyd6s/image2.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "Advanced Training",
+    description: "Advanced martial arts techniques and training sessions",
+    featured: true,
+    aspectRatio: "16/9",
+    size: "wide",
+    type: "image"
   },
   {
-    src: "https://images.pexels.com/photos/8611871/pexels-photo-8611871.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    title: "Kickboxing",
-    category: "Martial Arts",
-    description: "Learn powerful striking techniques and improve your fitness"
+    id: 3,
+    src: "https://img.youtube.com/vi/GLtEfAEpa_s/hqdefault.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Gym Promo",
+    description: "Explore our modern gym facilities and training equipment",
+    featured: true,
+    aspectRatio: "16/9",
+    size: "wide",
+    type: "video",
+    videoUrl: "https://www.youtube.com/embed/GLtEfAEpa_s"
   },
   {
-    src: "https://images.pexels.com/photos/7045660/pexels-photo-7045660.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    title: "Kids Martial Arts",
-    category: "Kids",
-    description: "Fun and engaging martial arts training for young warriors"
+    id: 4,
+    src: "https://img.youtube.com/vi/ZzWmeqCa3RI/maxresdefault.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Promo",
+    description: "Experience the power of martial arts training at YKFA",
+    featured: true,
+    aspectRatio: "16/9",
+    size: "wide",
+    type: "video",
+    videoUrl: "https://www.youtube.com/embed/ZzWmeqCa3RI"
   },
   {
-    src: "https://images.pexels.com/photos/6456300/pexels-photo-6456300.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    title: "HIIT Fitness",
-    category: "Fitness",
-    description: "High-intensity interval training for maximum results"
-  },
-  {
-    src: "https://images.pexels.com/photos/7045596/pexels-photo-7045596.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    title: "Self-Defense Essentials",
-    category: "Self-Defense",
-    description: "Practical self-defense techniques for real-world situations"
-  },
-  {
-    src: "https://images.pexels.com/photos/7045439/pexels-photo-7045439.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    title: "Advanced Karate",
-    category: "Martial Arts",
-    description: "Take your karate skills to the next level"
-  },
-  {
-    src: "https://images.pexels.com/photos/4754146/pexels-photo-4754146.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-    title: "Fitness Boxing",
-    category: "Fitness",
-    description: "Cardio boxing workouts for strength and endurance"
+    id: 5,
+    src: "https://img.youtube.com/vi/UITDMMyzH04/hqdefault.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Training Highlights",
+    description: "Watch our students master the art of martial arts",
+    featured: true,
+    aspectRatio: "16/9",
+    size: "wide",
+    type: "video",
+    videoUrl: "https://www.youtube.com/embed/UITDMMyzH04"
   }
 ];
 
-const GalleryPage = () => {
-  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
-  const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [isLoading, setIsLoading] = useState(true);
-  const heroRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<HTMLDivElement>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
-  const progressRef = useRef<HTMLDivElement>(null);
-  const categories = ['all', ...new Set(galleryImages.map(img => img.category))];
+// Custom data attributes for cursor interactions
+const CURSOR_ATTRIBUTES = {
+  HOVER: 'data-cursor-hover',
+  CLICK: 'data-cursor-click',
+};
 
-  // Preload images for better performance
+const ProgramsPage = () => {
+  // State management
+  const [selectedImage, setSelectedImage] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [scrollY, setScrollY] = useState<number>(0);
+  const [cardsVisible, setCardsVisible] = useState<boolean[]>([]);
+  
+  // Refs for animation elements
+  const containerRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  
+  // Initialize card refs
   useEffect(() => {
-    const preloadImages = async () => {
-      const imagePromises = galleryImages.map(img => {
-        return new Promise((resolve, reject) => {
-          const image = new Image();
-          image.src = img.src;
-          image.onload = resolve;
-          image.onerror = reject;
-        });
-      });
+    cardRefs.current = Array(galleryImages.length).fill(null);
+    setCardsVisible(Array(galleryImages.length).fill(false));
+  }, []);
 
+  // Load images
+  useEffect(() => {
+    const loadImages = async () => {
       try {
-        await Promise.all(imagePromises);
+        await Promise.all(
+          galleryImages.map((img) => {
+            return new Promise((resolve) => {
+              const image = new Image();
+              image.onload = () => resolve(null);
+              image.onerror = () => {
+                image.src = img.fallbackSrc;
+                resolve(null);
+              };
+              image.src = img.src;
+            });
+          })
+        );
         setIsLoading(false);
       } catch (error) {
-        console.error('Error preloading images:', error);
+        console.error('Error loading images:', error);
         setIsLoading(false);
       }
     };
 
-    preloadImages();
+    loadImages();
   }, []);
 
-  // Optimized animation setup
-  const setupAnimations = useCallback(() => {
-    if (!heroRef.current || !gridRef.current) return;
-
-    // Hero animations
-    const hero = heroRef.current;
-    const heroElements = {
-      title: hero.querySelector('h1'),
-      subtitle: hero.querySelector('p'),
-      button: hero.querySelector('button'),
-      overlay: hero.querySelector('.hero-overlay')
-    };
-
-    const heroTimeline = gsap.timeline();
-    heroTimeline
-      .fromTo(heroElements.overlay, 
-        { opacity: 0 },
-        { opacity: 1, duration: 1, ease: 'power2.inOut' }
-      )
-      .fromTo([heroElements.title, heroElements.subtitle, heroElements.button],
-        { opacity: 0, y: 40 },
-        { 
-          opacity: 1, 
-          y: 0, 
-          stagger: 0.2, 
-          duration: 0.8, 
-          ease: 'power3.out' 
-        },
-        '-=0.5'
-      );
-
-    // Parallax effect
-    gsap.to(hero, {
-      backgroundPosition: '50% 100%',
-      ease: 'none',
-      scrollTrigger: {
-        trigger: hero,
-        start: 'top top',
-        end: 'bottom top',
-        scrub: 1,
-        invalidateOnRefresh: true
-      }
-    });
-
-    // Grid animations
-    const items = gridRef.current.querySelectorAll('.gallery-img-item');
-    items.forEach((item, i) => {
-      const img = item.querySelector('img');
-      const overlay = item.querySelector('.gallery-overlay');
-      const content = item.querySelector('.gallery-content');
-
-      // Initial animation
-      gsap.fromTo(item,
-        { opacity: 0, y: 60, scale: 0.95 },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.7,
-          delay: 0.2 + i * 0.08,
-          ease: 'power2.out',
-          scrollTrigger: {
-            trigger: item,
-            start: 'top 90%',
-            toggleActions: 'play none none none',
-            once: true
-          }
-        }
-      );
-
-      // Hover animation
-      const hoverTimeline = gsap.timeline({ paused: true });
-      hoverTimeline
-        .to([img, overlay], {
-          scale: 1.05,
-          duration: 0.3,
-          ease: 'power2.out'
-        })
-        .to(content, {
-          y: 0,
-          opacity: 1,
-          duration: 0.3,
-          ease: 'power2.out'
-        }, '-=0.2');
-
-      item.addEventListener('mouseenter', () => hoverTimeline.play());
-      item.addEventListener('mouseleave', () => hoverTimeline.reverse());
-    });
-
-    // Scroll progress bar
-    gsap.to(progressRef.current, {
-      scaleX: 1,
-      ease: 'none',
-      scrollTrigger: {
-        trigger: document.documentElement,
-        start: 'top top',
-        end: 'bottom bottom',
-        scrub: 0.3
-      }
-    });
-  }, []);
-
+  // Track scroll position with simplified footer awareness
   useEffect(() => {
-    if (!isLoading) {
-      setupAnimations();
-    }
-  }, [isLoading, setupAnimations]);
-
-  // Enhanced modal animation
-  const openModal = useCallback((idx: number) => {
-    setSelectedIdx(idx);
-    if (modalRef.current) {
-      const modal = modalRef.current;
-      const img = modal.querySelector('img');
-      const content = modal.querySelector('.modal-content');
-
-      const modalTimeline = gsap.timeline();
-      modalTimeline
-        .fromTo(modal,
-          { opacity: 0, scale: 0.92 },
-          { 
-            opacity: 1, 
-            scale: 1, 
-            duration: 0.4, 
-            ease: 'power3.out' 
-          }
-        )
-        .fromTo(img,
-          { scale: 0.8, opacity: 0 },
-          { 
-            scale: 1, 
-            opacity: 1, 
-            duration: 0.5, 
-            ease: 'power3.out' 
-          },
-          '-=0.2'
-        )
-        .fromTo(content,
-          { y: 30, opacity: 0 },
-          { 
-            y: 0, 
-            opacity: 1, 
-            duration: 0.4, 
-            ease: 'power2.out' 
-          },
-          '-=0.3'
-        );
-    }
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // Initialize
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
-  const filteredImages = activeCategory === 'all' 
-    ? galleryImages 
-    : galleryImages.filter(img => img.category === activeCategory);
+  // Set up intersection observer for card animations
+  useEffect(() => {
+    if (isLoading) return;
+    
+    const options = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 0.15,
+    };
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const index = cardRefs.current.findIndex(ref => ref === entry.target);
+          if (index !== -1) {
+            setCardsVisible(prev => {
+              const newState = [...prev];
+              newState[index] = true;
+              return newState;
+            });
+          }
+          observer.unobserve(entry.target);
+        }
+      });
+    }, options);
+    
+    cardRefs.current.forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+    
+    return () => observer.disconnect();
+  }, [isLoading]);
 
+  // Modal navigation
+  const navigateImage = (direction: 'next' | 'prev') => {
+    if (selectedImage === null) return;
+    
+    const currentIndex = galleryImages.findIndex(img => img.id === selectedImage);
+    let newIndex: number;
+    
+    if (direction === 'next') {
+      newIndex = currentIndex === galleryImages.length - 1 ? 0 : currentIndex + 1;
+    } else {
+      newIndex = currentIndex === 0 ? galleryImages.length - 1 : currentIndex - 1;
+    }
+    
+    setSelectedImage(galleryImages[newIndex].id);
+  };
+
+  // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-900">
-        <div className="w-16 h-16 border-4 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-b from-dark-900 via-dark-800 to-dark-900">
+        <div className="relative w-20 h-20 mb-4">
+          <div className="absolute inset-0 border-4 border-amber-400/20 rounded-full"></div>
+          <div className="absolute inset-0 border-t-4 border-amber-400 rounded-full animate-spin"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Camera className="w-6 h-6 text-amber-400" />
+          </div>
+        </div>
+        <p className="text-gray-300 text-lg font-medium mb-2">Loading Gallery</p>
+        <p className="text-gray-400 text-sm">Preparing your images...</p>
       </div>
     );
   }
+  
+  const selectedImageData = selectedImage !== null 
+    ? galleryImages.find(img => img.id === selectedImage) 
+    : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-900 via-dark-800 to-black">
-      {/* Scroll Progress Bar */}
-      <div 
-        ref={progressRef}
-        className="fixed top-0 left-0 w-full h-1 bg-amber-400 origin-left scale-x-0 z-50"
-      />
-
-      {/* Hero Section */}
-      <div
-        ref={heroRef}
-        className="relative flex flex-col items-center justify-center h-screen text-center"
-        style={{
-          background: 'url(/your-hero-image.jpg) center/cover no-repeat fixed',
-        }}
-      >
-        <div className="hero-overlay absolute inset-0 bg-gradient-to-b from-black/80 via-black/50 to-transparent"></div>
-        <h1 className="text-8xl font-extrabold text-white drop-shadow-lg mb-6 relative z-10">
-          <span className="text-amber-400">YKFA</span> Gallery
-        </h1>
-        <p className="text-3xl text-amber-300 mb-12 max-w-2xl mx-auto relative z-10">
-          Explore our world of fitness, martial arts, and community.
-        </p>
-        <button
-          className="px-10 py-5 bg-amber-400 text-black font-bold rounded-full shadow-lg hover:bg-amber-500 transition-all duration-300 hover:scale-105 relative z-10"
-          onClick={() => window.scrollTo({ top: gridRef.current?.offsetTop || 0, behavior: 'smooth' })}
+    <div className="min-h-screen bg-gradient-to-b from-dark-900 via-dark-800 to-dark-900 pt-20 md:pt-24 pb-16 md:pb-20 overflow-hidden">
+      <div className="container mx-auto px-4 md:px-6 relative">
+        {/* Gallery Title Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mb-10 md:mb-14 text-center"
         >
-          View Gallery
-        </button>
-      </div>
-
-      {/* Category Filter */}
-      <div className="sticky top-0 z-40 bg-dark-900/80 backdrop-blur-md py-4 mb-12">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex flex-wrap justify-center gap-4">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                  activeCategory === category
-                    ? 'bg-amber-400 text-black shadow-lg'
-                    : 'bg-dark-700 text-white hover:bg-dark-600'
-                }`}
+          <div className="inline-block mb-4 py-1.5 px-4 rounded-full backdrop-blur-md bg-amber-400/20 border border-amber-400/30">
+            <p className="text-amber-400 font-medium text-sm">Our Gallery</p>
+          </div>
+          <h1 className="mb-4 text-3xl md:text-5xl font-bold leading-tight">
+            Discover Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-300">Gallery</span>
+          </h1>
+          <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+            Explore our comprehensive range of martial arts and fitness programs
+          </p>
+        </motion.div>
+        
+        {/* Gallery Container */}
+        <div 
+          ref={containerRef}
+          className="max-w-4xl mx-auto relative z-10"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            {galleryImages.map((image, index) => (
+              <motion.div
+                key={image.id}
+                ref={el => cardRefs.current[index] = el}
+                initial={{ opacity: 0, y: 30, rotateY: 15, scale: 0.95 }}
+                animate={cardsVisible[index] ? { 
+                  opacity: 1, 
+                  y: 0, 
+                  rotateY: 0, 
+                  scale: 1,
+                  transition: { 
+                    duration: 0.65,
+                    delay: index * 0.12,
+                    ease: [0.25, 0.1, 0.25, 1]
+                  }
+                } : {}}
+                className="gallery-card relative overflow-hidden group backdrop-blur-md bg-white/5 hover:bg-white/10 rounded-xl md:rounded-xl border border-white/10 hover:border-white/20 shadow-lg shadow-black/20"
+                onClick={() => setSelectedImage(image.id)}
+                style={{ 
+                  minHeight: '180px',
+                  maxHeight: '240px',
+                  transformStyle: 'preserve-3d',
+                }}
+                {...cursorProps('hover')}
               >
-                {category.charAt(0).toUpperCase() + category.slice(1)}
-              </button>
+                <div className="relative overflow-hidden rounded-xl h-full">
+                  {/* Content Container */}
+                  <div className="relative w-full h-full">
+                    {image.type === 'video' ? (
+                      <div className="relative w-full h-full">
+                        <img
+                          src={image.src}
+                          alt={image.title}
+                          loading="eager"
+                          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 relative z-10"
+                          style={{ aspectRatio: image.aspectRatio }}
+                          onError={(e) => {
+                            const imgElement = e.target as HTMLImageElement;
+                            imgElement.src = image.fallbackSrc;
+                          }}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center z-20">
+                          <motion.div 
+                            className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-amber-400/90 flex items-center justify-center backdrop-blur-sm border border-amber-300/50"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            {...cursorProps('click')}
+                          >
+                            <Play className="w-5 h-5 md:w-6 md:h-6 text-black" fill="currentColor" />
+                          </motion.div>
+                        </div>
+                      </div>
+                    ) : (
+                      <img
+                        src={image.src}
+                        alt={image.title}
+                        loading="eager"
+                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 relative z-10"
+                        style={{ aspectRatio: image.aspectRatio }}
+                        onError={(e) => {
+                          const imgElement = e.target as HTMLImageElement;
+                          imgElement.src = image.fallbackSrc;
+                        }}
+                      />
+                    )}
+                  </div>
+                  
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 transition-opacity duration-300"></div>
+                </div>
+
+                {/* Info */}
+                <div className="absolute inset-x-0 bottom-0 p-2.5 md:p-3">
+                  <div className="backdrop-blur-sm bg-black/40 p-2 md:p-2.5 rounded-lg">
+                    <h3 className="text-white text-xs md:text-sm font-bold mb-0.5">{image.title}</h3>
+                    <p className="text-white/80 text-xs line-clamp-1">{image.description}</p>
+                  </div>
+                </div>
+                
+                {/* Interactive hover effects */}
+                <motion.div 
+                  className="absolute inset-0 bg-amber-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl pointer-events-none"
+                  initial={false}
+                  whileHover={{ opacity: 1 }}
+                ></motion.div>
+              </motion.div>
             ))}
           </div>
+          
+          {/* Summary bar */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+            className="mt-8 backdrop-blur-md bg-white/5 rounded-xl border border-white/10 p-3 flex justify-center items-center"
+          >
+            <div className="text-gray-400 text-xs flex items-center">
+              <Info className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
+              Displaying <span className="text-amber-400 font-medium mx-1">{galleryImages.length}</span> gallery items • Click to view details
+            </div>
+          </motion.div>
         </div>
       </div>
-
-      {/* Gallery Grid */}
-      <div 
-        ref={gridRef} 
-        className="max-w-7xl mx-auto px-4 columns-1 sm:columns-2 lg:columns-3 gap-8 space-y-8 pb-24"
-      >
-        {filteredImages.map((img, idx) => (
-          <div
-            key={idx}
-            className="gallery-img-item mb-8 break-inside-avoid rounded-2xl overflow-hidden shadow-2xl group cursor-pointer relative"
-            onClick={() => openModal(idx)}
+      
+      {/* Image Modal */}
+      <AnimatePresence>
+        {selectedImage !== null && selectedImageData && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 pt-16 md:pt-4"
+            onClick={() => setSelectedImage(null)}
           >
-            <img
-              src={img.src}
-              alt={img.title}
-              className="w-full h-auto object-cover object-center transition-transform duration-500"
-              style={{ aspectRatio: '4/3' }}
-              loading="lazy"
-            />
-            <div className="gallery-overlay absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="gallery-content absolute bottom-0 left-0 right-0 p-8 transform translate-y-4 opacity-0 group-hover:opacity-100 transition-all duration-300">
-              <span className="text-amber-400 text-sm font-medium mb-2 block">{img.category}</span>
-              <h3 className="text-2xl font-bold text-white mb-2">{img.title}</h3>
-              <p className="text-white/80 text-sm">{img.description}</p>
+            {/* Close button */}
+            <motion.button 
+              className="absolute top-4 right-4 p-2 bg-black/50 backdrop-blur-md rounded-full text-white hover:text-amber-400 z-50"
+              onClick={() => setSelectedImage(null)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              {...cursorProps('click')}
+            >
+              <X className="w-5 h-5 md:w-6 md:h-6" />
+            </motion.button>
+            
+            {/* Navigation */}
+            <motion.button 
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 bg-black/50 backdrop-blur-md rounded-full text-white hover:text-amber-400 z-30"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigateImage('prev');
+              }}
+              whileHover={{ scale: 1.1, x: -3 }}
+              whileTap={{ scale: 0.9 }}
+              {...cursorProps('click')}
+            >
+              <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+            </motion.button>
+            
+            <motion.button 
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 bg-black/50 backdrop-blur-md rounded-full text-white hover:text-amber-400 z-30"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigateImage('next');
+              }}
+              whileHover={{ scale: 1.1, x: 3 }}
+              whileTap={{ scale: 0.9 }}
+              {...cursorProps('click')}
+            >
+              <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+            </motion.button>
+            
+            {/* Content */}
+            <div 
+              className="w-full max-w-5xl overflow-y-auto max-h-[calc(100vh-32px)] md:max-h-[calc(100vh-64px)] custom-scrollbar"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex flex-col md:flex-row gap-6">
+                {/* Media Container */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  className="flex-1 rounded-2xl overflow-hidden relative"
+                >
+                  {selectedImageData.type === 'video' ? (
+                    <div className="relative w-full pt-[56.25%]">
+                      <iframe
+                        className="absolute inset-0 w-full h-full rounded-2xl"
+                        src={selectedImageData.videoUrl}
+                        title={selectedImageData.title}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                      />
+                    </div>
+                  ) : (
+                    <img 
+                      src={selectedImageData.src} 
+                      alt={selectedImageData.title}
+                      className="w-full h-auto max-h-[70vh] object-contain rounded-2xl relative z-10"
+                      loading="eager"
+                      onError={(e) => {
+                        const imgElement = e.target as HTMLImageElement;
+                        imgElement.src = selectedImageData.fallbackSrc;
+                      }}
+                    />
+                  )}
+                </motion.div>
+                
+                {/* Info */}
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.4, delay: 0.1 }}
+                  className="md:max-w-xs flex flex-col"
+                >
+                  <div className="backdrop-blur-lg bg-white/10 border border-white/10 p-6 rounded-2xl">
+                    <div className="inline-block px-2.5 py-1 bg-amber-400/20 rounded-full text-amber-400 text-xs mb-4">
+                      {selectedImageData.type === 'video' ? 'Video' : 'Image'}
+                    </div>
+                    <h2 className="text-2xl font-bold text-white mb-3">{selectedImageData.title}</h2>
+                    <p className="text-gray-300 mb-6 text-sm">{selectedImageData.description}</p>
+                    
+                    <motion.div 
+                      className="flex justify-center"
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.98 }}
+                      {...cursorProps('hover')}
+                    >
+                      <button className="flex items-center gap-2 text-sm text-white hover:text-amber-400 transition-colors">
+                        <Share2 className="w-4 h-4" />
+                        Share
+                      </button>
+                    </motion.div>
+                  </div>
+                </motion.div>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Modal */}
-      {selectedIdx !== null && (
-        <div
-          ref={modalRef}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl"
-          onClick={() => setSelectedIdx(null)}
-        >
-          <button
-            className="absolute top-6 right-8 text-4xl text-white/80 hover:text-amber-400 transition-colors z-50"
-            onClick={() => setSelectedIdx(null)}
-            aria-label="Close"
-          >
-            &times;
-          </button>
-          <div className="max-w-5xl w-full p-4 relative">
-            <img
-              src={galleryImages[selectedIdx].src}
-              alt={galleryImages[selectedIdx].title}
-              className="w-full h-auto rounded-2xl shadow-2xl border-4 border-amber-400/20"
-            />
-            <div className="modal-content mt-8 text-center">
-              <span className="text-amber-400 text-lg font-medium mb-2 block">
-                {galleryImages[selectedIdx].category}
-              </span>
-              <h2 className="text-4xl font-bold text-white mb-4">
-                {galleryImages[selectedIdx].title}
-              </h2>
-              <p className="text-white/80 text-lg max-w-2xl mx-auto">
-                {galleryImages[selectedIdx].description}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Background Decoration */}
-      <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-0">
-        <div className="absolute top-1/3 left-1/4 w-96 h-96 bg-amber-400/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Custom styles for animations */}
+      <style>{`
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.1);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(251, 191, 36, 0.3);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(251, 191, 36, 0.5);
+        }
+        
+        /* Advanced hover effects */
+        .gallery-card {
+          transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+          transform-style: preserve-3d;
+          perspective: 1000px;
+        }
+        
+        .gallery-card:hover {
+          transform: translateY(-8px) scale(1.02) rotateX(2deg);
+          box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+          .gallery-card,
+          .gallery-card:hover {
+            transition: opacity 0.3s linear !important;
+            transform: none !important;
+            perspective: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };
 
-export default GalleryPage;
+export default ProgramsPage;

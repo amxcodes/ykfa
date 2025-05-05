@@ -202,32 +202,6 @@ const ModernPricingCard = ({
   );
 };
 
-const FAQ = ({ 
-  question, 
-  answer 
-}: { 
-  question: string; 
-  answer: string;
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  
-  return (
-    <div className="border-b border-dark-700 py-4 animate-fade-up">
-      <button 
-        className="flex items-center justify-between w-full text-left"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <h3 className="text-lg font-medium">{question}</h3>
-        <div className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
-          <ChevronRight className="w-5 h-5 rotate-90" />
-        </div>
-      </button>
-      <div className={`mt-2 overflow-hidden transition-all duration-300 ${isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-        <p className="text-gray-400">{answer}</p>
-      </div>
-    </div>
-  );
-};
 
 const MembershipPage = () => {
   const [planDuration, setPlanDuration] = useState<'monthly' | 'quarterly' | 'halfYearly' | 'annual'>('monthly');
