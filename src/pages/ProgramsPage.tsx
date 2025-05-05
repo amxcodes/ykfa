@@ -92,6 +92,18 @@ const galleryImages: GalleryImage[] = [
     size: "wide",
     type: "video",
     videoUrl: "https://www.youtube.com/embed/UITDMMyzH04"
+  },
+  {
+    id: 6,
+    src: "https://img.youtube.com/vi/KLy38Oplx_E/maxresdefault.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Champions",
+    description: "Meet the champions trained at YKFA and their inspiring journey",
+    featured: true,
+    aspectRatio: "16/9",
+    size: "wide",
+    type: "video",
+    videoUrl: "https://www.youtube.com/embed/KLy38Oplx_E"
   }
 ];
 
@@ -228,6 +240,9 @@ const ProgramsPage = () => {
   const selectedImageData = selectedImage !== null 
     ? galleryImages.find(img => img.id === selectedImage) 
     : null;
+
+  // Find the YKFA Champions video
+  const championsVideo = galleryImages.find(img => img.id === 6);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark-900 via-dark-800 to-dark-900 pt-20 md:pt-24 pb-16 md:pb-20 overflow-hidden">
