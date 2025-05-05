@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Home, Dumbbell, Users, CreditCard, Phone, ShoppingCart } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Google Play Store SVG icon component
 const PlayStoreIcon = () => (
@@ -24,23 +25,10 @@ interface MobileMenuProps {
 
 const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
   const [screenSize, setScreenSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight
   });
-
-  // Handle visibility state
-  useEffect(() => {
-    if (isOpen) {
-      setIsVisible(true);
-    } else {
-      const timer = setTimeout(() => {
-        setIsVisible(false);
-      }, 400); // Match this with the animation duration
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
 
   // Track screen size changes
   useEffect(() => {
@@ -107,41 +95,37 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
     const width = screenSize.width;
     const height = screenSize.height;
     
-    // Base styles - making everything smaller
+    // Base styles
     let containerWidth = '75%';
-    let maxWidth = '280px';
-    let padding = '16px';
-    let borderRadius = '14px';
+    let maxWidth = '300px';
+    let borderRadius = '16px';
     let fontSize = '14px';
     let maxHeight = '100%';
-    let itemPadding = '10px 12px';
+    let itemPadding = '12px 16px';
     
     // Small phones
     if (width < 350) {
       containerWidth = '85%';
-      maxWidth = '250px';
-      padding = '14px';
-      borderRadius = '12px';
+      maxWidth = '260px';
+      borderRadius = '14px';
       fontSize = '13px';
-      itemPadding = '8px 10px';
+      itemPadding = '10px 12px';
     }
     
     // Very small phones in landscape
     if (height < 500) {
-      padding = '10px';
-      itemPadding = '6px 8px';
+      itemPadding = '8px 12px';
     }
     
     // Larger phones
     if (width >= 400) {
       containerWidth = '70%';
-      maxWidth = '300px';
+      maxWidth = '320px';
     }
     
     return {
       width: containerWidth,
       maxWidth,
-      padding,
       borderRadius,
       fontSize,
       maxHeight,
@@ -151,317 +135,190 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
 
   const styles = getContainerStyles();
 
-  if (!isVisible) return null;
+  // Define navigation items
+  const navigationItems = [
+    { to: '/', icon: Home, label: 'Home' },
+    { to: '/programs', icon: Dumbbell, label: 'Gallery' },
+    { to: '/store', icon: ShoppingCart, label: 'Store' },
+    { to: '/membership', icon: CreditCard, label: 'Membership' },
+    { to: '/contact', icon: Phone, label: 'Contact' }
+  ];
+
+  // Animation variants for staggered children
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { 
+        duration: 0.3,
+        when: "beforeChildren",
+        staggerChildren: 0.1
+      }
+    },
+    exit: {
+      opacity: 0,
+      transition: { duration: 0.2 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: { 
+      opacity: 1, 
+      x: 0,
+      transition: { type: "spring", stiffness: 300, damping: 24 }
+    }
+  };
+
+  const backdropVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 0.3 } },
+    exit: { opacity: 0, transition: { duration: 0.2 } }
+  };
+
+  const menuVariants = {
+    hidden: { opacity: 0, scale: 0.95, y: 10 },
+    visible: { 
+      opacity: 1, 
+      scale: 1, 
+      y: 0, 
+      transition: { 
+        type: "spring",
+        stiffness: 300,
+        damping: 30
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      scale: 0.95, 
+      y: 10, 
+      transition: { 
+        duration: 0.2 
+      } 
+    }
+  };
 
   // Use portal to render outside the component hierarchy
   return ReactDOM.createPortal(
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        display: 'grid',
-        placeItems: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        zIndex: 99999,
-        opacity: isOpen ? 1 : 0,
-        transition: 'opacity 0.3s ease-out'
-      }}
-    >
-      <div
-        ref={menuRef}
-        style={{
-          width: styles.width,
-          maxWidth: styles.maxWidth,
-          padding: styles.padding,
-          backgroundColor: 'rgba(28, 28, 32, 0.5)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          borderRadius: styles.borderRadius,
-          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
-          marginTop: 0,
-          marginBottom: 0,
-          marginLeft: 'auto',
-          marginRight: 'auto',
-          position: 'relative',
-          isolation: 'isolate',
-          overflowY: 'visible',
-          transformOrigin: 'center',
-          opacity: isOpen ? 1 : 0,
-          transform: isOpen ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(10px)',
-          transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
-        }}
-      >
-        {/* Golden gradient blur elements with animation */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '-20px',
-            right: '-20px',
-            width: '120px',
-            height: '120px',
-            background: 'radial-gradient(circle, rgba(251, 191, 36, 0.2) 0%, rgba(251, 191, 36, 0) 70%)',
-            borderRadius: '100%',
-            filter: 'blur(20px)',
-            zIndex: -1,
-            opacity: 0,
-            animation: 'fadeIn 0.6s ease-out forwards',
-            animationDelay: '0.2s'
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '-30px',
-            left: '-30px',
-            width: '150px',
-            height: '150px',
-            background: 'radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0) 70%)',
-            borderRadius: '100%',
-            filter: 'blur(25px)',
-            zIndex: -1,
-            opacity: 0,
-            animation: 'fadeIn 0.6s ease-out forwards',
-            animationDelay: '0.3s'
-          }}
-        />
-
-        {/* Header with animation */}
-        <div
-          style={{
-            marginBottom: '10px',
-            textAlign: 'center',
-            paddingBottom: screenSize.height < 600 ? '8px' : '10px',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-            width: '100%',
-            opacity: 0,
-            transform: 'translateY(-10px)',
-            animation: 'fadeInUp 0.5s ease-out forwards',
-            animationDelay: '0.2s'
-          }}
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 flex items-center justify-center z-[999]"
+          variants={backdropVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
         >
-          <div
+          {/* Backdrop with blur */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-xl" onClick={onClose} />
+          
+          {/* Menu container */}
+          <motion.div
+            ref={menuRef}
+            className="relative w-full z-10"
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: screenSize.width < 350 ? '8px' : '10px', // Reduced
-              borderRadius: '10px', // Reduced from 12px
-              background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.05))',
-              marginBottom: screenSize.height < 600 ? '4px' : '6px', // Reduced
-              boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(251, 191, 36, 0.2)'
+              width: styles.width,
+              maxWidth: styles.maxWidth
             }}
+            variants={menuVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
           >
-            <img 
-              src="/icons/dumbbell-small.svg" 
-              alt="YKFA" 
-              style={{
-                width: screenSize.width < 350 ? '18px' : '20px', // Reduced
-                height: screenSize.width < 350 ? '18px' : '20px', // Reduced
-              }}
-            />
-          </div>
-          <div>
-            <span
-              style={{
-                fontSize: screenSize.width < 350 ? '14px' : '16px', // Reduced
-                fontWeight: 'bold',
-                color: 'white',
-                letterSpacing: '0.5px',
-                textShadow: '0 2px 10px rgba(0, 0, 0, 0.2)'
-              }}
-            >
-              <span style={{ 
-                background: 'linear-gradient(to right, #fbbf24, #f59e0b)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text'
-              }}>YKFA</span>{' '}
-              <span>Menu</span>
-            </span>
-          </div>
-        </div>
+            <div className="backdrop-blur-xl bg-black/40 border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+              {/* Decorative elements */}
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/20 rounded-full blur-2xl opacity-60 pointer-events-none"></div>
+              <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/20 rounded-full blur-2xl opacity-60 pointer-events-none"></div>
+              
+              {/* Header with logo */}
+              <div className="p-5 border-b border-white/10">
+                <div className="flex items-center justify-center gap-3">
+                  {/* Logo container */}
+                  <div className="relative w-10 h-10 flex items-center justify-center rounded-lg overflow-hidden bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg">
+                    <span className="absolute inset-0 bg-gradient-to-br from-amber-300 to-amber-600 opacity-70"></span>
+                    <img 
+                      src="/icons/dumbbell-small.svg" 
+                      alt="YKFA" 
+                      className="w-10 h-10 relative z-10"
+                      style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))' }}
+                    />
+                  </div>
+                  
+                  {/* Text content */}
+                  <div className="flex flex-col items-center">
+                    <span className="text-xl font-bold font-spaceGrotesk tracking-wide">
+                      Yaseen's <span className="text-amber-400">YKFA</span>
+                    </span>
+                    <span className="text-[10px] text-gray-400 -mt-1 tracking-wide">FITNESS & MARTIAL ARTS</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Navigation */}
+              <motion.div 
+                className="p-3"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                <div className="space-y-2">
+                  {navigationItems.map((item) => (
+                    <motion.div
+                      key={item.to}
+                      variants={itemVariants}
+                    >
+                      <Link
+                        to={item.to}
+                        className="flex items-center w-full gap-3 p-3 text-sm transition-all text-gray-200 hover:bg-white/10 rounded-xl group mb-1 border border-transparent hover:border-white/10 relative overflow-hidden"
+                        onClick={onClose}
+                      >
+                        <div className="h-8 w-8 flex-shrink-0 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center border border-white/10 relative z-10">
+                          <item.icon size={14} className="text-amber-400" />
+                        </div>
+                        <div className="flex-1 text-left">
+                          <p className="text-white group-hover:text-amber-300 font-medium transition-colors">{item.label}</p>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+              
+              {/* App Store Links */}
+              <div className="p-4 border-t border-white/10 space-y-3">
+                <motion.a
+                  href="https://play.google.com/store/apps/details?id=com.ydl.yaseensykfawarriors&pcampaignid=web_share"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-full gap-2 bg-gradient-to-br from-amber-400 to-amber-500 text-black px-4 py-3 rounded-xl hover:shadow-lg transition-all border border-amber-300/30 font-medium"
+                  onClick={onClose}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <PlayStoreIcon />
+                  <span>Download on Google Play</span>
+                </motion.a>
 
-        {/* Navigation with staggered animations */}
-        <nav
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: screenSize.height < 600 ? '3px' : '6px',
-            width: '100%',
-            marginBottom: screenSize.height < 600 ? '8px' : '12px'
-          }}
-        >
-          {[
-            { to: '/', icon: Home, label: 'Home' },
-            { to: '/programs', icon: Dumbbell, label: 'Gallery' },
-            { to: '/store', icon: ShoppingCart, label: 'Store' },
-            { to: '/instructors', icon: Users, label: 'Instructors' },
-            { to: '/membership', icon: CreditCard, label: 'Membership' },
-            { to: '/contact', icon: Phone, label: 'Contact' }
-          ].map((item, index) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                padding: styles.itemPadding,
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                color: 'white',
-                borderRadius: '8px',
-                fontSize: styles.fontSize,
-                textDecoration: 'none',
-                transition: 'all 0.2s ease',
-                gap: '10px',
-                backdropFilter: 'blur(5px)',
-                border: '1px solid rgba(255, 255, 255, 0.03)',
-                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-                opacity: 0,
-                transform: 'translateX(-20px)',
-                animation: 'slideInRight 0.4s ease-out forwards',
-                animationDelay: `${0.3 + index * 0.1}s`
-              }}
-              onClick={onClose}
-            >
-              <item.icon size={screenSize.width < 350 ? 12 : 14} style={{ color: '#f59e0b' }} />
-              <span>{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-
-        {/* Footer with animation */}
-        <div
-          style={{
-            width: '100%',
-            paddingTop: screenSize.height < 600 ? '8px' : '10px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-            opacity: 0,
-            transform: 'translateY(10px)',
-            animation: 'fadeInUp 0.5s ease-out forwards',
-            animationDelay: '0.8s',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px'
-          }}
-        >
-          <a
-            href="https://play.google.com/store/apps/details?id=com.ydl.yaseensykfawarriors&pcampaignid=web_share"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '100%',
-              padding: screenSize.height < 600 ? '8px' : '12px',
-              background: 'linear-gradient(to right, #fbbf24, #f59e0b)',
-              color: '#151515',
-              fontSize: screenSize.width < 350 ? '13px' : '14px',
-              fontWeight: 'bold',
-              textAlign: 'center',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(245, 158, 11, 0.25)',
-              border: '1px solid rgba(251, 191, 36, 0.5)',
-              position: 'relative',
-              overflow: 'hidden',
-              gap: '8px'
-            }}
-            onClick={onClose}
-          >
-            <PlayStoreIcon />
-            <span>Google Play</span>
-          </a>
-          <a
-            href="https://apps.apple.com/in/app/yaseens-ykfa-warriors/id6742874298"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '100%',
-              padding: screenSize.height < 600 ? '8px' : '12px',
-              background: 'linear-gradient(to right, #fbbf24, #f59e0b)',
-              color: '#151515',
-              fontSize: screenSize.width < 350 ? '13px' : '14px',
-              fontWeight: 'bold',
-              textAlign: 'center',
-              borderRadius: '8px',
-              textDecoration: 'none',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 15px rgba(245, 158, 11, 0.25)',
-              border: '1px solid rgba(251, 191, 36, 0.5)',
-              position: 'relative',
-              overflow: 'hidden',
-              gap: '8px'
-            }}
-            onClick={onClose}
-          >
-            <AppleStoreIcon />
-            <span>App Store</span>
-          </a>
-        </div>
-      </div>
-    </div>,
+                <motion.a
+                  href="https://apps.apple.com/in/app/yaseens-ykfa-warriors/id6742874298"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center w-full gap-2 bg-white/10 backdrop-blur-md text-white px-4 py-3 rounded-xl hover:bg-white/15 transition-all border border-white/10 font-medium"
+                  onClick={onClose}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <AppleStoreIcon />
+                  <span>Download on App Store</span>
+                </motion.a>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
     document.body
   );
 };
-
-// Add these keyframes at the top of the file, after the imports
-const keyframes = `
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95) translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
-  }
-
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @keyframes slideInRight {
-    from {
-      opacity: 0;
-      transform: translateX(-20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-`;
-
-// Add the keyframes to the document
-const styleSheet = document.createElement('style');
-styleSheet.textContent = keyframes;
-document.head.appendChild(styleSheet);
 
 export default MobileMenu; 

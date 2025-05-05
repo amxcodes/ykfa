@@ -116,9 +116,7 @@ ${formData.message}
       <div className="container max-w-6xl mx-auto px-4">
         {/* Simple Header */}
         <div className="text-center mb-12 md:mb-16">
-          <div className="inline-block mb-3 py-1 px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
-            <p className="text-amber-400 font-medium text-sm">Contact Us</p>
-          </div>
+          
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Get in <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">Touch</span></h1>
           <p className="text-lg text-gray-300 max-w-2xl mx-auto">
             Have questions or ready to start your fitness journey? We're here to help you.

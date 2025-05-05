@@ -254,9 +254,6 @@ const ProgramsPage = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mb-10 md:mb-14 text-center"
         >
-          <div className="inline-block mb-4 py-1.5 px-4 rounded-full backdrop-blur-md bg-amber-400/20 border border-amber-400/30">
-            <p className="text-amber-400 font-medium text-sm">Our Gallery</p>
-          </div>
           <h1 className="mb-4 text-3xl md:text-5xl font-bold leading-tight">
             Discover Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-300">Gallery</span>
           </h1>

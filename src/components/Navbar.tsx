@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Dumbbell } from 'lucide-react';
+import { motion } from 'framer-motion';
 import MobileMenu from './MobileMenu';
 import AppStoreWidget from './AppStoreWidget';
 
@@ -83,96 +84,133 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
 
   return (
     <header
-      className={`fixed w-full z-[100] transition-all duration-300 glassmorphic-nav ${
-        isScrolled 
-          ? 'bg-black/40 backdrop-blur-xl border-b border-white/10' 
-          : 'bg-gradient-to-b from-black/60 via-black/40 to-transparent backdrop-blur-md'
-      } ${!show ? '-translate-y-full' : 'translate-y-0'}`}
+      className={`fixed w-full z-[100] transition-all duration-300 mt-3 bg-transparent ${
+        !show ? '-translate-y-full' : 'translate-y-0'
+      }`}
       style={{ 
-        marginBottom: '-2px',
-        boxShadow: isScrolled ? '0 10px 30px -10px rgba(0, 0, 0, 0.3)' : 'none'
+        willChange: 'transform',
+        transform: `translateZ(0)`,
+        WebkitBackfaceVisibility: 'hidden',
+        backfaceVisibility: 'hidden'
       }}
     >
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between relative">
-          <Link to="/" className="flex items-center gap-2 glassmorphic-icon">
-            <div className="relative w-10 h-10 flex items-center justify-center rounded-lg overflow-hidden bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg hover:shadow-amber-400/50 transition-shadow duration-300 group p-0">
-              <span className="absolute inset-0 bg-gradient-to-br from-amber-300 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-              <img 
-                src="/icons/dumbbell-small.svg" 
-                alt="Dumbbell icon" 
-                className="w-10 h-10 text-black z-10 transform group-hover:scale-105 transition-transform duration-300 p-0"
-                style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))' }}
-              />
-            </div>
-            <span className="text-xl font-bold font-spaceGrotesk tracking-wide">
-              Yaseen's <span className="text-amber-400">YKFA</span>
-            </span>
-          </Link>
+      <div className={`max-w-[96%] w-full mx-auto rounded-full transition-all duration-300 ${
+        isScrolled 
+          ? 'backdrop-blur-xl border border-white/10 shadow-lg' 
+          : 'backdrop-blur-md border border-white/10'
+      }`}>
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between relative">
+            {/* Logo with tagline */}
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="relative w-10 h-10 flex items-center justify-center rounded-lg overflow-hidden bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg group-hover:shadow-amber-400/50 transition-shadow duration-300">
+                <span className="absolute inset-0 bg-gradient-to-br from-amber-300 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                <img 
+                  src="/icons/dumbbell-small.svg" 
+                  alt="Dumbbell icon" 
+                  className="w-10 h-10 text-black z-10 transform group-hover:scale-105 transition-transform duration-300"
+                  style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))' }}
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xl font-bold font-spaceGrotesk tracking-wide">
+                  Yaseen's <span className="text-amber-400">YKFA</span>
+                </span>
+                <span className="text-[10px] text-gray-400 -mt-1 tracking-wide">FITNESS & MARTIAL ARTS</span>
+              </div>
+            </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center">
-            <div className="flex items-center space-x-1">
-              <NavLink to="/" className={({ isActive }) => 
-                `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-white/5 backdrop-blur-md shadow-sm' : 'text-white hover:text-amber-400 hover:bg-white/5'}`
-              }>
-                Home
-              </NavLink>
-              <NavLink to="/about" className={({ isActive }) => 
-                `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-white/5 backdrop-blur-md shadow-sm' : 'text-white hover:text-amber-400 hover:bg-white/5'}`
-              }>
-                About
-              </NavLink>
-              <NavLink to="/programs" className={({ isActive }) => 
-                `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-white/5 backdrop-blur-md shadow-sm' : 'text-white hover:text-amber-400 hover:bg-white/5'}`
-              }>
-                Gallery
-              </NavLink>
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center">
+              <div className="flex items-center space-x-1">
+                <NavLink to="/" className={({ isActive }) => 
+                  `px-4 py-2 rounded-xl transition-all duration-300 ${
+                    isActive 
+                      ? 'text-amber-400 bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
+                      : 'text-white hover:text-amber-400 hover:bg-white/5 border border-transparent'
+                  }`
+                }>
+                  Home
+                </NavLink>
+                <NavLink to="/about" className={({ isActive }) => 
+                  `px-4 py-2 rounded-xl transition-all duration-300 ${
+                    isActive 
+                      ? 'text-amber-400 bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
+                      : 'text-white hover:text-amber-400 hover:bg-white/5 border border-transparent'
+                  }`
+                }>
+                  About
+                </NavLink>
+                <NavLink to="/programs" className={({ isActive }) => 
+                  `px-4 py-2 rounded-xl transition-all duration-300 ${
+                    isActive 
+                      ? 'text-amber-400 bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
+                      : 'text-white hover:text-amber-400 hover:bg-white/5 border border-transparent'
+                  }`
+                }>
+                  Gallery
+                </NavLink>
+                
+                <NavLink to="/store" className={({ isActive }) => 
+                  `px-4 py-2 rounded-xl transition-all duration-300 ${
+                    isActive 
+                      ? 'text-amber-400 bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
+                      : 'text-white hover:text-amber-400 hover:bg-white/5 border border-transparent'
+                  }`
+                }>
+                  Store
+                </NavLink>
+                <NavLink to="/membership" className={({ isActive }) => 
+                  `px-4 py-2 rounded-xl transition-all duration-300 ${
+                    isActive 
+                      ? 'text-amber-400 bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
+                      : 'text-white hover:text-amber-400 hover:bg-white/5 border border-transparent'
+                  }`
+                }>
+                  Membership
+                </NavLink>
+                <NavLink to="/contact" className={({ isActive }) => 
+                  `px-4 py-2 rounded-xl transition-all duration-300 ${
+                    isActive 
+                      ? 'text-amber-400 bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
+                      : 'text-white hover:text-amber-400 hover:bg-white/5 border border-transparent'
+                  }`
+                }>
+                  Contact
+                </NavLink>
+              </div>
               
-              <NavLink to="/store" className={({ isActive }) => 
-                `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-white/5 backdrop-blur-md shadow-sm' : 'text-white hover:text-amber-400 hover:bg-white/5'}`
-              }>
-                Store
-              </NavLink>
-              <NavLink to="/membership" className={({ isActive }) => 
-                `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-white/5 backdrop-blur-md shadow-sm' : 'text-white hover:text-amber-400 hover:bg-white/5'}`
-              }>
-                Membership
-              </NavLink>
-              <NavLink to="/contact" className={({ isActive }) => 
-                `px-4 py-2 rounded-lg transition-colors ${isActive ? 'text-amber-400 bg-white/5 backdrop-blur-md shadow-sm' : 'text-white hover:text-amber-400 hover:bg-white/5'}`
-              }>
-                Contact
-              </NavLink>
-            </div>
-            
-            {/* Divider and Download App Button with extra spacing */}
-            <div className="flex items-center">
-              <div className="mx-8 h-5 w-px bg-white/10"></div>
-              <a 
-                ref={appButtonRef}
-                href="https://play.google.com/store/apps/details?id=com.ydl.yaseensykfawarriors&pcampaignid=web_share" 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-gradient-to-r from-amber-400 to-amber-500 text-black px-6 py-2 rounded-lg hover:shadow-[0_0_15px_rgba(255,215,0,0.5)] transition-shadow backdrop-blur-md flex items-center gap-2"
-                onClick={handleAppWidgetToggle}
-              >
-                <PlayStoreIcon />
-                <span>Download App</span>
-              </a>
-            </div>
-          </nav>
+              {/* Divider and Download App Button with extra spacing */}
+              <div className="flex items-center">
+                <div className="mx-8 h-5 w-px bg-white/10"></div>
+                <motion.a 
+                  ref={appButtonRef}
+                  href="https://play.google.com/store/apps/details?id=com.ydl.yaseensykfawarriors&pcampaignid=web_share" 
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gradient-to-br from-amber-400 to-amber-500 text-black px-6 py-2 rounded-xl hover:shadow-[0_0_15px_rgba(255,191,36,0.3)] transition-all flex items-center gap-2 border border-amber-300/30"
+                  onClick={handleAppWidgetToggle}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  <PlayStoreIcon />
+                  <span className="font-medium">Download App</span>
+                </motion.a>
+              </div>
+            </nav>
 
-          {/* Mobile Navigation Toggle */}
-          <div className="lg:hidden relative z-50">
-            <button
-              id="menu-button"
-              className="relative z-50 w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors backdrop-blur-sm"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            {/* Mobile Navigation Toggle */}
+            <div className="lg:hidden relative z-50">
+              <motion.button
+                id="menu-button"
+                className="relative z-50 w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/10 transition-colors backdrop-blur-sm border border-white/10"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                aria-label="Toggle menu"
+                whileTap={{ scale: 0.95 }}
+              >
+                {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </motion.button>
+            </div>
           </div>
         </div>
       </div>

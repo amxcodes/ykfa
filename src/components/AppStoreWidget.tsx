@@ -25,14 +25,14 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
         const navbarHeight = 70; // Approximate navbar height
 
         setPosition({
-          // Align with the bottom of the navbar
-          top: navbarHeight,
+          // Align with the bottom of the navbar plus additional offset
+          top: navbarHeight + 20, // Added 20px to push it down
           right: window.innerWidth - rect.right
         });
       } else {
         // Fallback position if there's no button reference
         setPosition({
-          top: 70, // Navbar height
+          top: 90, // Increased from 70 to push it down
           right: 20
         });
       }
@@ -97,16 +97,7 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
 
   return (
     <>
-      {/* Backdrop overlay with radial gradient */}
-      <div 
-        className="fixed inset-0 z-[199] pointer-events-none transition-opacity duration-300"
-        style={{
-          background: `radial-gradient(circle at ${position.right + 20}px ${position.top - 20}px, rgba(251, 191, 36, 0.08) 0%, transparent 70%)`,
-          opacity: isContentVisible ? 1 : 0
-        }}
-      />
-      
-      {/* Widget container */}
+      {/* Widget container - Removed the backdrop overlay that was causing the color bar */}
       <div 
         ref={widgetRef}
         className="fixed z-[200] w-72 rounded-xl overflow-hidden widget-glass"
@@ -118,18 +109,18 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
             : 'translateY(-20px) perspective(600px) rotateX(5deg) scale(0.98)',
           opacity: isContentVisible ? 1 : 0,
           boxShadow: isContentVisible 
-            ? '0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(251, 191, 36, 0.15)' 
+            ? '0 8px 15px -5px rgba(0, 0, 0, 0.25), 0 0 5px rgba(255, 255, 255, 0.05)' 
             : '0 0 0 rgba(0, 0, 0, 0)',
           transition: 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s ease, box-shadow 0.4s ease'
         }}
       >
         {/* Widget inner with blur glass effect */}
-        <div className="relative bg-dark-850/90 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden h-full">
-          {/* Top light effect */}
+        <div className="relative bg-dark-850/95 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden h-full">
+          {/* Top light effect - reduced opacity */}
           <div 
-            className="absolute inset-x-0 top-0 h-24 pointer-events-none transition-opacity duration-500 delay-300"
+            className="absolute inset-x-0 top-0 h-20 pointer-events-none transition-opacity duration-500 delay-300"
             style={{
-              background: 'linear-gradient(to bottom, rgba(251, 191, 36, 0.08), transparent)',
+              background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.02), transparent)',
               opacity: isContentVisible ? 1 : 0
             }}
           />
@@ -255,19 +246,6 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
                 </a>
               </div>
             </div>
-
-            {/* Arrow pointing to button */}
-            <div 
-              className="absolute w-3 h-3 bg-dark-850/90 border-t border-r border-white/10 rotate-[-45deg] widget-arrow"
-              style={{ 
-                top: '-1.5px', 
-                right: '28px',
-                transform: isContentVisible ? 'translateY(0) rotate(-45deg) scale(1)' : 'translateY(-5px) rotate(-45deg) scale(0)',
-                opacity: isContentVisible ? 1 : 0,
-                transition: 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease',
-                transitionDelay: '0.1s'
-              }}
-            ></div>
           </div>
         </div>
       </div>
@@ -279,7 +257,7 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
 const style = document.createElement('style');
 style.textContent = `
   .widget-glass {
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(10px);
   }
     
   /* Button styles */
@@ -311,7 +289,7 @@ style.textContent = `
   
   .widget-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px -5px rgba(245, 158, 11, 0.4);
+    box-shadow: 0 6px 15px -5px rgba(245, 158, 11, 0.3);
   }
   
   .widget-button:active {
