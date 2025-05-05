@@ -32,17 +32,20 @@
   /* Custom cursor styles for all pages */
   @media (pointer: fine) {
     html, body, a, button, [role="button"], 
-    [type="button"], [type="submit"], [type="reset"] {
+    [type="button"], [type="submit"], [type="reset"],
+    input, select, textarea {
       cursor: none !important;
     }
 
     /* Elements with specific cursor behaviors */
     [data-cursor-hover] {
       cursor: none !important;
+      transition: transform 0.2s ease;
     }
     
     [data-cursor-click] {
       cursor: none !important;
+      transition: transform 0.2s ease;
     }
     
     /* Only apply cursor styles if not using reduced motion */

@@ -1,7 +1,7 @@
 import { ArrowRight, Timer, MessageCircle, Bot, Calculator, X, ChevronRight, Calendar, Users } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Hero from '../components/Hero';
-import { useState, useEffect, useRef, useContext } from 'react';
+import { useState, useEffect, useRef, useContext, useCallback } from 'react';
 // Add an icon for the floating button (you can use any icon you prefer)
 // Import the ShuffleCards component
 import { ShuffleCards } from '../components/ui/shuffle-cards';
@@ -393,24 +393,11 @@ const ProgramDetailsModal = ({
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const isMobile = useRef(window.innerWidth < 768);
   
   // Generate details for each program based on MembershipPage.tsx data
-  const getProgramDetails = () => {
+  const getProgramDetails = useCallback(() => {
     const details = {
-      price: {
-        monthly: program.title === "GYM ONLY" ? "₹2,500" : 
-                program.title === "MMA ONLY" ? "₹2,500" : 
-                program.title === "GROUP FITNESS" ? "₹2,500" : 
-                program.title === "KARATE" ? "₹1,000" : "₹3,500",
-        quarterly: program.title === "GYM ONLY" ? "₹5,500" : 
-                   program.title === "MMA ONLY" ? "₹5,500" : 
-                   program.title === "GROUP FITNESS" ? "₹5,500" : 
-                   program.title === "KARATE" ? "Monthly only" : "₹9,500",
-        annual: program.title === "GYM ONLY" ? "₹15,000" : 
-                program.title === "MMA ONLY" ? "₹15,000" : 
-                program.title === "GROUP FITNESS" ? "₹15,000" : 
-                program.title === "KARATE" ? "Monthly only" : "₹25,000",
-      },
       schedule: program.title === "MMA + GYM" ? "24/7 gym access, 3 martial arts classes per week" :
                 program.title === "MMA ONLY" ? "3 martial arts classes per week" :
                 program.title === "GROUP FITNESS" ? "2 days cardio, 4 days strength training" :
@@ -422,47 +409,62 @@ const ProgramDetailsModal = ({
       features: program.title === "MMA + GYM" ? [
                   "Access to gym", 
                   "3 martial arts classes per week", 
-                  "Basic fitness assessment", 
-                  "Access to gym app", 
                   "All MMA disciplines included"
                 ] :
                 program.title === "MMA ONLY" ? [
-                  "3 martial arts classes per week", 
                   "Boxing, Kickboxing, Muay Thai", 
                   "Wrestling, Judo, BJJ", 
-                  "Technical sessions", 
-                  "Sparring sessions"
+                  "Technical sessions" 
                 ] :
                 program.title === "GROUP FITNESS" ? [
                   "Group cardio sessions with coach", 
                   "Access to gym app", 
-                  "2 days cardio and HIIT", 
-                  "4 days strength training", 
-                  "Personalized fitness guidance"
+                  "2 days cardio and HIIT" 
                 ] :
                 program.title === "KARATE" ? [
-                  "2 classes per week", 
                   "Belt progression system", 
                   "Kata and kumite practice", 
-                  "Self-defense techniques", 
-                  "Mental discipline focus"
+                  "Self-defense techniques" 
                 ] : [
                   "Access to gym", 
-                  "Access to gym app", 
                   "Full range of equipment", 
-                  "Free weights and machines", 
                   "Cardio section"
                 ]
     };
     return details;
-  };
+  }, [program.title]);
   
   const details = getProgramDetails();
   
-  // Animation for modal open/close
+  // Animation for modal open/close - optimized for performance
   useEffect(() => {
     if (!modalRef.current || !contentRef.current) return;
     
+    // Skip GSAP for mobile to improve performance
+    if (isMobile.current) {
+      if (isOpen) {
+        // Simple CSS-based animation for mobile
+        modalRef.current.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        modalRef.current.style.backdropFilter = 'blur(8px)';
+        
+        contentRef.current.style.opacity = '1';
+        contentRef.current.style.transform = 'translateY(0) scale(1)';
+        
+        // Lock body scroll
+        document.body.style.overflow = 'hidden';
+      } else {
+        // Animate out
+        modalRef.current.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+        modalRef.current.style.backdropFilter = 'blur(0px)';
+        
+        contentRef.current.style.opacity = '0';
+        contentRef.current.style.transform = 'translateY(20px) scale(0.95)';
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
+      }
+    } else {
+      // Use GSAP for desktop where performance is better
     if (isOpen) {
       // Animate backdrop
       gsap.to(modalRef.current, {
@@ -509,6 +511,7 @@ const ProgramDetailsModal = ({
       
       // Restore body scroll
       document.body.style.overflow = '';
+      }
     }
     
     // Cleanup
@@ -521,7 +524,6 @@ const ProgramDetailsModal = ({
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        console.log('Escape key pressed - closing modal');
         onClose();
       }
     };
@@ -537,7 +539,6 @@ const ProgramDetailsModal = ({
   
   // Simple close handler
   const closeModal = () => {
-    console.log('Close modal called');
     onClose();
   };
   
@@ -546,9 +547,9 @@ const ProgramDetailsModal = ({
   return (
     <div 
       ref={modalRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 pt-0 sm:p-4 bg-black/0 backdrop-blur-0 transition-all"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/0 backdrop-blur-0 transition-all"
       style={{
-        paddingTop: 'env(safe-area-inset-top, 0px)'
+        paddingTop: 'env(safe-area-inset-top, 16px)'
       }}
     >
       {/* Backdrop for catching outside clicks */}
@@ -559,136 +560,103 @@ const ProgramDetailsModal = ({
       
       <div 
         ref={contentRef}
-        className="relative w-full max-w-3xl bg-dark-800/80 backdrop-blur-lg border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl z-10"
+        className="relative w-full max-w-sm bg-dark-800/90 backdrop-blur-lg border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl z-10"
         style={{ 
           opacity: 0,
-          maxHeight: 'calc(100vh - 84px)', // Account for navbar height + safe area
-          marginTop: '60px', // Add top margin to account for navbar
-          overflowY: 'auto',
-          WebkitOverflowScrolling: 'touch', // For smooth scrolling on iOS
-          msOverflowStyle: '-ms-autohiding-scrollbar', // Improved scrolling on Edge
-          paddingBottom: 'env(safe-area-inset-bottom, 16px)' // iOS safe area bottom padding
+          transition: isMobile.current ? 'opacity 0.3s ease, transform 0.3s ease' : 'none',
+          maxWidth: isMobile.current ? '90%' : '500px', // Narrower overall
+          marginTop: '0px', // Remove top margin to center in viewport
         }}
       >
-        {/* Close button - fixed position on mobile, absolute on desktop */}
+        {/* Close button - absolute position */}
         <button 
           type="button"
           onClick={closeModal}
-          className="fixed top-3 right-3 sm:absolute sm:top-4 sm:right-4 z-20 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full bg-dark-800/90 hover:bg-dark-700 text-white border border-white/20 shadow-lg transition-all duration-300"
+          className="absolute top-2 right-2 z-20 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-dark-800/90 hover:bg-dark-700 text-white border border-white/20 shadow-lg transition-all duration-300"
           aria-label="Close modal"
         >
-          <X size={16} className="text-amber-400 sm:hidden" />
-          <X size={20} className="text-amber-400 hidden sm:block" />
+          <X size={12} className="text-amber-400 sm:hidden" />
+          <X size={16} className="text-amber-400 hidden sm:block" />
         </button>
         
         {/* Hero section - smaller on mobile */}
-        <div className="relative h-40 sm:h-56 md:h-72 overflow-hidden">
+        <div className="relative h-24 sm:h-36 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-t from-dark-800 to-transparent z-10"></div>
           <img 
             src={program.image} 
             alt={program.title} 
             className="w-full h-full object-cover"
-            loading="eager" // Prioritize loading for better UX
-            width="800"
-            height="450"
+            loading="eager"
+            width="500"
+            height="200"
+            decoding="async"
+            fetchPriority="high"
             onError={(e) => {
               (e.target as HTMLImageElement).src = "https://images.pexels.com/photos/4761352/pexels-photo-4761352.jpeg?auto=compress&cs=tinysrgb&w=800";
             }}
           />
-          <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-6 z-10">
-            <div className="inline-block mb-1 sm:mb-3 py-1 px-2 sm:px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
-              <p className="text-amber-400 font-medium text-[10px] sm:text-xs">{program.category.toUpperCase()}</p>
+          <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-4 z-10">
+            <div className="inline-block mb-0.5 sm:mb-1 py-0.5 px-1.5 sm:px-2 rounded-full bg-amber-400/20 border border-amber-400/30">
+              <p className="text-amber-400 font-medium text-[7px] sm:text-[10px]">{program.category.toUpperCase()}</p>
             </div>
-            <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-white">{program.title}</h2>
+            <h2 className="text-sm sm:text-xl font-bold text-white">{program.title}</h2>
           </div>
         </div>
         
         {/* Content - more compact on mobile */}
-        <div className="p-3 sm:p-6">
-          {/* Description */}
-          <div id="program-description" className="mb-3 sm:mb-6">
-            <h3 className="text-base sm:text-lg font-semibold mb-1.5 sm:mb-3 text-white">Description</h3>
-            <p className="text-gray-300 text-xs sm:text-sm leading-relaxed">{program.description}</p>
+        <div className="p-2 sm:p-4">
+          {/* Description - shorter and more compact */}
+          <div id="program-description" className="mb-1.5 sm:mb-3">
+            <p className="text-gray-300 text-[10px] sm:text-xs leading-tight">{program.description}</p>
           </div>
           
-          {/* Features */}
-          <div id="program-features" className="mb-3 sm:mb-6">
-            <h3 className="text-base sm:text-lg font-semibold mb-1.5 sm:mb-3 text-white">What's Included</h3>
-            <ul className="grid grid-cols-1 sm:grid-cols-1 gap-x-2 gap-y-1 sm:space-y-2">
+          {/* Features - simplified */}
+          <div className="mb-2 sm:mb-3 bg-dark-700/30 rounded-lg p-1.5 sm:p-2.5">
+            <ul className="grid grid-cols-1 sm:grid-cols-1 gap-y-0.5 sm:gap-y-1">
               {details.features.map((feature, index) => (
-                <li key={index} className="flex items-start gap-1.5 sm:gap-2 text-gray-300 text-xs sm:text-sm">
-                  <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                <li key={index} className="flex items-start gap-1 sm:gap-1.5 text-gray-300 text-[9px] sm:text-xs">
+                  <ChevronRight className="w-2 h-2 sm:w-3 sm:h-3 text-amber-400 mt-0.5 flex-shrink-0" />
                   <span>{feature}</span>
                 </li>
               ))}
             </ul>
           </div>
           
-          {/* Details grid */}
-          <div id="program-details" className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-6">
-            <div className="bg-dark-700/50 border border-white/5 rounded-lg sm:rounded-xl p-2.5 sm:p-4">
-              <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-amber-400/20 flex items-center justify-center">
-                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400" />
+          {/* Schedule and Trainer in a row */}
+          <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+            <div className="bg-dark-700/30 rounded-lg p-1.5 sm:p-2.5">
+              <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+                <Calendar className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-400" />
+                <h4 className="font-medium text-[9px] sm:text-xs text-white">Schedule</h4>
                 </div>
-                <h4 className="font-medium text-xs sm:text-base text-white">Schedule</h4>
-              </div>
-              <p className="text-gray-300 text-xs sm:text-sm pl-8 sm:pl-11">{details.schedule}</p>
+              <p className="text-gray-300 text-[8px] sm:text-[10px] leading-tight pl-3.5 sm:pl-4">{details.schedule}</p>
             </div>
             
-            <div className="bg-dark-700/50 border border-white/5 rounded-lg sm:rounded-xl p-2.5 sm:p-4">
-              <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-amber-400/20 flex items-center justify-center">
-                  <Users className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400" />
+            <div className="bg-dark-700/30 rounded-lg p-1.5 sm:p-2.5">
+              <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
+                <Users className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-400" />
+                <h4 className="font-medium text-[9px] sm:text-xs text-white">Trainer</h4>
                 </div>
-                <h4 className="font-medium text-xs sm:text-base text-white">Trainer</h4>
-              </div>
-              <p className="text-gray-300 text-xs sm:text-sm pl-8 sm:pl-11">{details.trainer}</p>
-            </div>
-          </div>
-          
-          {/* Pricing */}
-          <div id="program-pricing" className="mb-3 sm:mb-6">
-            <h3 className="text-base sm:text-lg font-semibold mb-1.5 sm:mb-3 text-white">Pricing Options</h3>
-            <div className="grid grid-cols-3 sm:grid-cols-3 gap-1.5 sm:gap-3">
-              <div className="bg-dark-700/50 border border-white/5 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center">
-                <h4 className="text-gray-300 text-[10px] sm:text-sm mb-0.5 sm:mb-1">Monthly</h4>
-                <p className="text-base sm:text-xl font-bold text-white">{details.price.monthly}</p>
-                <p className="text-[8px] sm:text-xs text-gray-400">Per month</p>
-              </div>
-              
-              <div className="bg-dark-700/50 border border-white/5 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center relative overflow-hidden">
-                <div className="absolute -right-6 -top-1 rotate-45 bg-amber-400/80 text-black text-[7px] sm:text-[10px] font-bold py-0.5 px-6">
-                  POPULAR
-                </div>
-                <h4 className="text-gray-300 text-[10px] sm:text-sm mb-0.5 sm:mb-1">Quarterly</h4>
-                <p className="text-base sm:text-xl font-bold text-white">{details.price.quarterly}</p>
-                <p className="text-[8px] sm:text-xs text-gray-400">3 months</p>
-              </div>
-              
-              <div className="bg-dark-700/50 border border-white/5 rounded-lg sm:rounded-xl p-2 sm:p-4 text-center">
-                <h4 className="text-gray-300 text-[10px] sm:text-sm mb-0.5 sm:mb-1">Annual</h4>
-                <p className="text-base sm:text-xl font-bold text-white">{details.price.annual}</p>
-                <p className="text-[8px] sm:text-xs text-gray-400">Best value</p>
-              </div>
+              <p className="text-gray-300 text-[8px] sm:text-[10px] leading-tight pl-3.5 sm:pl-4">{details.trainer}</p>
             </div>
           </div>
           
           {/* CTA buttons */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pb-6 sm:pb-4">
+          <div className="flex gap-1.5 sm:gap-2">
             <a 
               href={`/contact?program=membership&type=${program.title.toLowerCase().replace(' ', '_')}`}
-              className="flex-1 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-medium py-2 sm:py-3 px-4 sm:px-6 rounded-lg sm:rounded-xl text-center transition-all text-xs sm:text-base"
+              className="flex-1 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-medium py-1.5 sm:py-2 px-2 sm:px-4 rounded-lg text-center transition-all text-[10px] sm:text-xs"
             >
               Join Now
             </a>
             
-            <a 
-              href="/contact" 
-              className="flex-1 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-medium py-2 sm:py-3 px-4 sm:px-6 rounded-lg sm:rounded-xl text-center transition-all text-xs sm:text-base"
+            <Link
+              to="/membership"
+              className="flex items-center justify-center gap-1 bg-white/10 hover:bg-white/15 text-white border border-white/20 font-medium py-1.5 sm:py-2 px-2 sm:px-4 rounded-lg text-center transition-all text-[10px] sm:text-xs"
             >
-              Request Information
-            </a>
+              <span>View Pricing</span>
+              <ArrowRight className="w-2.5 h-2.5" />
+            </Link>
           </div>
         </div>
       </div>
@@ -968,6 +936,10 @@ const HomePage = () => {
   const previousTouchDeltaY = useRef(0);
   const scrollLockRef = useRef(false);
   const hasPassedLockedSectionRef = useRef(false);
+  const scrollLockTimeoutRef = useRef<number | null>(null);
+  const lastScrollPositionRef = useRef(0);
+  const scrollInactivityTimerRef = useRef<number | null>(null);
+  const scrollDirectionChangeCountRef = useRef(0);
   
   // Force faster loading for loader
   const [forceComplete, setForceComplete] = useState(false);
@@ -1100,6 +1072,188 @@ const HomePage = () => {
     
     return () => {
       window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
+
+  // Immediately check scroll position on mount to avoid lock after refresh
+  useEffect(() => {
+    // Short delay to ensure DOM is ready and scroll position is accurate
+    const initialPositionCheck = setTimeout(() => {
+      if (aboutSectionRef.current && programsSectionRef.current) {
+        const scrollPosition = window.scrollY;
+        const aboutRect = aboutSectionRef.current.getBoundingClientRect();
+        const programsRect = programsSectionRef.current.getBoundingClientRect();
+        
+        // If page loads and user is already scrolled past About section
+        if (aboutRect.bottom < 0 || programsRect.top < window.innerHeight || scrollPosition > window.innerHeight) {
+          console.log('Initial check: User is already past About section, preventing scroll lock');
+          hasPassedLockedSectionRef.current = true;
+          wheelCountRef.current = 3; // Force completion
+          setScrollCount(3);
+          setPreventScroll(false);
+          setShowAboutInstruction(false);
+          scrollLockRef.current = false;
+          document.body.style.overflow = '';
+        }
+      }
+    }, 100);
+
+    return () => clearTimeout(initialPositionCheck);
+  }, []); // Run once on mount
+
+  // FALLBACK: Master timeout to release scroll lock after a maximum time
+  // This ensures users never get permanently stuck
+  useEffect(() => {
+    // Function to clear scroll lock in case user gets stuck
+    const clearScrollLock = () => {
+      if (scrollLockRef.current) {
+        console.log('Fallback: Releasing scroll lock after timeout');
+        scrollLockRef.current = false;
+        hasPassedLockedSectionRef.current = true;
+        setPreventScroll(false);
+        setShowAboutInstruction(false);
+        document.body.style.overflow = '';
+      }
+    };
+
+    // Set a master timeout whenever scroll lock is activated
+    if (scrollLockRef.current) {
+      // Clear any existing timeout
+      if (scrollLockTimeoutRef.current) {
+        window.clearTimeout(scrollLockTimeoutRef.current);
+      }
+      
+      // Set a new 8-second timeout to release the lock
+      scrollLockTimeoutRef.current = window.setTimeout(clearScrollLock, 8000);
+    } else if (scrollLockTimeoutRef.current) {
+      // Clear the timeout if scroll lock is released naturally
+      window.clearTimeout(scrollLockTimeoutRef.current);
+      scrollLockTimeoutRef.current = null;
+    }
+
+    return () => {
+      if (scrollLockTimeoutRef.current) {
+        window.clearTimeout(scrollLockTimeoutRef.current);
+      }
+    };
+  }, [preventScroll]);
+
+  // FALLBACK: Monitor scroll position to detect if user is trying to escape
+  useEffect(() => {
+    // Clear scroll lock if user is vigorously trying to scroll
+    const handleScrollActivity = () => {
+      const currentPosition = window.scrollY;
+      
+      // Check if user is actively trying to scroll away
+      if (scrollLockRef.current && !hasPassedLockedSectionRef.current) {
+        // Detect direction change
+        if ((lastScrollPositionRef.current < currentPosition && 
+            previousTouchDeltaY.current < 0) || 
+            (lastScrollPositionRef.current > currentPosition && 
+            previousTouchDeltaY.current > 0)) {
+          scrollDirectionChangeCountRef.current++;
+        }
+        
+        // If user changes scroll direction multiple times, they might be trying to escape
+        if (scrollDirectionChangeCountRef.current > 4) {
+          console.log('Fallback: Releasing scroll lock due to multiple scroll direction changes');
+          scrollLockRef.current = false;
+          hasPassedLockedSectionRef.current = true;
+          wheelCountRef.current = 3; // Force completion
+          setScrollCount(3);
+          setPreventScroll(false);
+          setShowAboutInstruction(false);
+          document.body.style.overflow = '';
+          scrollDirectionChangeCountRef.current = 0;
+        }
+      } else {
+        // Reset counter when not locked
+        scrollDirectionChangeCountRef.current = 0;
+      }
+      
+      lastScrollPositionRef.current = currentPosition;
+      
+      // Reset inactivity timer
+      if (scrollInactivityTimerRef.current) {
+        window.clearTimeout(scrollInactivityTimerRef.current);
+      }
+      
+      // Set new inactivity timer - if user stops scrolling, check their position
+      scrollInactivityTimerRef.current = window.setTimeout(() => {
+        checkUserPosition();
+      }, 1000);
+    };
+    
+    // Check if user has scrolled far away from about section
+    const checkUserPosition = () => {
+      if (!aboutSectionRef.current || hasPassedLockedSectionRef.current) return;
+      
+      const rect = aboutSectionRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      
+      // If about section is completely out of view and we're still locked
+      if ((rect.bottom < 0 || rect.top > windowHeight * 1.5) && scrollLockRef.current) {
+        console.log('Fallback: Releasing scroll lock as user is far from about section');
+        scrollLockRef.current = false;
+        hasPassedLockedSectionRef.current = true;
+        wheelCountRef.current = 3; // Force completion
+        setScrollCount(3);
+        setPreventScroll(false);
+        setShowAboutInstruction(false);
+        document.body.style.overflow = '';
+      }
+    };
+    
+    window.addEventListener('scroll', handleScrollActivity, { passive: true });
+    
+    // Initial check
+    checkUserPosition();
+    
+    return () => {
+      window.removeEventListener('scroll', handleScrollActivity);
+      if (scrollInactivityTimerRef.current) {
+        window.clearTimeout(scrollInactivityTimerRef.current);
+      }
+    };
+  }, []);
+
+  // FALLBACK: Check page visibility changes to handle tab switches and browser back/forward
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // When user comes back to the page, check if they're still in about section
+        if (aboutSectionRef.current) {
+          const rect = aboutSectionRef.current.getBoundingClientRect();
+          const windowHeight = window.innerHeight;
+          
+          // If about section is not in view but scroll is locked, release it
+          if ((rect.bottom < 0 || rect.top > windowHeight) && scrollLockRef.current) {
+            console.log('Fallback: Releasing scroll lock after tab/visibility change');
+            scrollLockRef.current = false;
+            hasPassedLockedSectionRef.current = true;
+            wheelCountRef.current = 3; // Force completion
+            setScrollCount(3);
+            setPreventScroll(false);
+            setShowAboutInstruction(false);
+            document.body.style.overflow = '';
+          }
+        }
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Also handle page refreshes and restoration
+    window.addEventListener('pageshow', (event) => {
+      // If page is restored from bfcache (back/forward cache)
+      if (event.persisted) {
+        handleVisibilityChange();
+      }
+    });
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('pageshow', handleVisibilityChange);
     };
   }, []);
 
