@@ -11,6 +11,7 @@ import MembershipPage from './pages/MembershipPage';
 import ContactPage from './pages/ContactPage';
 import TimerPage from './pages/TimerPage';
 import StorePage from './pages/StorePage';
+import SchedulePage from './pages/SchedulePage';
 import { TimerProvider } from './context/TimerContext';
 import CustomCursor from './components/CustomCursor';
 
@@ -255,6 +256,7 @@ function App() {
             <Route path="membership" element={<MembershipPage />} />
             <Route path="contact" element={<ContactPage />} />
             <Route path="store" element={<StorePage />} />
+            <Route path="schedule" element={<SchedulePage />} />
             <Route 
               path="timer" 
               element={

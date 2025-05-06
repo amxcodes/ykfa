@@ -1316,9 +1316,6 @@ const HomePage = () => {
         <div className="container">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="order-2 lg:order-1">
-              <div className="inline-block mb-4 py-1 px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
-                <p className="text-amber-400 font-medium text-sm">About Us</p>
-              </div>
               <h2 className="mb-6">Welcome to <span className="text-transparent bg-clip-text bg-gold-gradient">YKFA</span></h2>
               <div className="space-y-4 text-gray-300">
                 <p>
@@ -1336,7 +1333,7 @@ const HomePage = () => {
             </div>
             
             <div className="order-1 lg:order-2 relative">
-              <div className="absolute -top-6 -left-6 w-64 h-64 rounded-full bg-amber-400/20 blur-3xl"></div>
+              <div className="absolute -top-6 -left-6 w-64 h-64 rounded-full bg-amber-400/20 blur-3xl hidden md:block"></div>
               <div 
                 ref={aboutImageRef}
                 className="relative z-10 rounded-xl overflow-visible"
@@ -1465,9 +1462,6 @@ const HomePage = () => {
       <section ref={programsSectionRef} className="section bg-dark-800">
         <div className="container">
           <div className="text-center max-w-2xl mx-auto mb-12 animate-fade-up">
-            <div className="inline-block mb-4 py-1 px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
-              <p className="text-amber-400 font-medium text-sm">Our Programs</p>
-            </div>
             <h2 className="mb-4">Training Programs for <span className="text-transparent bg-clip-text bg-gold-gradient">All Levels</span></h2>
             <p className="text-gray-300">
               Explore our diverse range of training programs designed to help you achieve your fitness and martial arts goals.
@@ -1500,9 +1494,6 @@ const HomePage = () => {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.1),transparent_70%)]"></div>
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
           <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12 animate-fade-up">
-            <div className="inline-block mb-4 py-1 px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
-              <p className="text-amber-400 font-medium text-sm">Testimonials</p>
-            </div>
             <h2 className="mb-4">What Our <span className="text-transparent bg-clip-text bg-gold-gradient">Members</span> Say</h2>
             <p className="text-gray-300">
               Hear from our community about their experiences and transformations at YKFA.

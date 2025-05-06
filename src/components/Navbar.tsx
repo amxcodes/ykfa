@@ -151,6 +151,16 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                   Gallery
                 </NavLink>
                 
+                <NavLink to="/schedule" className={({ isActive }) => 
+                  `px-4 py-2 rounded-xl transition-all duration-300 ${
+                    isActive 
+                      ? 'text-amber-400 bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
+                      : 'text-white hover:text-amber-400 hover:bg-white/5 border border-transparent'
+                  }`
+                }>
+                  Schedule
+                </NavLink>
+                
                 <NavLink to="/store" className={({ isActive }) => 
                   `px-4 py-2 rounded-xl transition-all duration-300 ${
                     isActive 

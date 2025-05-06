@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Camera, Share2, ChevronLeft, ChevronRight, Info, Play } from 'lucide-react';
+import { X, Camera, Share2, ChevronLeft, ChevronRight, Info, Play, Filter } from 'lucide-react';
 import { cursorProps } from '../types/cursor';
 
 // Define types for better TypeScript support
@@ -104,6 +104,126 @@ const galleryImages: GalleryImage[] = [
     size: "wide",
     type: "video",
     videoUrl: "https://www.youtube.com/embed/KLy38Oplx_E"
+  },
+  {
+    id: 7,
+    src: "https://i.postimg.cc/3RJcSt0H/img-4.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "Training Session",
+    description: "Intensive training session with expert instructors",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 8,
+    src: "https://i.postimg.cc/1tCYLDDV/img-3.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "Technique Practice",
+    description: "Refining techniques through dedicated practice",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 9,
+    src: "https://i.postimg.cc/rpqnsfJt/img-22.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "Strength Training",
+    description: "Building strength and endurance through specialized exercises",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 10,
+    src: "https://i.postimg.cc/wBFWmDf4/img-11.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "Group Training",
+    description: "Collaborative training sessions for improved skills",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 11,
+    src: "https://i.postimg.cc/rsRg3387/img-6.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "Form Practice",
+    description: "Mastering forms and stances for better performance",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 12,
+    src: "https://i.postimg.cc/NfYppN3C/img-9.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "Defense Techniques",
+    description: "Learning effective self-defense strategies",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 13,
+    src: "https://i.postimg.cc/bNTLMx8y/img-20.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "Competition Training",
+    description: "Preparing athletes for competitive events",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 14,
+    src: "https://i.postimg.cc/0yyZqz2p/img-19.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "Sparring Session",
+    description: "Controlled sparring to develop fighting skills",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 15,
+    src: "https://i.postimg.cc/mrcwtK9k/img-21.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "Kickboxing Practice",
+    description: "Perfecting kickboxing techniques and combinations",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 16,
+    src: "https://i.postimg.cc/PqBMZKb4/img-12.avif",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "Professional Training",
+    description: "Elite training methodologies for martial artists",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 17,
+    src: "https://i.postimg.cc/SR5QN2bJ/img-13.avif",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "Physical Conditioning",
+    description: "Building the optimal physical condition for martial arts",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 18,
+    src: "https://i.postimg.cc/15n57HD6/img17.avif",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "Advanced Combat",
+    description: "Advanced combat techniques for experienced practitioners",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
   }
 ];
 
@@ -119,10 +239,19 @@ const ProgramsPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [scrollY, setScrollY] = useState<number>(0);
   const [cardsVisible, setCardsVisible] = useState<boolean[]>([]);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'images' | 'videos'>('all');
   
   // Refs for animation elements
   const containerRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
+  
+  // Get filtered gallery items based on active filter
+  const filteredGalleryImages = galleryImages.filter(image => {
+    if (activeFilter === 'all') return true;
+    if (activeFilter === 'images') return image.type === 'image';
+    if (activeFilter === 'videos') return image.type === 'video';
+    return true;
+  });
   
   // Initialize card refs
   useEffect(() => {
@@ -171,7 +300,16 @@ const ProgramsPage = () => {
     };
   }, []);
 
-  // Set up intersection observer for card animations
+  // This effect will run when filter or loading state changes
+  useEffect(() => {
+    if (isLoading) return;
+    
+    // When filter changes, make all cards visible immediately
+    setCardsVisible(Array(filteredGalleryImages.length).fill(true));
+    
+  }, [isLoading, activeFilter, filteredGalleryImages.length]);
+
+  // Set up intersection observer for initial load animations
   useEffect(() => {
     if (isLoading) return;
     
@@ -255,49 +393,117 @@ const ProgramsPage = () => {
           className="mb-10 md:mb-14 text-center"
         >
           <h1 className="mb-4 text-3xl md:text-5xl font-bold leading-tight">
-            Discover Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-300">Gallery</span>
+            YKFA <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-300">Training Gallery</span>
           </h1>
-          <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-            Explore our comprehensive range of martial arts and fitness programs
+          <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+            Explore our comprehensive range of martial arts training, techniques, and fitness programs through our extensive image and video collection
           </p>
+        </motion.div>
+        
+        {/* Filter Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="max-w-6xl mx-auto mb-6 flex justify-center"
+        >
+          <div className="backdrop-blur-md bg-white/5 rounded-full border border-white/10 p-1 flex space-x-1">
+            <button
+              onClick={() => setActiveFilter('all')}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                activeFilter === 'all' 
+                  ? 'bg-amber-500 text-black' 
+                  : 'text-gray-300 hover:text-white hover:bg-white/10'
+              }`}
+              {...cursorProps('click')}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setActiveFilter('images')}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                activeFilter === 'images' 
+                  ? 'bg-amber-500 text-black' 
+                  : 'text-gray-300 hover:text-white hover:bg-white/10'
+              }`}
+              {...cursorProps('click')}
+            >
+              Images
+            </button>
+            <button
+              onClick={() => setActiveFilter('videos')}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                activeFilter === 'videos' 
+                  ? 'bg-amber-500 text-black' 
+                  : 'text-gray-300 hover:text-white hover:bg-white/10'
+              }`}
+              {...cursorProps('click')}
+            >
+              Videos
+            </button>
+          </div>
         </motion.div>
         
         {/* Gallery Container */}
         <div 
           ref={containerRef}
-          className="max-w-4xl mx-auto relative z-10"
+          className="max-w-6xl mx-auto relative z-10"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-            {galleryImages.map((image, index) => (
-              <motion.div
-                key={image.id}
-                ref={el => cardRefs.current[index] = el}
-                initial={{ opacity: 0, y: 30, rotateY: 15, scale: 0.95 }}
-                animate={cardsVisible[index] ? { 
-                  opacity: 1, 
-                  y: 0, 
-                  rotateY: 0, 
-                  scale: 1,
-                  transition: { 
-                    duration: 0.65,
-                    delay: index * 0.12,
-                    ease: [0.25, 0.1, 0.25, 1]
-                  }
-                } : {}}
-                className="gallery-card relative overflow-hidden group backdrop-blur-md bg-white/5 hover:bg-white/10 rounded-xl md:rounded-xl border border-white/10 hover:border-white/20 shadow-lg shadow-black/20"
-                onClick={() => setSelectedImage(image.id)}
-                style={{ 
-                  minHeight: '180px',
-                  maxHeight: '240px',
-                  transformStyle: 'preserve-3d',
-                }}
-                {...cursorProps('hover')}
-              >
-                <div className="relative overflow-hidden rounded-xl h-full">
-                  {/* Content Container */}
-                  <div className="relative w-full h-full">
-                    {image.type === 'video' ? (
-                      <div className="relative w-full h-full">
+          {filteredGalleryImages.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              {filteredGalleryImages.map((image, index) => (
+                <motion.div
+                  key={`${activeFilter}-${image.id}`}
+                  ref={el => cardRefs.current[index] = el}
+                  initial={{ opacity: 0, y: 30, rotateY: 15, scale: 0.95 }}
+                  animate={{ 
+                    opacity: 1, 
+                    y: 0, 
+                    rotateY: 0, 
+                    scale: 1,
+                    transition: { 
+                      duration: 0.5,
+                      delay: index * 0.05,
+                      ease: [0.25, 0.1, 0.25, 1]
+                    }
+                  }}
+                  className="gallery-card relative overflow-hidden group backdrop-blur-md bg-white/5 hover:bg-white/10 rounded-xl md:rounded-xl border border-white/10 hover:border-white/20 shadow-lg shadow-black/20"
+                  onClick={() => setSelectedImage(image.id)}
+                  style={{ 
+                    minHeight: '180px',
+                    maxHeight: '240px',
+                    transformStyle: 'preserve-3d',
+                  }}
+                  {...cursorProps('hover')}
+                >
+                  <div className="relative overflow-hidden rounded-xl h-full">
+                    {/* Content Container */}
+                    <div className="relative w-full h-full">
+                      {image.type === 'video' ? (
+                        <div className="relative w-full h-full">
+                          <img
+                            src={image.src}
+                            alt={image.title}
+                            loading="eager"
+                            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 relative z-10"
+                            style={{ aspectRatio: image.aspectRatio }}
+                            onError={(e) => {
+                              const imgElement = e.target as HTMLImageElement;
+                              imgElement.src = image.fallbackSrc;
+                            }}
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center z-20">
+                            <motion.div 
+                              className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-amber-400/90 flex items-center justify-center backdrop-blur-sm border border-amber-300/50"
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.95 }}
+                              {...cursorProps('click')}
+                            >
+                              <Play className="w-5 h-5 md:w-6 md:h-6 text-black" fill="currentColor" />
+                            </motion.div>
+                          </div>
+                        </div>
+                      ) : (
                         <img
                           src={image.src}
                           alt={image.title}
@@ -309,64 +515,60 @@ const ProgramsPage = () => {
                             imgElement.src = image.fallbackSrc;
                           }}
                         />
-                        <div className="absolute inset-0 flex items-center justify-center z-20">
-                          <motion.div 
-                            className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-amber-400/90 flex items-center justify-center backdrop-blur-sm border border-amber-300/50"
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.95 }}
-                            {...cursorProps('click')}
-                          >
-                            <Play className="w-5 h-5 md:w-6 md:h-6 text-black" fill="currentColor" />
-                          </motion.div>
-                        </div>
-                      </div>
-                    ) : (
-                      <img
-                        src={image.src}
-                        alt={image.title}
-                        loading="eager"
-                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 relative z-10"
-                        style={{ aspectRatio: image.aspectRatio }}
-                        onError={(e) => {
-                          const imgElement = e.target as HTMLImageElement;
-                          imgElement.src = image.fallbackSrc;
-                        }}
-                      />
-                    )}
+                      )}
+                    </div>
+                    
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 transition-opacity duration-300"></div>
+                  </div>
+
+                  {/* Info */}
+                  <div className="absolute inset-x-0 bottom-0 p-2.5 md:p-3">
+                    <div className="backdrop-blur-sm bg-black/40 p-2 md:p-2.5 rounded-lg">
+                      <h3 className="text-white text-xs md:text-sm font-bold mb-0.5">{image.title}</h3>
+                      <p className="text-white/80 text-xs line-clamp-1">{image.description}</p>
+                    </div>
                   </div>
                   
-                  {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 transition-opacity duration-300"></div>
-                </div>
-
-                {/* Info */}
-                <div className="absolute inset-x-0 bottom-0 p-2.5 md:p-3">
-                  <div className="backdrop-blur-sm bg-black/40 p-2 md:p-2.5 rounded-lg">
-                    <h3 className="text-white text-xs md:text-sm font-bold mb-0.5">{image.title}</h3>
-                    <p className="text-white/80 text-xs line-clamp-1">{image.description}</p>
-                  </div>
-                </div>
-                
-                {/* Interactive hover effects */}
-                <motion.div 
-                  className="absolute inset-0 bg-amber-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl pointer-events-none"
-                  initial={false}
-                  whileHover={{ opacity: 1 }}
-                ></motion.div>
-              </motion.div>
-            ))}
-          </div>
+                  {/* Interactive hover effects */}
+                  <motion.div 
+                    className="absolute inset-0 bg-amber-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl pointer-events-none"
+                    initial={false}
+                    whileHover={{ opacity: 1 }}
+                  ></motion.div>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="p-8 text-center backdrop-blur-md bg-white/5 rounded-xl border border-white/10"
+            >
+              <p className="text-gray-300 text-lg">No {activeFilter === 'videos' ? 'videos' : 'images'} found in this category.</p>
+              <button 
+                onClick={() => setActiveFilter('all')}
+                className="mt-4 px-4 py-2 bg-amber-500 text-black rounded-lg text-sm font-medium hover:bg-amber-400 transition-colors"
+                {...cursorProps('click')}
+              >
+                Show All Items
+              </button>
+            </motion.div>
+          )}
           
           {/* Summary bar */}
           <motion.div 
+            key={`summary-${activeFilter}-${filteredGalleryImages.length}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
             className="mt-8 backdrop-blur-md bg-white/5 rounded-xl border border-white/10 p-3 flex justify-center items-center"
           >
             <div className="text-gray-400 text-xs flex items-center">
               <Info className="w-3.5 h-3.5 mr-1.5 text-amber-400" />
-              Displaying <span className="text-amber-400 font-medium mx-1">{galleryImages.length}</span> gallery items • Click to view details
+              Displaying <span className="text-amber-400 font-medium mx-1">{filteredGalleryImages.length}</span> gallery items 
+              {activeFilter !== 'all' && <> in <span className="text-amber-400 font-medium mx-1">{activeFilter}</span> category</>} • Click to view details
             </div>
           </motion.div>
         </div>
