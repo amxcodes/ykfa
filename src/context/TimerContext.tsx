@@ -38,6 +38,8 @@ interface TimerContextProps {
   setTimerMode: (mode: TimerMode) => void;
   exitFullscreen: () => void;
   backgroundGradient: string;
+  isMusicMuted: boolean;
+  toggleMusicMute: () => void;
 }
 
 const defaultSettings: TimerSettings = {
@@ -113,9 +115,13 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   const [backgroundGradient, setBackgroundGradient] = useState(PHASE_COLORS.warmup.gradient);
   // Add state to store the time remaining when paused
   const [pausedTimeRemaining, setPausedTimeRemaining] = useState<number | null>(null);
+  // Add state for music mute
+  const [isMusicMuted, setIsMusicMuted] = useState(false);
   
   const isInPhaseTransition = useRef(false);
   const transitionTimeout = useRef<NodeJS.Timeout | null>(null);
+  // Store previous music volume
+  const prevMusicVolumeRef = useRef(0.3);
 
   // Audio elements for sounds
   const startSoundRef = useRef<HTMLAudioElement | null>(null);
@@ -194,11 +200,11 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       }
     });
     
-    // Ambient sound at lower volume
-    if (ambientSoundRef.current) {
+    // Ambient sound at lower volume (only if not muted)
+    if (ambientSoundRef.current && !isMusicMuted) {
       ambientSoundRef.current.volume = settings.soundVolume * 0.3;
     }
-  }, [settings.soundVolume]);
+  }, [settings.soundVolume, isMusicMuted]);
   
   // Sound player functions
   const playSound = useCallback((soundRef: React.RefObject<HTMLAudioElement>) => {
@@ -809,6 +815,23 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     }
   }, [timerMode, currentPhase, isRunning, transitionActive, playWarmupSound, isPaused]);
 
+  // Toggle music mute function
+  const toggleMusicMute = useCallback(() => {
+    if (ambientSoundRef.current) {
+      if (isMusicMuted) {
+        // Unmute - restore the volume
+        ambientSoundRef.current.volume = settings.soundVolume * prevMusicVolumeRef.current;
+        setIsMusicMuted(false);
+      } else {
+        // Save current volume before muting
+        prevMusicVolumeRef.current = ambientSoundRef.current.volume / settings.soundVolume;
+        // Mute by setting volume to 0
+        ambientSoundRef.current.volume = 0;
+        setIsMusicMuted(true);
+      }
+    }
+  }, [isMusicMuted, settings.soundVolume]);
+
   const value = {
     settings,
     currentPhase,
@@ -830,6 +853,8 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     setTimerMode: updateTimerMode,
     exitFullscreen,
     backgroundGradient,
+    isMusicMuted,
+    toggleMusicMute,
   };
 
   // Wrap the timer provider with a div that has the background gradient

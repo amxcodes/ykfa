@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Play, Pause, RotateCcw } from 'lucide-react';
+import { Play, Pause, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 import { useTimerContext } from '../context/TimerContext';
 import { useEffect, useState } from 'react';
 
@@ -48,12 +48,22 @@ const TimerControlsStyles = () => (
       .active-pause-btn:hover {
         border: 1px solid rgba(239, 68, 68, 0.5);
       }
+      
+      .active-mute-btn {
+        background-color: rgba(99, 102, 241, 0.1);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        color: white;
+      }
+      
+      .active-mute-btn:hover {
+        border: 1px solid rgba(99, 102, 241, 0.5);
+      }
     `}
   </style>
 );
 
 const TimerControls = ({ className = '' }: TimerControlsProps) => {
-  const { isRunning, toggleTimer, resetTimer, transitionActive } = useTimerContext();
+  const { isRunning, toggleTimer, resetTimer, transitionActive, isMusicMuted, toggleMusicMute } = useTimerContext();
   const [windowHeight, setWindowHeight] = useState(0);
   const [windowWidth, setWindowWidth] = useState(0);
   
@@ -87,17 +97,48 @@ const TimerControls = ({ className = '' }: TimerControlsProps) => {
     transitionActive 
       ? 'bg-dark-800/40 backdrop-blur-md border border-gray-700/50 opacity-70 cursor-not-allowed' 
       : 'bg-dark-800/40 backdrop-blur-md border border-white/10 hover:border-white/30 hover:bg-dark-700/40';
+      
+  const muteButtonClass = 
+    transitionActive 
+      ? 'bg-dark-800/40 backdrop-blur-md border border-gray-700/50 opacity-70 cursor-not-allowed' 
+      : isMusicMuted
+        ? 'active-mute-btn'
+        : 'bg-dark-800/40 backdrop-blur-md border border-white/10 hover:border-white/30 hover:bg-dark-700/40';
   
   // Adjust button sizing and container position for better mobile layout
   const buttonSize = isSmallScreen ? 'w-14 h-14' : 'w-16 h-16';
+  const smallButtonSize = isSmallScreen ? 'w-12 h-12' : 'w-14 h-14';
   const iconSize = isSmallScreen ? 'w-6 h-6' : 'w-7 h-7';
+  const smallIconSize = isSmallScreen ? 'w-5 h-5' : 'w-6 h-6';
   
   return (
     <>
       {/* Include global styles */}
       <TimerControlsStyles />
       
-      <div className={`flex justify-center gap-4 py-3 ${className}`}>
+      <div className={`flex justify-center items-center gap-4 py-3 ${className}`}>
+        {/* Music mute button */}
+        <motion.button
+          whileHover={!transitionActive ? { scale: 1.05 } : {}}
+          whileTap={!transitionActive ? { scale: 0.95 } : {}}
+          onClick={!transitionActive ? toggleMusicMute : undefined}
+          className={`${muteButtonClass} ${smallButtonSize} rounded-full flex items-center justify-center shadow-md transition-all relative overflow-hidden group`}
+          disabled={transitionActive}
+          aria-label={isMusicMuted ? "Unmute music" : "Mute music"}
+          title={isMusicMuted ? "Unmute music" : "Mute music"}
+        >
+          {/* Subtle hover effect */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-gradient-to-r from-transparent via-white to-transparent -translate-x-full group-hover:translate-x-full transition-all duration-1000 ease-in-out"></div>
+          
+          <div className="relative z-10">
+            {isMusicMuted ? (
+              <VolumeX className={`${smallIconSize} text-indigo-400`} />
+            ) : (
+              <Volume2 className={`${smallIconSize} text-white`} />
+            )}
+          </div>
+        </motion.button>
+        
         {/* Enhanced play/pause button */}
         <motion.button
           whileHover={!transitionActive ? { scale: 1.05 } : {}}
@@ -141,7 +182,7 @@ const TimerControls = ({ className = '' }: TimerControlsProps) => {
           whileHover={!transitionActive ? { scale: 1.05 } : {}}
           whileTap={!transitionActive ? { scale: 0.95 } : {}}
           onClick={!transitionActive ? resetTimer : undefined}
-          className={`${resetButtonClass} text-white rounded-full ${buttonSize} flex items-center justify-center transition-all shadow-lg backdrop-blur-md relative overflow-hidden group`}
+          className={`${resetButtonClass} text-white rounded-full ${smallButtonSize} flex items-center justify-center transition-all shadow-md backdrop-blur-md relative overflow-hidden group`}
           disabled={transitionActive}
         >
           {/* Subtle hover effect */}
@@ -152,7 +193,7 @@ const TimerControls = ({ className = '' }: TimerControlsProps) => {
             transition={{ duration: 0.3 }}
             className="relative z-10"
           >
-            <RotateCcw className="w-5 h-5" />
+            <RotateCcw className={`${smallIconSize}`} />
           </motion.div>
         </motion.button>
       </div>
