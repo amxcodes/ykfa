@@ -47,7 +47,7 @@ const defaultSettings: TimerSettings = {
   breakDuration: 45,
   cooldownDuration: 120,
   autoStart: true,
-  transitionDelay: 3,
+  transitionDelay: 0,
   soundVolume: 0.5,
 };
 
@@ -69,7 +69,7 @@ const SOUND_URLS = {
   warmup: '/sounds/warm up.mp3', // Local warm up announcement
   cooldown: '/sounds/cool down.mp3', // Local cool down announcement
   // Ambient background sound
-  ambient: 'https://assets.mixkit.co/active_storage/sfx/2466/2466-preview.mp3' // Medium speed heartbeat for background
+  ambient: '/sounds/workout.mp3' // Local background music
 };
 
 // Add phase color constants for the background gradients
@@ -111,9 +111,11 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   const [transitionActive, setTransitionActive] = useState(false);
   // Add state for background gradient
   const [backgroundGradient, setBackgroundGradient] = useState(PHASE_COLORS.warmup.gradient);
+  // Add state to store the time remaining when paused
+  const [pausedTimeRemaining, setPausedTimeRemaining] = useState<number | null>(null);
   
   const isInPhaseTransition = useRef(false);
-  const transitionTimeout = useRef<number | null>(null);
+  const transitionTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Audio elements for sounds
   const startSoundRef = useRef<HTMLAudioElement | null>(null);
@@ -474,6 +476,20 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     autoStart: false
   });
 
+  // We need to prevent issues caused by recreating the timer after it's already set up
+  const isTimerInitialized = useRef(false);
+
+  // Only initialize the timer once if it hasn't been initialized
+  useEffect(() => {
+    if (!isTimerInitialized.current && !isRunning && !isPaused) {
+      const duration = getCurrentPhaseDuration();
+      // Make sure to reset milliseconds for more consistent timing
+      const expiryTime = getExpiryTimestamp(duration);
+      restart(expiryTime, false);
+      isTimerInitialized.current = true;
+    }
+  }, [getCurrentPhaseDuration, getExpiryTimestamp, isPaused, isRunning, restart]);
+
   // Control ambient sound based on timer running state - now added after timer declaration
   useEffect(() => {
     // Play ambient sound when timer is running and not paused or in transition
@@ -492,13 +508,15 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   }, [isRunning, isPaused, transitionActive, timerMode]);
 
   useEffect(() => {
-    if (!isRunning && !transitionActive) {
+    // Only respond to settings changes if timer is not paused
+    // This prevents resetting when paused
+    if (!isRunning && !transitionActive && !isPaused) {
+      // Only if the timer is stopped normally (not paused)
       const duration = getCurrentPhaseDuration();
-      // Make sure to reset milliseconds for more consistent timing
       const expiryTime = getExpiryTimestamp(duration);
       restart(expiryTime, false);
     }
-  }, [settings, getCurrentPhaseDuration, getExpiryTimestamp, isRunning, restart, transitionActive]);
+  }, [settings, getCurrentPhaseDuration, getExpiryTimestamp, isRunning, restart, transitionActive, isPaused]);
 
   useEffect(() => {
     return () => {
@@ -636,6 +654,11 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     }
     
     if (isRunning) {
+      // Calculate and store the remaining time before pausing
+      const timeRemaining = minutes * 60 + seconds;
+      setPausedTimeRemaining(timeRemaining);
+      
+      // Just pause the timer without changing any state
       pause();
       setIsPaused(true);
       playStopSound();
@@ -652,7 +675,17 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         ease: 'power2.out'
       });
     } else {
+      // If we have stored paused time, use it to restart the timer from where it was paused
+      if (pausedTimeRemaining !== null) {
+        const expiryTimestamp = getExpiryTimestamp(pausedTimeRemaining);
+        restart(expiryTimestamp, true);
+        // Clear the stored time
+        setPausedTimeRemaining(null);
+      } else {
+        // Fallback to regular start if no stored time
       start();
+      }
+      
       setIsPaused(false);
       playStartSound();
       
@@ -670,7 +703,8 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         ease: 'back.out(1.2)'
       });
     }
-  }, [isRunning, start, pause, playStartSound, playStopSound, timerMode, currentPhase, playWarmupSound]);
+  }, [isRunning, start, pause, playStartSound, playStopSound, timerMode, currentPhase, playWarmupSound, 
+      minutes, seconds, restart, getExpiryTimestamp, pausedTimeRemaining]);
 
   const updateTimerMode = useCallback((mode: TimerMode) => {
     if (mode === 'running' && timerMode === 'setup') {
@@ -768,12 +802,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   // Add this useEffect to ensure warmup sound plays after setup
   useEffect(() => {
     // Play warmup sound when transitioning from setup to running mode
-    if (timerMode === 'running' && currentPhase === 'warmup' && !isRunning && !transitionActive) {
+    if (timerMode === 'running' && currentPhase === 'warmup' && !isRunning && !transitionActive && !isPaused) {
       setTimeout(() => {
         playWarmupSound();
       }, 100);
     }
-  }, [timerMode, currentPhase, isRunning, transitionActive, playWarmupSound]);
+  }, [timerMode, currentPhase, isRunning, transitionActive, playWarmupSound, isPaused]);
 
   const value = {
     settings,

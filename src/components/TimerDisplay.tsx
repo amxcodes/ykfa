@@ -37,7 +37,8 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
     seconds,
     isRunning,
     calculateProgress,
-    transitionActive
+    transitionActive,
+    isPaused
   } = useTimerContext();
 
   const [windowHeight, setWindowHeight] = useState(0);
@@ -45,10 +46,12 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
   const [factIndex, setFactIndex] = useState(0);
   const [shouldResetRing, setShouldResetRing] = useState(false);
   const [prevPhase, setPrevPhase] = useState(currentPhase);
+  const [pausedProgress, setPausedProgress] = useState<number | null>(null);
   
   const timerRef = useRef<HTMLDivElement>(null);
   const timeDisplayRef = useRef<HTMLDivElement>(null);
   const prevTimeRef = useRef(`${minutes}:${seconds}`);
+  const lastProgressRef = useRef(calculateProgress());
   
   // Change facts every minute instead of every 10 seconds
   useEffect(() => {
@@ -79,6 +82,22 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
       return () => clearTimeout(timeout);
     }
   }, [shouldResetRing]);
+  
+  // Update progress reference whenever it changes
+  useEffect(() => {
+    lastProgressRef.current = calculateProgress();
+  }, [calculateProgress, minutes, seconds]);
+  
+  // Store progress when the timer is paused
+  useEffect(() => {
+    if (isPaused) {
+      // Store the current progress value when paused
+      setPausedProgress(calculateProgress());
+    } else {
+      // Only clear the paused progress value when explicitly resumed
+      setPausedProgress(null);
+    }
+  }, [isPaused, calculateProgress]);
   
   // Get next phase for display in transition
   const getNextPhase = () => {
@@ -298,7 +317,7 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
   // Calculate the actual time values to display
   const displayMinutes = minutes.toString().padStart(2, '0');
   const displaySeconds = seconds.toString().padStart(2, '0');
-  const displayProgress = Math.round(progress);
+  const displayProgress = Math.round(isPaused && pausedProgress !== null ? pausedProgress : progress);
 
   // Get current fact
   const currentFact = fitnessFacts[factIndex];
@@ -362,7 +381,7 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
             
             {/* Progress Ring with Gradient Fill */}
             <motion.circle
-              key={`circle-${shouldResetRing ? 'reset' : 'normal'}-${currentPhase}`}
+              key={`circle-${shouldResetRing ? 'reset' : 'normal'}-${currentPhase}-${currentRound}-${isPaused ? 'paused' : 'running'}`}
               cx="50"
               cy="50"
               r="40"
@@ -373,11 +392,17 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
               strokeLinecap="round"
               filter="url(#subtleGlow)"
               strokeDasharray={`${2 * Math.PI * 40} ${2 * Math.PI * 40}`}
-              initial={{ strokeDashoffset: `${2 * Math.PI * 40}` }}
+              initial={shouldResetRing ? 
+                { strokeDashoffset: `${2 * Math.PI * 40}` } : 
+                isPaused && pausedProgress !== null ?
+                { strokeDashoffset: `${2 * Math.PI * 40 * (1 - pausedProgress / 100)}` } :
+                undefined
+              }
               animate={{
-                strokeDashoffset: `${2 * Math.PI * 40 * (1 - progress / 100)}`,
+                strokeDashoffset: `${2 * Math.PI * 40 * (1 - (isPaused && pausedProgress !== null ? pausedProgress : progress) / 100)}`,
                 transition: { 
-                  type: 'spring', 
+                  type: isPaused ? 'tween' : 'spring',
+                  duration: 0, // Use immediate transition for paused state
                   damping: 15,
                   stiffness: 30
                 }

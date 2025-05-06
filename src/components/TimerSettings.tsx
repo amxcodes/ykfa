@@ -86,7 +86,7 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
     
     // Handle empty inputs
     if (currentValue === '' || isNaN(parsedValue)) {
-      parsedValue = type === 'minutes' || type === 'value' ? 0 : 5;
+      parsedValue = 0;
     }
     
     if (type === 'minutes') {
@@ -99,20 +99,6 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       // Calculate new total time
       let totalSeconds = (parsedValue * 60) + seconds;
       
-      // If minutes are 0, ensure seconds are at least 5
-      if (parsedValue === 0 && seconds < 5) {
-        totalSeconds = 5;
-        
-        // Update the seconds field in UI
-        setInputValues(prev => ({
-          ...prev,
-          [setting]: {
-            ...prev[setting],
-            seconds: '5'
-          }
-        }));
-      }
-      
       // Update setting
       updateSettings(setting, totalSeconds);
       animateSettingChange(`.${setting}-value`);
@@ -123,20 +109,6 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       
       // Get current minutes
       const minutes = parseInt(inputValues[setting]?.minutes || '0', 10) || 0;
-      
-      // If minutes are 0, ensure seconds are at least 5
-      if (minutes === 0 && parsedValue < 5) {
-        parsedValue = 5;
-        
-        // Update the seconds field in UI
-        setInputValues(prev => ({
-          ...prev,
-          [setting]: {
-            ...prev[setting],
-            seconds: '5'
-          }
-        }));
-      }
       
       // Calculate new total time
       const totalSeconds = (minutes * 60) + parsedValue;
@@ -149,10 +121,12 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       if (setting === 'rounds') {
         // Clamp rounds between 1-99
         parsedValue = Math.max(1, Math.min(99, parsedValue));
+      } else if (setting === 'transitionDelay') {
+        // For transition delay, allow 0 as minimum
+        parsedValue = Math.max(0, Math.min(10, parsedValue));
       } else {
-        // For transition delay and other simple values
-        // Ensure minimum 5 seconds
-        parsedValue = Math.max(5, Math.min(59, parsedValue));
+        // For other simple values, allow 0 as minimum
+        parsedValue = Math.max(0, Math.min(59, parsedValue));
       }
       
       // Update setting
@@ -171,8 +145,8 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       const roundsValue = Math.max(1, Math.min(99, value));
       updateSettings(setting, roundsValue);
     } else if (setting === 'transitionDelay') {
-      // Transition delay slider (5-60 seconds)
-      const delayValue = Math.max(5, Math.min(60, value));
+      // Transition delay slider (0-10 seconds)
+      const delayValue = Math.max(0, Math.min(10, value));
       updateSettings(setting, delayValue);
     } else {
       // Time-based sliders (in seconds)
@@ -319,9 +293,9 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       color: 'bg-blue-900/30 border-blue-500/20 hover:bg-blue-800/30',
       unit: 's',
       showMinutes: true,
-      sliderMin: 30,
+      sliderMin: 0,
       sliderMax: 300,
-      sliderStep: 30
+      sliderStep: 5
     },
     { 
       key: 'rounds', 
@@ -341,9 +315,9 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       color: 'bg-amber-900/30 border-amber-500/20 hover:bg-amber-800/30',
       unit: 's',
       showMinutes: true,
-      sliderMin: 30,
+      sliderMin: 0,
       sliderMax: 600,
-      sliderStep: 30
+      sliderStep: 5
     },
     { 
       key: 'breakDuration', 
@@ -352,9 +326,9 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       color: 'bg-green-900/30 border-green-500/20 hover:bg-green-800/30',
       unit: 's',
       showMinutes: true,
-      sliderMin: 15,
+      sliderMin: 0,
       sliderMax: 300,
-      sliderStep: 15
+      sliderStep: 5
     },
     { 
       key: 'cooldownDuration', 
@@ -363,9 +337,9 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       color: 'bg-blue-900/30 border-blue-500/20 hover:bg-blue-800/30',
       unit: 's',
       showMinutes: true,
-      sliderMin: 30,
+      sliderMin: 0,
       sliderMax: 300,
-      sliderStep: 30
+      sliderStep: 5
     },
     {
       key: 'transitionDelay',
@@ -374,7 +348,7 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       color: 'bg-purple-900/30 border-purple-500/20 hover:bg-purple-800/30',
       unit: 's',
       showMinutes: false,
-      sliderMin: 3,
+      sliderMin: 0,
       sliderMax: 10,
       sliderStep: 1
     }
