@@ -40,6 +40,35 @@ export default {
       boxShadow: {
         'gold': '0 0 15px rgba(255, 215, 0, 0.5)',
       },
+      keyframes: {
+        'card-shuffle-out': {
+          '0%': { transform: 'rotateY(0deg) scale(1)', opacity: '1' },
+          '100%': { transform: 'rotateY(90deg) scale(0.9)', opacity: '0' }
+        },
+        'card-shuffle-in': {
+          '0%': { transform: 'rotateY(-90deg) scale(0.9)', opacity: '0' },
+          '100%': { transform: 'rotateY(0deg) scale(1)', opacity: '1' }
+        },
+        'card-slide-out': {
+          '0%': { transform: 'translateX(0) scale(1) rotate(0)', opacity: '1' },
+          '100%': { transform: 'translateX(-40%) scale(0.9) rotate(-5deg)', opacity: '0' }
+        },
+        'card-slide-in': {
+          '0%': { transform: 'translateX(40%) scale(0.9) rotate(5deg)', opacity: '0' },
+          '100%': { transform: 'translateX(0) scale(1) rotate(0)', opacity: '1' }
+        },
+        'bounce-slow': {
+          '0%, 100%': { transform: 'translateY(-10%)' },
+          '50%': { transform: 'translateY(0)' }
+        },
+      },
+      animation: {
+        'card-shuffle-out': 'card-shuffle-out 0.6s ease-in-out forwards',
+        'card-shuffle-in': 'card-shuffle-in 0.6s ease-in-out forwards',
+        'card-slide-out': 'card-slide-out 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) forwards',
+        'card-slide-in': 'card-slide-in 0.6s cubic-bezier(0.25, 0.1, 0.25, 1) forwards',
+        'bounce-slow': 'bounce-slow 2s ease-in-out infinite',
+      },
     },
   },
   plugins: [],

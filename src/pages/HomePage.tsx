@@ -922,24 +922,10 @@ const HomePage = () => {
   const programsSectionRef = useRef<HTMLElement>(null);
   const aboutImageRef = useRef<HTMLDivElement>(null);
   const [aboutImageIndex, setAboutImageIndex] = useState(0);
-  const [scrollCount, setScrollCount] = useState(0);
-  const [preventScroll, setPreventScroll] = useState(false);
-  const [showAboutInstruction, setShowAboutInstruction] = useState(false);
-  const wheelCountRef = useRef(0);
-  const isAtBottomRef = useRef(false);
-  const touchStartY = useRef(0);
-  const touchStartX = useRef(0);
-  const isTouchActiveRef = useRef(false);
-  const lastInteractionTime = useRef(0);
-  const interactionCooldown = 200; // Reduced cooldown for faster responsiveness
+  // Remove scroll lock related states
   const isMobileDevice = useRef(false);
-  const previousTouchDeltaY = useRef(0);
-  const scrollLockRef = useRef(false);
-  const hasPassedLockedSectionRef = useRef(false);
-  const scrollLockTimeoutRef = useRef<number | null>(null);
-  const lastScrollPositionRef = useRef(0);
-  const scrollInactivityTimerRef = useRef<number | null>(null);
-  const scrollDirectionChangeCountRef = useRef(0);
+  const autoImageChangeInterval = useRef<NodeJS.Timeout | null>(null);
+  const imageTransitionInProgress = useRef(false);
   
   // Force faster loading for loader
   const [forceComplete, setForceComplete] = useState(false);
@@ -1075,227 +1061,145 @@ const HomePage = () => {
     };
   }, []);
 
-  // Immediately check scroll position on mount to avoid lock after refresh
-  useEffect(() => {
-    // Short delay to ensure DOM is ready and scroll position is accurate
-    const initialPositionCheck = setTimeout(() => {
-      if (aboutSectionRef.current && programsSectionRef.current) {
-        const scrollPosition = window.scrollY;
-        const aboutRect = aboutSectionRef.current.getBoundingClientRect();
-        const programsRect = programsSectionRef.current.getBoundingClientRect();
-        
-        // If page loads and user is already scrolled past About section
-        if (aboutRect.bottom < 0 || programsRect.top < window.innerHeight || scrollPosition > window.innerHeight) {
-          console.log('Initial check: User is already past About section, preventing scroll lock');
-          hasPassedLockedSectionRef.current = true;
-          wheelCountRef.current = 3; // Force completion
-          setScrollCount(3);
-          setPreventScroll(false);
-          setShowAboutInstruction(false);
-          scrollLockRef.current = false;
-          document.body.style.overflow = '';
-        }
-      }
-    }, 100);
-
-    return () => clearTimeout(initialPositionCheck);
-  }, []); // Run once on mount
-
-  // FALLBACK: Master timeout to release scroll lock after a maximum time
-  // This ensures users never get permanently stuck
-  useEffect(() => {
-    // Function to clear scroll lock in case user gets stuck
-    const clearScrollLock = () => {
-      if (scrollLockRef.current) {
-        console.log('Fallback: Releasing scroll lock after timeout');
-        scrollLockRef.current = false;
-        hasPassedLockedSectionRef.current = true;
-        setPreventScroll(false);
-        setShowAboutInstruction(false);
-        document.body.style.overflow = '';
-      }
-    };
-
-    // Set a master timeout whenever scroll lock is activated
-    if (scrollLockRef.current) {
-      // Clear any existing timeout
-      if (scrollLockTimeoutRef.current) {
-        window.clearTimeout(scrollLockTimeoutRef.current);
-      }
-      
-      // Set a new 8-second timeout to release the lock
-      scrollLockTimeoutRef.current = window.setTimeout(clearScrollLock, 8000);
-    } else if (scrollLockTimeoutRef.current) {
-      // Clear the timeout if scroll lock is released naturally
-      window.clearTimeout(scrollLockTimeoutRef.current);
-      scrollLockTimeoutRef.current = null;
+  // Manual image change function
+  const changeImage = (direction: 'next' | 'prev') => {
+    if (imageTransitionInProgress.current) return;
+    
+    // Clear the auto-change interval and restart it
+    if (autoImageChangeInterval.current) {
+      clearInterval(autoImageChangeInterval.current);
     }
-
-    return () => {
-      if (scrollLockTimeoutRef.current) {
-        window.clearTimeout(scrollLockTimeoutRef.current);
-      }
-    };
-  }, [preventScroll]);
-
-  // FALLBACK: Monitor scroll position to detect if user is trying to escape
-  useEffect(() => {
-    // Clear scroll lock if user is vigorously trying to scroll
-    const handleScrollActivity = () => {
-      const currentPosition = window.scrollY;
-      
-      // Check if user is actively trying to scroll away
-      if (scrollLockRef.current && !hasPassedLockedSectionRef.current) {
-        // Detect direction change
-        if ((lastScrollPositionRef.current < currentPosition && 
-            previousTouchDeltaY.current < 0) || 
-            (lastScrollPositionRef.current > currentPosition && 
-            previousTouchDeltaY.current > 0)) {
-          scrollDirectionChangeCountRef.current++;
+    
+    imageTransitionInProgress.current = true;
+    
+    // Apply individual animations instead of moving all images at once
+    if (aboutImageRef.current) {
+      // Add a subtle container animation with better physics-based easing
+      gsap.to(aboutImageRef.current, {
+        scale: 0.99,
+        duration: 0.4,
+        ease: "power2.out",
+        onComplete: () => {
+          gsap.to(aboutImageRef.current, {
+            scale: 1,
+            duration: 0.5,
+            ease: "elastic.out(1, 0.75)",
+            delay: 0.1
+          });
         }
+      });
+      
+      // Get all image elements
+      const currentImageDiv = aboutImageRef.current.querySelector('.image-stack > div:nth-child(3)');
+      const prevImageDiv = aboutImageRef.current.querySelector('.image-stack > div:nth-child(1)');
+      const nextImageDiv = aboutImageRef.current.querySelector('.image-stack > div:nth-child(2)');
+      
+      // Animate side images with subtle movement based on direction
+      if (prevImageDiv && nextImageDiv) {
+        // Move side images in the opposite direction for a parallax effect
+        gsap.to(prevImageDiv, {
+          x: direction === 'next' ? '-12%' : '-2%',
+          scale: 0.95,
+          opacity: 0.6,
+          duration: 0.5,
+          ease: "power2.inOut"
+        });
         
-        // If user changes scroll direction multiple times, they might be trying to escape
-        if (scrollDirectionChangeCountRef.current > 4) {
-          console.log('Fallback: Releasing scroll lock due to multiple scroll direction changes');
-          scrollLockRef.current = false;
-          hasPassedLockedSectionRef.current = true;
-          wheelCountRef.current = 3; // Force completion
-          setScrollCount(3);
-          setPreventScroll(false);
-          setShowAboutInstruction(false);
-          document.body.style.overflow = '';
-          scrollDirectionChangeCountRef.current = 0;
-        }
-      } else {
-        // Reset counter when not locked
-        scrollDirectionChangeCountRef.current = 0;
+        gsap.to(nextImageDiv, {
+          x: direction === 'next' ? '2%' : '12%',
+          scale: 0.95,
+          opacity: 0.6,
+          duration: 0.5,
+          ease: "power2.inOut"
+        });
       }
       
-      lastScrollPositionRef.current = currentPosition;
-      
-      // Reset inactivity timer
-      if (scrollInactivityTimerRef.current) {
-        window.clearTimeout(scrollInactivityTimerRef.current);
-      }
-      
-      // Set new inactivity timer - if user stops scrolling, check their position
-      scrollInactivityTimerRef.current = window.setTimeout(() => {
-        checkUserPosition();
-      }, 1000);
-    };
-    
-    // Check if user has scrolled far away from about section
-    const checkUserPosition = () => {
-      if (!aboutSectionRef.current || hasPassedLockedSectionRef.current) return;
-      
-      const rect = aboutSectionRef.current.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      
-      // If about section is completely out of view and we're still locked
-      if ((rect.bottom < 0 || rect.top > windowHeight * 1.5) && scrollLockRef.current) {
-        console.log('Fallback: Releasing scroll lock as user is far from about section');
-        scrollLockRef.current = false;
-        hasPassedLockedSectionRef.current = true;
-        wheelCountRef.current = 3; // Force completion
-        setScrollCount(3);
-        setPreventScroll(false);
-        setShowAboutInstruction(false);
-        document.body.style.overflow = '';
-      }
-    };
-    
-    window.addEventListener('scroll', handleScrollActivity, { passive: true });
-    
-    // Initial check
-    checkUserPosition();
-    
-    return () => {
-      window.removeEventListener('scroll', handleScrollActivity);
-      if (scrollInactivityTimerRef.current) {
-        window.clearTimeout(scrollInactivityTimerRef.current);
-      }
-    };
-  }, []);
-
-  // FALLBACK: Check page visibility changes to handle tab switches and browser back/forward
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        // When user comes back to the page, check if they're still in about section
-        if (aboutSectionRef.current) {
-          const rect = aboutSectionRef.current.getBoundingClientRect();
-          const windowHeight = window.innerHeight;
-          
-          // If about section is not in view but scroll is locked, release it
-          if ((rect.bottom < 0 || rect.top > windowHeight) && scrollLockRef.current) {
-            console.log('Fallback: Releasing scroll lock after tab/visibility change');
-            scrollLockRef.current = false;
-            hasPassedLockedSectionRef.current = true;
-            wheelCountRef.current = 3; // Force completion
-            setScrollCount(3);
-            setPreventScroll(false);
-            setShowAboutInstruction(false);
-            document.body.style.overflow = '';
+      // Animate current image with smoother GSAP animation instead of CSS classes
+      if (currentImageDiv) {
+        // Exit animation
+        gsap.to(currentImageDiv, {
+          y: direction === 'next' ? -20 : 20,
+          rotationZ: direction === 'next' ? -2 : 2,
+          scale: 0.95,
+          opacity: 0,
+          filter: "blur(3px)",
+          duration: 0.6,
+          ease: "power3.inOut",
+          onComplete: () => {
+            // Update the image index
+            if (direction === 'next') {
+              setAboutImageIndex(prevIndex => (prevIndex + 1) % aboutImages.length);
+            } else {
+              setAboutImageIndex(prevIndex => (prevIndex - 1 + aboutImages.length) % aboutImages.length);
+            }
+            
+            // Small delay before entrance animation
+            setTimeout(() => {
+              if (currentImageDiv && aboutImageRef.current) {
+                // Reset position before animation
+                gsap.set(currentImageDiv, {
+                  y: direction === 'next' ? 20 : -20,
+                  rotationZ: direction === 'next' ? 2 : -2,
+                  scale: 0.95,
+                  opacity: 0,
+                  filter: "blur(3px)"
+                });
+                
+                // Entrance animation
+                gsap.to(currentImageDiv, {
+                  y: 0,
+                  rotationZ: 0,
+                  scale: 1,
+                  opacity: 1,
+                  filter: "blur(0px)",
+                  duration: 0.7,
+                  ease: "back.out(1.7)",
+                  onComplete: () => {
+                    // Animation complete, reset side images
+                    if (prevImageDiv && nextImageDiv) {
+                      gsap.to([prevImageDiv, nextImageDiv], {
+                        x: 0,
+                        scale: 0.97,
+                        opacity: 0.7,
+                        duration: 0.5,
+                        ease: "power2.out"
+                      });
+                    }
+                    
+                    // Reset flags
+                    imageTransitionInProgress.current = false;
+                    
+                    // Restart auto-change interval
+                    autoImageChangeInterval.current = setInterval(() => {
+                      if (!imageTransitionInProgress.current) {
+                        changeImage('next');
+                      }
+                    }, 5000);
+                  }
+                });
+              }
+            }, 50);
           }
-        }
+        });
       }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    // Also handle page refreshes and restoration
-    window.addEventListener('pageshow', (event) => {
-      // If page is restored from bfcache (back/forward cache)
-      if (event.persisted) {
-        handleVisibilityChange();
+    }
+  };
+
+  // Auto image change with GSAP animation
+  useEffect(() => {
+    // Set up automatic image rotation every 5 seconds
+    autoImageChangeInterval.current = setInterval(() => {
+      if (!imageTransitionInProgress.current) {
+        changeImage('next');
       }
-    });
+    }, 5000);
     
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('pageshow', handleVisibilityChange);
+      if (autoImageChangeInterval.current) {
+        clearInterval(autoImageChangeInterval.current);
+      }
     };
   }, []);
-
-  // Reset wheel count when scrolling away from section
-  const resetWheelCount = () => {
-    if (!isAtBottomRef.current && wheelCountRef.current > 0) {
-      wheelCountRef.current = 0;
-      setScrollCount(0);
-      setPreventScroll(false);
-      setShowAboutInstruction(false);
-      scrollLockRef.current = false;
-    }
-  };
-
-  // Release lock if user has somehow passed the section
-  const checkIfPassedLockedSection = () => {
-    if (aboutSectionRef.current && programsSectionRef.current) {
-      const aboutRect = aboutSectionRef.current.getBoundingClientRect();
-      const programsRect = programsSectionRef.current.getBoundingClientRect();
-      
-      // If the about section is completely above the viewport
-      // and the programs section is already visible
-      if (aboutRect.bottom < 0 && programsRect.top < window.innerHeight) {
-        // User has somehow passed the locked section
-        hasPassedLockedSectionRef.current = true;
-        scrollLockRef.current = false;
-        
-        // Reset all locks and counters
-        if (wheelCountRef.current < 3) {
-          wheelCountRef.current = 3; // Force completion
-          setScrollCount(3);
-          setPreventScroll(false);
-          setShowAboutInstruction(false);
-        }
-      } else {
-        // Reset the flag when scrolling back up
-        if (aboutRect.top > 0) {
-          hasPassedLockedSectionRef.current = false;
-        }
-      }
-    }
-  };
 
   // About section images array
   const aboutImages = [
@@ -1307,234 +1211,27 @@ const HomePage = () => {
 
   // Preload images for smoother transitions
   useEffect(() => {
+    const imageCache = new Map();
+    
     aboutImages.forEach(src => {
-      const img = new Image();
-      img.src = src;
+      if (!imageCache.has(src)) {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => {
+          imageCache.set(src, true);
+        };
+        // Force decode the image if the browser supports it
+        if ('decode' in img) {
+          img.decode().catch(() => {
+            // Silently catch any decode errors
+          });
+        }
+      }
     });
-  }, []);
-
-  // Change image and handle scroll count
-  const handleInteraction = () => {
-    const now = Date.now();
-    
-    // Don't process if we've already passed the section
-    if (hasPassedLockedSectionRef.current) return false;
-    
-    // Throttle interactions to prevent rapid firing
-    if (now - lastInteractionTime.current < interactionCooldown) return false;
-    lastInteractionTime.current = now;
-    
-    if (isAtBottomRef.current && wheelCountRef.current < 3) {
-      // Change image on each interaction
-      setAboutImageIndex(prevIndex => (prevIndex + 1) % aboutImages.length);
-      wheelCountRef.current++;
-      
-      // Update state for UI feedback
-      setScrollCount(wheelCountRef.current);
-      setPreventScroll(true);
-      scrollLockRef.current = true;
-      
-      // After 3 interactions, allow scrolling
-      if (wheelCountRef.current === 3) {
-        setTimeout(() => {
-          setPreventScroll(false);
-          setShowAboutInstruction(false);
-          scrollLockRef.current = false;
-        }, 500);
-      }
-      
-      return true; // Interaction was processed
-    }
-    
-    return false; // No interaction processed
-  };
-
-  // Check if user has scrolled to bottom of About section - optimized
-  useEffect(() => {
-    let lastCheckTime = 0;
-    const checkInterval = isMobileDevice.current ? 100 : 50; // Less frequent checks on mobile
-
-    const checkSectionPosition = () => {
-      const now = Date.now();
-      if (now - lastCheckTime < checkInterval) return;
-      lastCheckTime = now;
-      
-      if (aboutSectionRef.current) {
-        const rect = aboutSectionRef.current.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-        const wasAtBottom = isAtBottomRef.current;
-        
-        // Simplified bottom detection for better performance
-        const isAtBottom = 
-          rect.bottom <= windowHeight + 100 && // Larger buffer for mobile
-          rect.top < windowHeight * 0.6; // Less strict requirement
-          
-        isAtBottomRef.current = isAtBottom;
-        
-        // Show instruction when reaching the bottom for the first time
-        if (isAtBottom && !wasAtBottom && wheelCountRef.current === 0) {
-          setShowAboutInstruction(true);
-          scrollLockRef.current = true;
-        }
-        
-        // Reset when scrolling away
-        if (!isAtBottom && wasAtBottom) {
-          resetWheelCount();
-        }
-      }
-      
-      // Check if user has somehow passed the locked section
-      checkIfPassedLockedSection();
-    };
-
-    // Optimized scroll handler with passive event
-    const handleScroll = () => checkSectionPosition();
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', checkSectionPosition, { passive: true });
-    
-    // Initial check
-    checkSectionPosition();
     
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', checkSectionPosition);
-    };
-  }, []);
-
-  // Block all scrolling while in locked state
-  useEffect(() => {
-    const blockScroll = (e: Event) => {
-      // Check if we're past the section first
-      checkIfPassedLockedSection();
-      
-      // Don't block if we've passed the section
-      if (hasPassedLockedSectionRef.current) return true;
-      
-      if (scrollLockRef.current && isAtBottomRef.current && wheelCountRef.current < 3) {
-        e.preventDefault();
-        return false;
-      }
-      return true;
-    };
-
-    // Add multiple event handlers to catch all scroll events
-    document.addEventListener('wheel', blockScroll, { passive: false });
-    document.addEventListener('touchmove', blockScroll, { passive: false });
-    document.addEventListener('scroll', blockScroll, { passive: false });
-    
-    // For iOS momentum scrolling - only when lock is active and we haven't passed the section
-    if (scrollLockRef.current && !hasPassedLockedSectionRef.current) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    
-    return () => {
-      document.removeEventListener('wheel', blockScroll);
-      document.removeEventListener('touchmove', blockScroll);
-      document.removeEventListener('scroll', blockScroll);
-      document.body.style.overflow = '';
-    };
-  }, []);
-
-  // Handle wheel events for desktop
-  useEffect(() => {
-    if (isMobileDevice.current) return; // Skip wheel handling on mobile
-    
-    const handleWheel = (e: WheelEvent) => {
-      // Don't process if we've already passed the section
-      if (hasPassedLockedSectionRef.current) return;
-      
-      if (isAtBottomRef.current && wheelCountRef.current < 3) {
-        // Only prevent default for downward scrolling
-        if (e.deltaY > 0) {
-          e.preventDefault();
-          handleInteraction();
-        }
-      }
-    };
-    
-    document.addEventListener('wheel', handleWheel, { passive: false, capture: true });
-    
-    return () => {
-      document.removeEventListener('wheel', handleWheel, { capture: true });
-    };
-  }, []);
-
-  // Optimized touch handlers for mobile - Main interaction handler
-  useEffect(() => {
-    // Skip if not a mobile device
-    if (!isMobileDevice.current) return;
-    
-    const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 1) return; // Only handle single touch
-      
-      // Don't process if we've already passed the section
-      if (hasPassedLockedSectionRef.current) return;
-      
-      // Store both X and Y for better directional detection
-      touchStartY.current = e.touches[0].clientY;
-      touchStartX.current = e.touches[0].clientX;
-      previousTouchDeltaY.current = 0;
-      
-      // Check if we're in the critical section
-      isTouchActiveRef.current = isAtBottomRef.current && wheelCountRef.current < 3;
-      
-      if (isTouchActiveRef.current) {
-        // Mark that we're in a scroll lock state
-        scrollLockRef.current = true;
-      }
-    };
-    
-    const handleTouchMove = (e: TouchEvent) => {
-      // Check first if we've passed the section
-      checkIfPassedLockedSection();
-      
-      // If we've passed, don't process anything
-      if (hasPassedLockedSectionRef.current) return;
-      
-      // If in locked state, prevent all scroll
-      if (scrollLockRef.current && isAtBottomRef.current && wheelCountRef.current < 3) {
-        const touchY = e.touches[0].clientY;
-        const touchX = e.touches[0].clientX;
-        const deltaY = touchStartY.current - touchY;
-        const deltaX = touchStartX.current - touchX;
-        
-        // If swiping upward (positive deltaY)
-        if (deltaY > 5 && Math.abs(deltaY) > Math.abs(deltaX)) {
-          e.preventDefault();
-          
-          // Only process an interaction if it's a significant swipe
-          if (deltaY > 30) {
-            const interactionProcessed = handleInteraction();
-            
-            if (interactionProcessed) {
-              // Reset touch to prevent multiple triggers
-              touchStartY.current = touchY;
-              touchStartX.current = touchX;
-            }
-          }
-        }
-      }
-    };
-    
-    const handleTouchEnd = () => {
-      if (wheelCountRef.current >= 3 || hasPassedLockedSectionRef.current) {
-        scrollLockRef.current = false;
-      }
-      isTouchActiveRef.current = false;
-    };
-    
-    // Capture all touch events on the document level
-    document.addEventListener('touchstart', handleTouchStart, { passive: true });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
-    document.addEventListener('touchend', handleTouchEnd, { passive: true });
-    
-    return () => {
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', handleTouchMove, { capture: true });
-      document.removeEventListener('touchend', handleTouchEnd);
+      // Clear cache references when component unmounts
+      imageCache.clear();
     };
   }, []);
 
@@ -1562,8 +1259,8 @@ const HomePage = () => {
   }, [hasSwipedCards]);
 
   const handleCardSwipe = () => {
-    setShowTestimonialTooltip(false);
     setHasSwipedCards(true);
+    setShowTestimonialTooltip(false);
   };
 
   const programs = [
@@ -1615,115 +1312,149 @@ const HomePage = () => {
       <Hero loadingComplete={forceComplete} />
       
       {/* About Section */}
-      <section ref={aboutSectionRef} className="section bg-dark-900">
+      <section ref={aboutSectionRef} className="section py-16 sm:py-24 relative overflow-hidden">
         <div className="container">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="animate-fade-up">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="order-2 lg:order-1">
               <div className="inline-block mb-4 py-1 px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
-                <p className="text-amber-400 font-medium text-sm">About YKFA</p>
+                <p className="text-amber-400 font-medium text-sm">About Us</p>
               </div>
-              <h2 className="mb-6">Elevating Fitness and Martial Arts <span className="text-transparent bg-clip-text bg-gold-gradient">Since 2015</span></h2>
-              <p className="text-gray-300 mb-6">
-                Yaseen's YKFA combines state-of-the-art fitness facilities with traditional martial arts training. Our academy is built on the principles of discipline, respect, and continuous improvement.
-              </p>
-              <p className="text-gray-300 mb-6">
-                Whether you're a beginner looking to start your fitness journey or an experienced martial artist aiming to refine your skills, our expert instructors provide personalized guidance to help you achieve your goals.
-              </p>
-              <Link to="/about" className="btn btn-primary">
-                Our Story
-              </Link>
+              <h2 className="mb-6">Welcome to <span className="text-transparent bg-clip-text bg-gold-gradient">YKFA</span></h2>
+              <div className="space-y-4 text-gray-300">
+                <p>
+                  Yaseen's Kickboxing and Fitness Academy (YKFA) was founded by Master Yaseen, a passionate martial artist with over 15 years of experience. Our academy offers a range of martial arts and fitness programs designed to cater to all ages and skill levels.
+                </p>
+                <p>
+                  At YKFA, we believe in developing not just physical strength, but also mental discipline, self-confidence, and respect. Our instructors are dedicated to providing a supportive and motivating environment where members can achieve their fitness and martial arts goals.
+                </p>
+                <div className="pt-2">
+                  <Link to="/about" className="btn btn-primary">
+                    Learn More
+                  </Link>
+                </div>
+              </div>
             </div>
-            <div 
-              ref={aboutImageRef}
-              className="relative animate-fade-up touch-manipulation"
-              style={{ 
-                overscrollBehavior: 'contain',
-                transform: 'translateZ(0)'
-              }}
-            >
-              {/* Mobile instruction message for first-time visitors */}
-              {showAboutInstruction && !hasPassedLockedSectionRef.current && (
-                <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 z-30 w-max max-w-[90%] text-center">
-                  <div className="bg-amber-400/90 backdrop-blur-sm text-black text-xs sm:text-sm px-3 py-1.5 rounded-lg animate-bounce-slow inline-flex items-center shadow-lg">
-                    <svg className="w-3 h-3 mr-1.5 fill-current" viewBox="0 0 24 24">
-                      <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
-                    </svg>
-                    <span className="md:hidden">
-                      <span className="font-medium">Locked:</span> Swipe up {scrollCount}/3 times
-                    </span>
-                    <span className="hidden md:inline">Scroll down {scrollCount}/3 times to continue</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Lock indicator for mobile */}
-              {isAtBottomRef.current && wheelCountRef.current < 3 && !showAboutInstruction && !hasPassedLockedSectionRef.current && (
-                <div className="md:hidden absolute -bottom-12 left-1/2 -translate-x-1/2 z-30 w-max max-w-[90%] text-center">
-                  <div className="bg-amber-400/90 backdrop-blur-sm text-black text-xs px-3 py-1.5 rounded-lg inline-flex items-center shadow-lg">
-                    <svg className="w-3 h-3 mr-1.5 fill-current" viewBox="0 0 24 24">
-                      <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
-                    </svg>
-                    <span className="font-medium">Locked:</span> Swipe up {3 - wheelCountRef.current} more times
-                  </div>
-                </div>
-              )}
-
-              {/* Progress counter */}
-              {preventScroll && !hasPassedLockedSectionRef.current && (
-                <div className="absolute top-4 right-4 z-20 bg-amber-400/90 backdrop-blur-sm text-black text-xs font-medium px-2 py-1 rounded-full animate-pulse shadow-md">
-                  {scrollCount < 3 ? `${scrollCount}/3` : 'Complete!'}
-                </div>
-              )}
-              
+            
+            <div className="order-1 lg:order-2 relative">
               <div className="absolute -top-6 -left-6 w-64 h-64 rounded-full bg-amber-400/20 blur-3xl"></div>
-              <img 
-                src={aboutImages[aboutImageIndex]} 
-                alt="YKFA Training" 
-                className="w-full h-auto rounded-2xl shadow-lg relative z-10 transition-all duration-500 will-change-transform"
+              <div 
+                ref={aboutImageRef}
+                className="relative z-10 rounded-xl overflow-visible"
                 style={{ 
-                  objectFit: 'cover', 
-                  height: '400px',
-                  transform: `translateZ(0)` // Force hardware acceleration
+                  height: '380px',
+                  perspective: '1000px',
+                  width: '100%',
+                  maxWidth: '580px',
+                  margin: '0 auto',
+                  paddingTop: '30px',
+                  paddingBottom: '30px'
                 }}
-                loading="eager"
-              />
-              
-              {/* Navigation Buttons - Only visible after scroll lock completion */}
-              {wheelCountRef.current >= 3 && (
-                <>
-                  <button 
-                    onClick={() => setAboutImageIndex(prev => (prev - 1 + aboutImages.length) % aboutImages.length)}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-black/60 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-300 hover:scale-110 border border-white/10 shadow-lg"
-                    aria-label="Previous image"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M15 18l-6-6 6-6" />
-                    </svg>
-                  </button>
-                  <button 
-                    onClick={() => setAboutImageIndex(prev => (prev + 1) % aboutImages.length)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 z-20 bg-black/40 hover:bg-black/60 text-white w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm transition-all duration-300 hover:scale-110 border border-white/10 shadow-lg"
-                    aria-label="Next image"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M9 18l6-6-6-6" />
-                    </svg>
-                  </button>
-                </>
-              )}
-              
-              {/* Progress indicator dots */}
-              <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-20">
-                {aboutImages.map((_, index) => (
-                  <div 
-                    key={index} 
-                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                      index === aboutImageIndex 
-                        ? 'bg-amber-400 scale-125' 
-                        : 'bg-white/40 scale-100'
-                    }`}
-                  />
-                ))}
+              >
+                {/* Stack of images with minimal design */}
+                <div className="image-stack relative w-full h-full overflow-visible"
+                  style={{ 
+                    position: 'absolute',
+                    top: '30px',
+                    bottom: '30px',
+                    left: 0,
+                    right: 0
+                  }}
+                >
+                  {/* Previous image (left side, minimal peek) */}
+                  <div className="absolute top-0 bottom-0 left-[-5%] w-[12%] z-0 transform scale-[0.97] opacity-70 rounded-xl overflow-hidden shadow-lg">
+                    <img 
+                      src={aboutImages[(aboutImageIndex - 1 + aboutImages.length) % aboutImages.length]} 
+                      alt="Previous" 
+                      className="w-full h-full object-cover"
+                      style={{ 
+                        objectPosition: 'right center',
+                        transform: 'translateZ(0)',
+                        willChange: 'transform',
+                      }}
+                      loading="eager"
+                      decoding="async"
+                    />
+                    <div className="absolute inset-0 bg-black/50"></div>
+                  </div>
+                  
+                  {/* Next image (right side, minimal peek) */}
+                  <div className="absolute top-0 bottom-0 right-[-5%] w-[12%] z-0 transform scale-[0.97] opacity-70 rounded-xl overflow-hidden shadow-lg">
+                    <img 
+                      src={aboutImages[(aboutImageIndex + 1) % aboutImages.length]} 
+                      alt="Next" 
+                      className="w-full h-full object-cover"
+                      style={{ 
+                        objectPosition: 'left center',
+                        transform: 'translateZ(0)',
+                        willChange: 'transform',
+                      }}
+                      loading="eager"
+                      decoding="async"
+                    />
+                    <div className="absolute inset-0 bg-black/50"></div>
+                  </div>
+                  
+                  {/* Current image (center, fully visible) */}
+                  <div className="absolute inset-0 z-10 rounded-xl overflow-hidden transform transition-all duration-500 ease-out shadow-xl">
+                    <img 
+                      src={aboutImages[aboutImageIndex]} 
+                      alt="YKFA Training" 
+                      className="w-full h-full object-cover"
+                      loading="eager"
+                      fetchPriority="high"
+                      decoding="async"
+                      style={{
+                        transform: 'translateZ(0)',
+                        willChange: 'transform',
+                      }}
+                      onLoad={(e) => {
+                        // Make sure the image is fully loaded before showing it
+                        e.currentTarget.style.opacity = '1';
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                  </div>
+                </div>
+                
+                {/* Progress indicator dots - enhanced style */}
+                <div className="absolute -bottom-6 left-0 right-0 flex justify-center gap-1.5 z-20">
+                  {aboutImages.map((_, index) => (
+                    <button 
+                      key={index} 
+                      onClick={() => {
+                        if (index !== aboutImageIndex && !imageTransitionInProgress.current) {
+                          // Determine direction for animation
+                          const direction = index > aboutImageIndex ? 'next' : 'prev';
+                          changeImage(direction);
+                        }
+                      }}
+                      className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer progress-dot ${
+                        index === aboutImageIndex ? 'active' : 'bg-white/30 w-1.5'
+                      }`}
+                      aria-label={`Go to image ${index + 1}`}
+                    />
+                  ))}
+                </div>
+                
+                {/* Navigation Buttons - redesigned with better hover effects */}
+                <button 
+                  onClick={() => changeImage('prev')}
+                  className="image-nav-button absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-amber-500/80 text-white w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300"
+                  aria-label="Previous image"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
+                  </svg>
+                </button>
+                <button 
+                  onClick={() => changeImage('next')}
+                  className="image-nav-button absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-amber-500/80 text-white w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300"
+                  aria-label="Next image"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
@@ -1842,6 +1573,80 @@ const HomePage = () => {
           onClose={handleCloseModal}
         />
       )}
+
+      {/* Add custom styles for image stack transitions */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+        .image-stack {
+          transform-style: preserve-3d;
+          transition: transform 0.5s ease-out;
+          position: relative;
+          overflow: visible !important;
+        }
+        
+        .image-stack > div {
+          backface-visibility: hidden;
+          transition: all 0.75s cubic-bezier(0.33, 1, 0.68, 1);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+          overflow: hidden;
+        }
+        
+        /* Ensure proper visibility during transitions */
+        .image-stack > div:nth-child(3) {
+          opacity: 1 !important;
+          z-index: 10;
+          transform-origin: center center;
+          will-change: transform, opacity, filter;
+        }
+        
+        /* Enhance image loading appearance to prevent black bars */
+        .image-stack img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          will-change: transform, opacity;
+          transform: translateZ(0);
+          backface-visibility: hidden;
+          /* Force hardware acceleration to prevent black bar flashes */
+          -webkit-transform: translateZ(0);
+          -moz-transform: translateZ(0);
+          -ms-transform: translateZ(0);
+          -o-transform: translateZ(0);
+        }
+        
+        /* Enhanced hover effects for navigation buttons */
+        .image-nav-button {
+          transition: all 0.3s ease;
+          opacity: 0.7;
+          z-index: 40;
+        }
+        
+        .image-nav-button:hover {
+          transform: translateY(-50%) scale(1.15) !important;
+          opacity: 1;
+          box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+        }
+        
+        .image-nav-button:active {
+          transform: translateY(-50%) scale(0.95) !important;
+          transition: all 0.1s ease;
+        }
+        
+        /* Progress indicator dots animation */
+        .progress-dot {
+          transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .progress-dot.active {
+          background-color: #f59e0b;
+          width: 1rem;
+        }
+        
+        .progress-dot:not(.active):hover {
+          background-color: rgba(255, 255, 255, 0.5);
+          transform: scaleX(1.2);
+        }
+      `}} />
     </>
   );
 };
