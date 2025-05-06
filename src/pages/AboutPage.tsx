@@ -1,227 +1,396 @@
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
+import { useState } from 'react';
 
-const AboutPage = () => {
+interface Article {
+  id: string;
+  title: string;
+  category: string;
+  date: string;
+  author: string;
+  authorImage: string;
+  image: string;
+  excerpt: string;
+  content: string;
+  keywords: string[];
+}
+
+// Article data with real, SEO-optimized content
+const articles: Article[] = [
+  {
+    id: 'brazilian-jiu-jitsu-kerala',
+    title: 'Brazilian Jiu-Jitsu in Kerala: The Art of Ground Fighting',
+    category: 'BJJ',
+    date: '2024-03-15',
+    author: 'Master Yaseen',
+    authorImage: 'https://images.pexels.com/photos/7045560/pexels-photo-7045560.jpeg?auto=compress&cs=tinysrgb&w=500',
+    image: 'https://images.pexels.com/photos/7991632/pexels-photo-7991632.jpeg?auto=compress&cs=tinysrgb&w=1280',
+    excerpt: 'Discover how Brazilian Jiu-Jitsu is revolutionizing martial arts training in Kerala. Learn about its effectiveness for self-defense, fitness benefits, and why it\'s becoming increasingly popular in Ernakulam.',
+    content: `Brazilian Jiu-Jitsu (BJJ) has emerged as one of the most effective martial arts for self-defense and physical fitness in Kerala. At YKFA Edappally, we've seen a significant increase in students seeking to learn this ground-based martial art.
+
+What makes BJJ unique is its focus on leverage and technique over strength, making it accessible to practitioners of all sizes. Our training program covers:
+
+• Fundamental positions and submissions
+• Self-defense techniques
+• Competition preparation
+• Physical conditioning
+• Mental discipline
+
+The benefits of BJJ training include:
+- Improved cardiovascular health
+- Enhanced flexibility and mobility
+- Better problem-solving skills
+- Increased confidence
+- Stress relief
+
+Our BJJ classes in Edappally are structured to accommodate both beginners and advanced practitioners, with separate sessions for different skill levels.`,
+    keywords: ['BJJ Kerala', 'Brazilian Jiu-Jitsu Ernakulam', 'ground fighting', 'self-defense Kerala', 'martial arts Edappally']
+  },
+  {
+    id: 'muay-thai-training-kerala',
+    title: 'Muay Thai: The Art of Eight Limbs in Kerala',
+    category: 'Muay Thai',
+    date: '2024-03-10',
+    author: 'Coach Rahul',
+    authorImage: 'https://images.pexels.com/photos/9385171/pexels-photo-9385171.jpeg?auto=compress&cs=tinysrgb&w=500',
+    image: 'https://images.pexels.com/photos/7991209/pexels-photo-7991209.jpeg?auto=compress&cs=tinysrgb&w=1280',
+    excerpt: 'Explore the dynamic world of Muay Thai training in Kerala. From traditional techniques to modern fitness applications, learn how this ancient martial art is transforming lives in Ernakulam.',
+    content: `Muay Thai, known as the "Art of Eight Limbs," has gained tremendous popularity in Kerala for its comprehensive striking system and fitness benefits. At YKFA Edappally, our Muay Thai program combines traditional techniques with modern training methods.
+
+Key aspects of our Muay Thai training:
+• Striking techniques using fists, elbows, knees, and shins
+• Clinch work and close-range combat
+• Conditioning and strength training
+• Traditional Muay Thai rituals and respect
+• Competition preparation
+
+Training benefits include:
+- Full-body workout
+- Improved coordination
+- Enhanced cardiovascular fitness
+- Mental toughness
+- Self-defense skills
+
+Our Muay Thai classes are designed to build both technical skills and physical conditioning, making it an excellent choice for fitness enthusiasts and martial artists alike.`,
+    keywords: ['Muay Thai Kerala', 'kickboxing Ernakulam', 'martial arts training', 'fitness Edappally', 'striking techniques']
+  },
+  {
+    id: 'karate-tradition-kerala',
+    title: 'Karate in Kerala: Blending Tradition with Modern Training',
+    category: 'Karate',
+    date: '2024-03-05',
+    author: 'Sensei Kumar',
+    authorImage: 'https://images.pexels.com/photos/7045704/pexels-photo-7045704.jpeg?auto=compress&cs=tinysrgb&w=500',
+    image: 'https://images.pexels.com/photos/7045611/pexels-photo-7045611.jpeg?auto=compress&cs=tinysrgb&w=1280',
+    excerpt: 'Discover the rich tradition of Karate training in Kerala. Learn about our comprehensive program that combines traditional techniques with modern training methods for optimal results.',
+    content: `Karate training at YKFA Edappally represents the perfect blend of traditional martial arts values and modern training methodologies. Our program emphasizes both physical development and character building.
+
+Our Karate curriculum includes:
+• Basic stances and movements
+• Kata (forms) practice
+• Kumite (sparring) techniques
+• Self-defense applications
+• Belt progression system
+
+Benefits of Karate training:
+- Improved discipline and focus
+- Enhanced physical coordination
+- Better stress management
+- Increased self-confidence
+- Traditional martial arts values
+
+We offer classes for all age groups, from children to adults, with specialized programs for different skill levels.`,
+    keywords: ['Karate Kerala', 'martial arts training', 'self-defense Ernakulam', 'traditional karate', 'Edappally dojo']
+  },
+  {
+    id: 'kickboxing-kerala',
+    title: 'Kickboxing in Kerala: Modern Combat Training',
+    category: 'Kickboxing',
+    date: '2024-03-01',
+    author: 'Coach Alex',
+    authorImage: 'https://images.pexels.com/photos/7045586/pexels-photo-7045586.jpeg?auto=compress&cs=tinysrgb&w=500',
+    image: 'https://images.pexels.com/photos/7045570/pexels-photo-7045570.jpeg?auto=compress&cs=tinysrgb&w=1280',
+    excerpt: 'Experience the dynamic world of Kickboxing at YKFA Edappally. Learn how this high-energy martial art combines striking techniques with cardiovascular fitness for a complete workout.',
+    content: `Kickboxing has become one of the most popular martial arts in Kerala, combining elements of boxing and karate for a dynamic full-body workout. At YKFA Edappally, our kickboxing program focuses on both fitness and technique.
+
+Our kickboxing training includes:
+• Boxing fundamentals
+• Kick techniques
+• Combination drills
+• Cardio conditioning
+• Sparring practice
+
+Benefits of kickboxing:
+- Excellent cardiovascular workout
+- Improved coordination and balance
+- Enhanced strength and flexibility
+- Stress relief
+- Self-defense skills
+
+Our classes are suitable for all fitness levels, with modifications available for beginners.`,
+    keywords: ['Kickboxing Kerala', 'martial arts training', 'fitness Ernakulam', 'combat sports', 'Edappally gym']
+  },
+  {
+    id: 'judo-training-kerala',
+    title: 'Judo: The Gentle Way in Kerala',
+    category: 'Judo',
+    date: '2024-02-25',
+    author: 'Sensei Raj',
+    authorImage: 'https://images.pexels.com/photos/6765076/pexels-photo-6765076.jpeg?auto=compress&cs=tinysrgb&w=500',
+    image: 'https://images.pexels.com/photos/7045390/pexels-photo-7045390.jpeg?auto=compress&cs=tinysrgb&w=1280',
+    excerpt: 'Discover the art of Judo at YKFA Edappally. Learn how this Olympic sport combines physical training with mental discipline for a complete martial arts experience.',
+    content: `Judo, meaning "the gentle way," is a modern martial art that emphasizes using an opponent's strength against them. At YKFA Edappally, our Judo program teaches both traditional techniques and competitive skills.
+
+Our Judo curriculum includes:
+• Throwing techniques (Nage-waza)
+• Ground fighting (Ne-waza)
+• Break-falling (Ukemi)
+• Competition preparation
+• Self-defense applications
+
+Benefits of Judo training:
+- Improved balance and coordination
+- Enhanced physical fitness
+- Mental discipline
+- Self-confidence
+- Respect for others
+
+We offer classes for all ages, with special programs for children and competitive athletes.`,
+    keywords: ['Judo Kerala', 'martial arts training', 'self-defense Ernakulam', 'Olympic sports', 'Edappally dojo']
+  },
+  {
+    id: 'wrestling-kerala',
+    title: 'Wrestling Training in Kerala: Building Strength and Technique',
+    category: 'Wrestling',
+    date: '2024-02-20',
+    author: 'Coach Mike',
+    authorImage: 'https://images.pexels.com/photos/7045669/pexels-photo-7045669.jpeg?auto=compress&cs=tinysrgb&w=500',
+    image: 'https://images.pexels.com/photos/2526032/pexels-photo-2526032.jpeg?auto=compress&cs=tinysrgb&w=1280',
+    excerpt: 'Learn the art of wrestling at YKFA Edappally. Our comprehensive program combines traditional wrestling techniques with modern training methods for optimal results.',
+    content: `Wrestling is one of the oldest forms of combat sports, and at YKFA Edappally, we offer a comprehensive wrestling program that combines traditional techniques with modern training methods.
+
+Our wrestling training includes:
+• Takedown techniques
+• Ground control
+• Pinning combinations
+• Strength training
+• Competition preparation
+
+Benefits of wrestling training:
+- Enhanced physical strength
+- Improved flexibility
+- Better body control
+- Mental toughness
+- Self-discipline
+
+Our wrestling classes are suitable for both beginners and experienced wrestlers, with separate sessions for different skill levels.`,
+    keywords: ['Wrestling Kerala', 'combat sports', 'martial arts training', 'strength training', 'Edappally gym']
+  }
+];
+
+const BlogPage = () => {
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+
+  const openArticle = (article: Article) => {
+    setSelectedArticle(article);
+  };
+
+  const closeArticle = () => {
+    setSelectedArticle(null);
+  };
+
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-16 md:pt-40 md:pb-24 bg-black">
-        <div className="absolute inset-0 z-0 bg-black">
-          <div 
-            className="absolute inset-0 bg-center bg-cover opacity-40"
-            style={{ 
-              backgroundImage: "url('https://images.pexels.com/photos/8612000/pexels-photo-8612000.jpeg?auto=compress&cs=tinysrgb&w=1920')" 
-            }}
-          ></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/70 to-black"></div>
-        </div>
+      <Helmet>
+        <title>YKFA Blog | Martial Arts & Fitness Training in Edappally, Ernakulam</title>
+        <meta name="description" content="Expert insights on MMA, BJJ, Muay Thai, Karate, and other martial arts training in Kerala. Learn about techniques, benefits, and training programs at YKFA Edappally." />
+        <meta name="keywords" content="martial arts Kerala, MMA training, BJJ Ernakulam, Muay Thai Edappally, karate training, kickboxing Kerala" />
+        <link rel="canonical" href="https://www.ykfa.com/blog" />
+      </Helmet>
 
-        <div className="container relative z-10">
-          <div className="max-w-3xl animate-fade-up">
-            <div className="inline-block mb-4 py-1 px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
-              <p className="text-amber-400 font-medium text-sm">About Us</p>
-            </div>
-            <h1 className="mb-6">Our Journey to <span className="text-transparent bg-clip-text bg-gold-gradient">Excellence</span></h1>
-            <p className="text-lg md:text-xl mb-8 text-gray-300 max-w-2xl">
-              Discover the story behind Yaseen's YKFA, our mission, values, and commitment to excellence in martial arts and fitness.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Story Section */}
-      <section className="section bg-dark-800">
-        <div className="container">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="animate-fade-up">
-              <div className="inline-block mb-4 py-1 px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
-                <p className="text-amber-400 font-medium text-sm">Our Story</p>
-              </div>
-              <h2 className="mb-6">From Passion to <span className="text-transparent bg-clip-text bg-gold-gradient">Academy</span></h2>
-              <p className="text-gray-300 mb-6">
-                Founded in 2015 by Master Yaseen, a world-renowned martial artist and fitness expert, YKFA began as a small karate school with a vision to transform lives through discipline, respect, and physical excellence.
-              </p>
-              <p className="text-gray-300 mb-6">
-                After years of training and competing at international levels, Yaseen recognized the need for a comprehensive training facility that combined traditional martial arts wisdom with modern fitness science. This insight led to the creation of YKFA, where ancient practices meet cutting-edge training methodologies.
-              </p>
-              <p className="text-gray-300">
-                What started as a small dojo has now grown into one of the region's premier martial arts and fitness academies, with thousands of members whose lives have been transformed through our programs.
-              </p>
-            </div>
-            <div className="relative animate-fade-up">
-              <div className="absolute -top-6 -left-6 w-64 h-64 rounded-full bg-amber-400/20 blur-3xl"></div>
-              <img 
-                src="https://images.pexels.com/photos/7045665/pexels-photo-7045665.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
-                alt="YKFA Founder" 
-                className="w-full h-auto rounded-2xl shadow-lg relative z-10"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Mission & Values */}
-      <section className="section bg-dark-900">
-        <div className="container">
-          <div className="text-center max-w-2xl mx-auto mb-12 animate-fade-up">
-            <div className="inline-block mb-4 py-1 px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
-              <p className="text-amber-400 font-medium text-sm">Mission & Values</p>
-            </div>
-            <h2 className="mb-4">Guided by <span className="text-transparent bg-clip-text bg-gold-gradient">Principles</span></h2>
-            <p className="text-gray-300">
-              Our mission and values form the foundation of everything we do at Yaseen's YKFA.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-10 mb-12">
-            <div className="card hover:shadow-gold animate-fade-up">
-              <div className="bg-amber-400/20 w-14 h-14 rounded-full flex items-center justify-center mb-6">
-                <span className="text-xl font-bold text-amber-400">01</span>
-              </div>
-              <h3 className="text-xl font-bold mb-3">Our Mission</h3>
-              <p className="text-gray-400">
-                To empower individuals through martial arts and fitness training, creating a community where discipline, respect, and continuous growth lead to transformative life changes. We strive to make high-quality training accessible to everyone, regardless of age, background, or current fitness level.
-              </p>
-            </div>
-            
-            <div className="card hover:shadow-gold animate-fade-up">
-              <div className="bg-amber-400/20 w-14 h-14 rounded-full flex items-center justify-center mb-6">
-                <span className="text-xl font-bold text-amber-400">02</span>
-              </div>
-              <h3 className="text-xl font-bold mb-3">Our Vision</h3>
-              <p className="text-gray-400">
-                To be recognized as the premier martial arts and fitness academy, setting the gold standard for training excellence and personal development. We envision a future where YKFA has empowered thousands to lead stronger, more disciplined lives while fostering a global community united by the values of martial arts.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="card hover:bg-dark-700 transition-all animate-fade-up">
-              <h3 className="text-xl font-bold mb-3 text-amber-400">Excellence</h3>
-              <p className="text-gray-400">
-                We pursue excellence in every aspect of our academy, from our training programs to our facilities and instruction, never settling for anything less than the best.
-              </p>
-            </div>
-
-            <div className="card hover:bg-dark-700 transition-all animate-fade-up">
-              <h3 className="text-xl font-bold mb-3 text-amber-400">Respect</h3>
-              <p className="text-gray-400">
-                We foster an environment of mutual respect – for ourselves, our peers, our instructors, and our academy – creating a supportive community where everyone can thrive.
-              </p>
-            </div>
-
-            <div className="card hover:bg-dark-700 transition-all animate-fade-up">
-              <h3 className="text-xl font-bold mb-3 text-amber-400">Discipline</h3>
-              <p className="text-gray-400">
-                We instill discipline through structured training, helping our members develop the mental fortitude to overcome challenges both in and outside the academy.
-              </p>
-            </div>
-
-            <div className="card hover:bg-dark-700 transition-all animate-fade-up">
-              <h3 className="text-xl font-bold mb-3 text-amber-400">Growth</h3>
-              <p className="text-gray-400">
-                We believe in continuous improvement, encouraging our members to push their boundaries and embrace the journey of personal development.
-              </p>
-            </div>
-
-            <div className="card hover:bg-dark-700 transition-all animate-fade-up">
-              <h3 className="text-xl font-bold mb-3 text-amber-400">Community</h3>
-              <p className="text-gray-400">
-                We build a strong community that supports and motivates one another, recognizing that together we can achieve more than we can alone.
-              </p>
-            </div>
-
-            <div className="card hover:bg-dark-700 transition-all animate-fade-up">
-              <h3 className="text-xl font-bold mb-3 text-amber-400">Integrity</h3>
-              <p className="text-gray-400">
-                We operate with honesty and transparency in all our dealings, holding ourselves to the highest ethical standards.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Facilities */}
-      <section className="section bg-dark-800">
-        <div className="container">
-          <div className="text-center max-w-2xl mx-auto mb-12 animate-fade-up">
-            <div className="inline-block mb-4 py-1 px-3 rounded-full bg-amber-400/20 border border-amber-400/30">
-              <p className="text-amber-400 font-medium text-sm">Our Facilities</p>
-            </div>
-            <h2 className="mb-4">State-of-the-Art <span className="text-transparent bg-clip-text bg-gold-gradient">Training Facilities</span></h2>
-            <p className="text-gray-300">
-              Explore our premium training spaces designed for optimal performance and growth.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="animate-fade-up">
-              <div className="rounded-2xl overflow-hidden mb-4 aspect-[4/3]">
-                <img 
-                  src="https://images.pexels.com/photos/4164761/pexels-photo-4164761.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
-                  alt="Martial Arts Dojo" 
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Traditional Dojo</h3>
-              <p className="text-gray-400">
-                Our 2,500 sq ft traditional dojo features authentic tatami mats, training equipment, and a peaceful atmosphere for martial arts practice.
-              </p>
-            </div>
-
-            <div className="animate-fade-up">
-              <div className="rounded-2xl overflow-hidden mb-4 aspect-[4/3]">
-                <img 
-                  src="https://images.pexels.com/photos/4164762/pexels-photo-4164762.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
-                  alt="Fitness Area" 
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Modern Gym</h3>
-              <p className="text-gray-400">
-                Our fitness center is equipped with the latest strength and conditioning equipment, free weights, and functional training areas.
-              </p>
-            </div>
-
-            <div className="animate-fade-up">
-              <div className="rounded-2xl overflow-hidden mb-4 aspect-[4/3]">
-                <img 
-                  src="https://images.pexels.com/photos/3076516/pexels-photo-3076516.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
-                  alt="Recovery Lounge" 
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <h3 className="text-xl font-bold mb-2">Recovery Lounge</h3>
-              <p className="text-gray-400">
-                Our recovery area includes hot and cold plunge pools, stretching areas, and relaxation spaces to optimize your training recovery.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Call to Action */}
-      <section className="py-24 relative">
+      {/* Hero Section - Improved with parallax effect */}
+      <section className="relative pt-32 pb-24 overflow-hidden bg-gradient-to-br from-black via-amber-950/30 to-black">
         <div className="absolute inset-0 z-0">
-          <div 
-            className="absolute inset-0 bg-center bg-cover opacity-30"
+          <div className="absolute inset-0 bg-center bg-cover opacity-30 transform scale-105 motion-safe:animate-subtle-zoom"
             style={{ 
-              backgroundImage: "url('https://images.pexels.com/photos/6456207/pexels-photo-6456207.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2')" 
-            }}
-          ></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/70"></div>
+              backgroundImage: "url('https://images.pexels.com/photos/7045405/pexels-photo-7045405.jpeg?auto=compress&cs=tinysrgb&w=1280')" 
+            }}>
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black"></div>
         </div>
+
         <div className="container relative z-10">
-          <div className="max-w-3xl mx-auto text-center animate-fade-up">
-            <h2 className="mb-6">Experience YKFA <span className="text-transparent bg-clip-text bg-gold-gradient">For Yourself</span></h2>
-            <p className="text-xl text-gray-300 mb-8">
-              Ready to join our community of dedicated martial artists and fitness enthusiasts? Schedule a tour or try a free class today.
+          <div className="text-center max-w-4xl mx-auto">
+            <h1 className="mb-8 text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              <span className="block">Martial Arts</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-300">Knowledge Hub</span>
+            </h1>
+            <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
+              Expert insights, training techniques, and success stories from Kerala's premier martial arts center.
+            </p>
+          </div>
+        </div>
+        
+        {/* Decorative elements */}
+        <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-black to-transparent"></div>
+        <div className="absolute -bottom-6 -left-24 w-48 h-48 rounded-full bg-amber-500/10 blur-3xl"></div>
+        <div className="absolute -top-6 -right-24 w-48 h-48 rounded-full bg-amber-500/10 blur-3xl"></div>
+      </section>
+
+      {/* Featured Articles - With improved card design */}
+      <section className="py-20 bg-gradient-to-b from-black to-black/95">
+        <div className="container">
+          <div className="flex items-center gap-3 mb-12">
+            <div className="h-10 w-1.5 bg-gradient-to-b from-amber-400 to-amber-600 rounded-full"></div>
+            <h2 className="text-2xl md:text-3xl font-bold">Featured Articles</h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {articles.map((article, index) => (
+              <article 
+                key={article.id} 
+                className="group bg-gradient-to-br from-amber-950/10 to-black/40 backdrop-blur-sm rounded-xl overflow-hidden border border-amber-500/10 hover:border-amber-500/30 shadow-lg hover:shadow-amber-500/5 transition-all duration-300 transform hover:-translate-y-1"
+              >
+                <div className="overflow-hidden aspect-[3/2] relative">
+                  <img 
+                    src={article.image}
+                    alt={article.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-70 group-hover:opacity-50 transition-opacity duration-300"></div>
+                  <div className="absolute top-4 left-4">
+                    <span className="text-xs font-medium text-amber-400 py-1 px-3 rounded-full bg-amber-400/10 border border-amber-400/20 backdrop-blur-sm shadow-lg shadow-black/20">{article.category}</span>
+            </div>
+          </div>
+
+                <div className="p-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs text-gray-400">{article.date}</span>
+                    <span className="text-amber-500/50">•</span>
+                    <span className="text-xs text-gray-400">{article.author}</span>
+            </div>
+
+                  <h3 className="text-xl font-bold text-white group-hover:text-amber-400 transition-colors mb-3 line-clamp-2">{article.title}</h3>
+                  <p className="text-gray-400 mb-4 line-clamp-3">{article.excerpt}</p>
+                  
+                  <button 
+                    onClick={() => openArticle(article)}
+                    className="text-amber-400 hover:text-amber-300 font-medium flex items-center gap-1.5 transition-colors group-hover:gap-2.5"
+                  >
+                    Read More
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m9 18 6-6-6-6"></path>
+                    </svg>
+                  </button>
+            </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Article Modal - Redesigned with better readability */}
+      {selectedArticle && (
+        <div 
+          className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center"
+          onClick={closeArticle}
+        >
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-md"></div>
+          <div 
+            className="relative w-full max-w-2xl mx-4 transform transition-all duration-300 ease-out motion-safe:animate-modal-appear"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="relative bg-gradient-to-br from-amber-950/20 to-black/70 backdrop-blur-xl rounded-2xl w-full max-h-[80vh] overflow-y-auto border border-amber-500/20 shadow-2xl">
+              <button 
+                onClick={closeArticle}
+                className="absolute top-4 right-4 text-gray-400 hover:text-white bg-black/40 backdrop-blur-sm rounded-full p-2 hover:bg-black/60 transition-colors border border-amber-500/20 z-10 shadow-lg"
+                aria-label="Close article"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+              
+              <div className="relative h-56 md:h-72 overflow-hidden">
+                <img 
+                  src={selectedArticle.image}
+                  alt={selectedArticle.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+                
+                <div className="absolute bottom-0 left-0 right-0 p-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-xs font-medium text-amber-400 py-1 px-3 rounded-full bg-amber-400/10 border border-amber-400/20 backdrop-blur-sm">{selectedArticle.category}</span>
+                    <span className="text-amber-500/50">•</span>
+                    <span className="text-xs text-gray-300">{selectedArticle.date}</span>
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white">{selectedArticle.title}</h2>
+                </div>
+              </div>
+              
+              <div className="p-6 md:p-8">
+                <div className="flex items-center gap-3 mb-6 border-b border-amber-500/10 pb-4">
+                  <img 
+                    src={selectedArticle.authorImage} 
+                    alt={selectedArticle.author}
+                    className="w-10 h-10 rounded-full object-cover border-2 border-amber-500/30"
+                  />
+                  <div>
+                    <h3 className="font-medium text-white">{selectedArticle.author}</h3>
+                    <p className="text-xs text-gray-400">YKFA Instructor</p>
+                  </div>
+            </div>
+
+                <div className="prose prose-invert max-w-none">
+                  {selectedArticle.content.split('\n\n').map((paragraph, index) => (
+                    <p key={index} className="mb-4 text-gray-300 leading-relaxed">{paragraph}</p>
+                  ))}
+              </div>
+                
+                <div className="mt-8 pt-6 border-t border-amber-500/10">
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {selectedArticle.keywords.map((keyword, index) => (
+                      <span key={index} className="text-xs text-gray-400 py-1 px-2 rounded-full bg-amber-500/5 border border-amber-500/10">
+                        #{keyword.replace(/\s+/g, '')}
+                      </span>
+                    ))}
+            </div>
+
+                  <div className="flex flex-wrap gap-4">
+                    <Link to="/contact" className="px-6 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-black font-medium hover:from-amber-400 hover:to-amber-500 transition-all shadow-lg shadow-amber-500/10 transform hover:-translate-y-0.5">
+                      Book a Free Class
+                    </Link>
+                    <Link to="/programs" className="px-6 py-2.5 rounded-full bg-black/30 border border-amber-500/30 text-white font-medium hover:bg-black/50 hover:border-amber-500/50 transition-all backdrop-blur-sm shadow-lg shadow-amber-500/5 transform hover:-translate-y-0.5">
+                      Explore Programs
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CTA Section - Redesigned with better visual hierarchy */}
+      <section className="py-20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-black via-amber-950/5 to-black"></div>
+        <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-amber-500/5 blur-3xl"></div>
+        <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-amber-500/5 blur-3xl"></div>
+        
+        <div className="container relative z-10">
+          <div className="max-w-4xl mx-auto text-center bg-gradient-to-br from-amber-950/10 to-black/60 backdrop-blur-sm rounded-2xl p-8 md:p-12 border border-amber-500/10 shadow-2xl">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">Start Your Martial Arts Journey at <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-300">YKFA Edappally</span></h2>
+            <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-2xl mx-auto">
+              Join Kerala's premier martial arts and fitness community. Schedule a free trial class today.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link to="/contact" className="btn btn-primary">
-                Schedule a Tour
+              <Link to="/contact" className="px-8 py-3.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-black font-medium hover:from-amber-400 hover:to-amber-500 transition-all shadow-xl shadow-amber-500/20 hover:shadow-amber-500/30 transform hover:-translate-y-1">
+                Book a Free Class
               </Link>
-              <Link to="/programs" className="btn btn-outline">
-                Explore Our Programs
+              <Link to="/programs" className="px-8 py-3.5 rounded-full bg-black/40 border border-amber-500/30 text-white font-medium hover:bg-black/60 hover:border-amber-500/50 transition-all backdrop-blur-sm shadow-xl shadow-amber-500/5 hover:shadow-amber-500/10 transform hover:-translate-y-1">
+                Explore Programs
               </Link>
             </div>
           </div>
@@ -231,4 +400,4 @@ const AboutPage = () => {
   );
 };
 
-export default AboutPage;
+export default BlogPage;

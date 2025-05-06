@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Camera, Share2, ChevronLeft, ChevronRight, Info, Play, Filter } from 'lucide-react';
+import { X, Camera, Share2, ChevronLeft, ChevronRight, Info, Play } from 'lucide-react';
 import { cursorProps } from '../types/cursor';
 
 // Define types for better TypeScript support
@@ -16,6 +16,24 @@ interface GalleryImage {
   type?: 'image' | 'video';
   videoUrl?: string;
 }
+
+// Add function to share content 
+const shareContent = (title: string, text: string, url: string) => {
+  if (navigator.share) {
+    navigator.share({
+      title,
+      text,
+      url
+    })
+    .then(() => console.log('Shared successfully'))
+    .catch((error) => console.log('Error sharing:', error));
+  } else {
+    // Fallback for browsers that don't support Web Share API
+    navigator.clipboard.writeText(url)
+      .then(() => alert('Link copied to clipboard!'))
+      .catch((err) => console.error('Could not copy text: ', err));
+  }
+};
 
 // Add fallback images array
 const fallbackImages = [
@@ -224,14 +242,101 @@ const galleryImages: GalleryImage[] = [
     aspectRatio: "4/3",
     size: "medium",
     type: "image"
-  }
+  },
+  // New images from user
+  {
+    id: 19,
+    src: "https://i.postimg.cc/Cxr6mHh9/IMG-9857.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Event 1",
+    description: "YKFA event photo 1",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 20,
+    src: "https://i.postimg.cc/JnVx2p9Y/IMG-9840.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Event 2",
+    description: "YKFA event photo 2",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 21,
+    src: "https://i.postimg.cc/P50QC6rf/IMG-9847.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Event 3",
+    description: "YKFA event photo 3",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 22,
+    src: "https://i.postimg.cc/dtx8fWCR/IMG-9853.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Event 4",
+    description: "YKFA event photo 4",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 23,
+    src: "https://i.postimg.cc/GpkGHd5z/IMG-9860.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Event 5",
+    description: "YKFA event photo 5",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 24,
+    src: "https://i.postimg.cc/SsHwxL2w/IMG-9826.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Event 6",
+    description: "YKFA event photo 6",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 25,
+    src: "https://i.postimg.cc/Fsy2hL9B/IMG-9828.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Event 7",
+    description: "YKFA event photo 7",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 26,
+    src: "https://i.postimg.cc/XYntqYq7/IMG-9845.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Event 8",
+    description: "YKFA event photo 8",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 27,
+    src: "https://i.postimg.cc/Wp7856SS/IMG-9836.jpg",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Event 9",
+    description: "YKFA event photo 9",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
 ];
 
 // Custom data attributes for cursor interactions
-const CURSOR_ATTRIBUTES = {
-  HOVER: 'data-cursor-hover',
-  CLICK: 'data-cursor-click',
-};
 
 const ProgramsPage = () => {
   // State management
@@ -358,6 +463,17 @@ const ProgramsPage = () => {
     setSelectedImage(galleryImages[newIndex].id);
   };
 
+  // Handle sharing content
+  const handleShare = (e: React.MouseEvent, image: GalleryImage) => {
+    e.stopPropagation();
+    
+    const shareTitle = `YKFA - ${image.title}`;
+    const shareText = image.description;
+    const shareUrl = window.location.href.split('?')[0] + `?image=${image.id}`;
+    
+    shareContent(shareTitle, shareText, shareUrl);
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -380,7 +496,6 @@ const ProgramsPage = () => {
     : null;
 
   // Find the YKFA Champions video
-  const championsVideo = galleryImages.find(img => img.id === 6);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark-900 via-dark-800 to-dark-900 pt-20 md:pt-24 pb-16 md:pb-20 overflow-hidden">
@@ -574,7 +689,7 @@ const ProgramsPage = () => {
         </div>
       </div>
       
-      {/* Image Modal */}
+      {/* Image Modal - Completely Redesigned */}
       <AnimatePresence>
         {selectedImage !== null && selectedImageData && (
           <motion.div
@@ -582,23 +697,56 @@ const ProgramsPage = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 pt-16 md:pt-4"
+            className="fixed inset-0 z-[1000] bg-gradient-to-b from-black/98 to-black/95 backdrop-blur-lg flex flex-col items-center justify-center"
             onClick={() => setSelectedImage(null)}
           >
-            {/* Close button */}
+            {/* Top Bar with Controls */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+              className="w-full px-4 py-3 bg-gradient-to-b from-black/80 to-transparent absolute top-0 left-0 z-50 flex items-center justify-between"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center space-x-2">
+                <div className="h-8 w-2 bg-amber-500 rounded-sm"></div>
+                <div>
+                  <h3 className="text-white text-sm font-medium">{selectedImageData.title}</h3>
+                  <p className="text-gray-400 text-xs">
+                    {selectedImageData.type === 'video' ? 'Video' : 'Image'} • YKFA Gallery
+                  </p>
+                </div>
+              </div>
+              
             <motion.button 
-              className="absolute top-4 right-4 p-2 bg-black/50 backdrop-blur-md rounded-full text-white hover:text-amber-400 z-50"
+                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-amber-500 hover:text-black transition-colors"
               onClick={() => setSelectedImage(null)}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               {...cursorProps('click')}
             >
-              <X className="w-5 h-5 md:w-6 md:h-6" />
+                <X className="w-4 h-4" />
             </motion.button>
+            </motion.div>
             
-            {/* Navigation */}
+            {/* Main Content Area */}
+            <div 
+              className="w-full h-full max-w-7xl px-4 py-14 flex flex-col md:flex-row md:items-center gap-4 md:gap-8 relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Left: Media Container */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ type: "spring", damping: 25 }}
+                className="flex-1 flex items-center justify-center relative"
+              >
+                {/* Navigation buttons overlay */}
+                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-3 md:px-6 z-20 pointer-events-none">
             <motion.button 
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 p-2 bg-black/50 backdrop-blur-md rounded-full text-white hover:text-amber-400 z-30"
+                    className="pointer-events-auto w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-gradient-to-r from-amber-500 to-amber-400 rounded-full text-black shadow-xl"
               onClick={(e) => {
                 e.stopPropagation();
                 navigateImage('prev');
@@ -607,11 +755,11 @@ const ProgramsPage = () => {
               whileTap={{ scale: 0.9 }}
               {...cursorProps('click')}
             >
-              <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+                    <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
             </motion.button>
             
             <motion.button 
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 bg-black/50 backdrop-blur-md rounded-full text-white hover:text-amber-400 z-30"
+                    className="pointer-events-auto w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-gradient-to-r from-amber-400 to-amber-500 rounded-full text-black shadow-xl"
               onClick={(e) => {
                 e.stopPropagation();
                 navigateImage('next');
@@ -620,78 +768,200 @@ const ProgramsPage = () => {
               whileTap={{ scale: 0.9 }}
               {...cursorProps('click')}
             >
-              <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
             </motion.button>
+                </div>
             
-            {/* Content */}
-            <div 
-              className="w-full max-w-5xl overflow-y-auto max-h-[calc(100vh-32px)] md:max-h-[calc(100vh-64px)] custom-scrollbar"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex flex-col md:flex-row gap-6">
-                {/* Media Container */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                  className="flex-1 rounded-2xl overflow-hidden relative"
-                >
+                {/* Media content with better styling */}
+                <div className="relative overflow-hidden border border-white/10 shadow-[0_0_25px_rgba(251,191,36,0.15)] rounded-xl">
                   {selectedImageData.type === 'video' ? (
-                    <div className="relative w-full pt-[56.25%]">
+                    // YouTube embed with standard dimensions
+                    <div className="w-full md:w-[640px] h-[320px] md:h-[360px] bg-black flex items-center justify-center">
                       <iframe
-                        className="absolute inset-0 w-full h-full rounded-2xl"
-                        src={selectedImageData.videoUrl}
+                        src={`${selectedImageData.videoUrl}?autoplay=1&rel=0`}
                         title={selectedImageData.title}
+                        width="100%"
+                        height="100%"
                         frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
-                      />
+                      ></iframe>
                     </div>
                   ) : (
+                    <div className="relative bg-black/40">
                     <img 
                       src={selectedImageData.src} 
                       alt={selectedImageData.title}
-                      className="w-full h-auto max-h-[70vh] object-contain rounded-2xl relative z-10"
+                        className="max-w-full max-h-[70vh] object-contain"
                       loading="eager"
                       onError={(e) => {
                         const imgElement = e.target as HTMLImageElement;
                         imgElement.src = selectedImageData.fallbackSrc;
                       }}
                     />
+                    </div>
                   )}
+                </div>
                 </motion.div>
                 
-                {/* Info */}
+              {/* Right: Info Panel (Desktop) / Bottom Panel (Mobile) - Only for desktop */}
                 <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  transition={{ duration: 0.4, delay: 0.1 }}
-                  className="md:max-w-xs flex flex-col"
+                initial={{ opacity: 0, y: 20, x: 20 }}
+                animate={{ opacity: 1, y: 0, x: 0 }}
+                exit={{ opacity: 0, y: 20, x: 20 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                className="hidden md:block md:w-80 lg:w-96 md:self-stretch md:flex md:flex-col"
                 >
-                  <div className="backdrop-blur-lg bg-white/10 border border-white/10 p-6 rounded-2xl">
-                    <div className="inline-block px-2.5 py-1 bg-amber-400/20 rounded-full text-amber-400 text-xs mb-4">
-                      {selectedImageData.type === 'video' ? 'Video' : 'Image'}
+                <div className="backdrop-blur-xl bg-gradient-to-br from-amber-900/30 to-black/60 border border-amber-500/20 rounded-xl overflow-hidden h-full flex flex-col">
+                  {/* Content Area */}
+                  <div className="p-4 md:p-6 flex-1">
+                    {/* Title and Tag */}
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <div className="px-2 py-0.5 bg-amber-500/20 rounded-md text-amber-400 text-xs font-medium">
+                          {selectedImageData.type === 'video' ? 'Video' : 'Photo'}
                     </div>
-                    <h2 className="text-2xl font-bold text-white mb-3">{selectedImageData.title}</h2>
-                    <p className="text-gray-300 mb-6 text-sm">{selectedImageData.description}</p>
+                      </div>
+                      <h2 className="text-xl md:text-2xl font-bold text-white">{selectedImageData.title}</h2>
+                    </div>
                     
-                    <motion.div 
-                      className="flex justify-center"
+                    {/* Description */}
+                    <div className="bg-black/30 rounded-lg p-3 mb-5">
+                      <p className="text-gray-300 text-sm">{selectedImageData.description}</p>
+                    </div>
+                    
+                    {/* Image Counter */}
+                    <div className="mb-6">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs text-gray-400">
+                          {selectedImageData.type === 'video' ? 'Video' : 'Image'} {galleryImages.findIndex(img => img.id === selectedImage) + 1} of {galleryImages.length}
+                        </span>
+                        <span className="text-xs text-amber-400/70">
+                          {selectedImageData.aspectRatio}
+                        </span>
+                      </div>
+                      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full"
+                          style={{ 
+                            width: `${((galleryImages.findIndex(img => img.id === selectedImage) + 1) / galleryImages.length) * 100}%` 
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    {/* Action Buttons - Only in desktop */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <motion.button
                       whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.98 }}
-                      {...cursorProps('hover')}
-                    >
-                      <button className="flex items-center gap-2 text-sm text-white hover:text-amber-400 transition-colors">
+                        whileTap={{ scale: 0.97 }}
+                        className="h-11 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-400 text-black rounded-lg font-medium text-sm"
+                        onClick={(e) => handleShare(e, selectedImageData)}
+                        {...cursorProps('click')}
+                      >
                         <Share2 className="w-4 h-4" />
-                        Share
-                      </button>
-                    </motion.div>
+                        <span>Share</span>
+                      </motion.button>
+                      
+                      <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        className="h-11 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white rounded-lg font-medium text-sm"
+                        onClick={() => setSelectedImage(null)}
+                        {...cursorProps('click')}
+                      >
+                        <X className="w-4 h-4" />
+                        <span>Close</span>
+                      </motion.button>
+                    </div>
+                  </div>
+                  
+                  {/* Footer */}
+                  <div className="p-4 border-t border-white/10 bg-black/20">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-gray-400">© YKFA Gallery</span>
+                      <div className="flex space-x-3">
+                        {[...Array(3)].map((_, i) => (
+                          <div 
+                            key={i} 
+                            className="w-1 h-1 rounded-full bg-amber-400/60"
+                          ></div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                   </div>
                 </motion.div>
+            </div>
+            
+            {/* Mobile-only Bottom Panel - Combined info and controls */}
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+              className="md:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 to-black/80 backdrop-blur-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Drag indicator */}
+              <div className="w-12 h-1 bg-white/20 rounded-full mx-auto my-2"></div>
+              
+              {/* Content container */}
+              <div className="px-4 pb-6 pt-2">
+                {/* Title and description */}
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="px-2 py-0.5 bg-amber-500/20 rounded-md text-amber-400 text-xs font-medium">
+                      {selectedImageData.type === 'video' ? 'Video' : 'Photo'}
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-bold text-white mb-1">{selectedImageData.title}</h3>
+                  <p className="text-gray-300 text-sm line-clamp-2">{selectedImageData.description}</p>
+                </div>
+                
+                {/* Progress bar and page indicator */}
+                <div className="mb-4">
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="text-xs text-gray-400">
+                      {selectedImageData.type === 'video' ? 'Video' : 'Image'} {galleryImages.findIndex(img => img.id === selectedImage) + 1} of {galleryImages.length}
+                    </span>
+                  </div>
+                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full"
+                      style={{ 
+                        width: `${((galleryImages.findIndex(img => img.id === selectedImage) + 1) / galleryImages.length) * 100}%` 
+                      }}
+                    ></div>
+                  </div>
+                </div>
+                
+                {/* Action buttons */}
+                <div className="grid grid-cols-2 gap-3">
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="h-11 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-400 text-black rounded-lg font-medium text-sm"
+                    onClick={(e) => handleShare(e, selectedImageData)}
+                    {...cursorProps('click')}
+                  >
+                    <Share2 className="w-4 h-4" />
+                    <span>Share</span>
+                  </motion.button>
+                  
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="h-11 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white rounded-lg font-medium text-sm"
+                    onClick={() => setSelectedImage(null)}
+                    {...cursorProps('click')}
+                  >
+                    <X className="w-4 h-4" />
+                    <span>Close</span>
+                  </motion.button>
               </div>
             </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

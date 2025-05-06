@@ -1,25 +1,25 @@
 import { useState, useEffect } from "react";
 import { TestimonialCard } from "./testimonial-card";
 
-// Fitness-related testimonials
+// Fitness-related testimonials with Kerala names and Unsplash place avatars
 const testimonials = [
   {
     id: 1,
-    testimonial: "I've been training at YKFA for 6 months and the transformation is incredible. The instructors are world-class and the community is so supportive.",
-    author: "Aisha K. - Member since 2022",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=387&q=80"
+    testimonial: "The MMA training at YKFA has transformed my life. I've gained so much confidence and discipline. Master Yaseen's teaching style makes complex techniques accessible to everyone.",
+    author: "Arun Nair - Member since 2022",
+    avatar: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=compress&fit=crop&w=200&q=80" // Place photo
   },
   {
     id: 2,
-    testimonial: "The karate program at YKFA has helped my child develop discipline and confidence. I've seen massive improvements in focus at school too.", 
-    author: "Michael T. - Parent of Junior Member",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=387&q=80"
+    testimonial: "My son has been attending the karate classes for a year now. The change in his focus and self-discipline is remarkable. The trainers here are excellent with children.", 
+    author: "Lakshmi Menon - Parent of Junior Member",
+    avatar: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=compress&fit=crop&w=200&q=80" // Place photo
   },
   {
     id: 3,
-    testimonial: "As a complete beginner to fitness, I was intimidated at first, but the trainers at YKFA made me feel welcome from day one. Now I can't imagine life without my training sessions!",
-    author: "Sarah J. - Kickboxing Enthusiast",
-    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=461&q=80"
+    testimonial: "I joined the group fitness classes to lose weight, but I gained so much more. The supportive community and expert guidance have kept me motivated throughout my fitness journey.",
+    author: "Suresh Kurup - Fitness Enthusiast",
+    avatar: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=compress&fit=crop&w=200&q=80" // Place photo
   }
 ];
 

@@ -1203,10 +1203,12 @@ const HomePage = () => {
 
   // About section images array
   const aboutImages = [
-    "https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&fit=crop&w=800&q=80", // Gym - working
-    "https://images.unsplash.com/photo-1554284126-aa88f22d8b74?auto=compress&fit=crop&w=800&q=80", // People working out
-    "https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&fit=crop&w=800&q=80", // Fitness class - working
-    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=compress&fit=crop&w=800&q=80"  // Gym equipment
+    "https://i.postimg.cc/Cxr6mHh9/IMG-9857.jpg", // First image
+    "https://i.postimg.cc/JnVx2p9Y/IMG-9840.jpg", // Second image
+    "https://i.postimg.cc/P50QC6rf/IMG-9847.jpg", // Third image
+    "https://i.postimg.cc/dtx8fWCR/IMG-9853.jpg", // Fourth image
+    "https://i.postimg.cc/GpkGHd5z/IMG-9860.jpg", // Fifth image
+    "https://i.postimg.cc/5ytC7vNk/Screenshot-2025-05-07-010532.png" // Sixth image
   ];
 
   // Preload images for smoother transitions

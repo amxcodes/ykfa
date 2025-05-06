@@ -10,17 +10,35 @@ interface TestimonialCardProps {
   position: "front" | "middle" | "back";
   id: number;
   author: string;
-  image?: string; // Optional image URL
+  avatar?: string; // Prop for avatar type or image url
 }
+
+// Standard user avatar SVG
+const UserAvatarIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    className="w-8 h-8 sm:w-12 sm:h-12 md:w-16 md:h-16 text-amber-400"
+  >
+    <circle cx="12" cy="8.5" r="4" fill="currentColor" className="opacity-30" />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M4.5 20a7.5 7.5 0 0115 0"
+      className="opacity-60"
+    />
+    <circle cx="12" cy="8.5" r="4" stroke="currentColor" strokeWidth="1.5" />
+  </svg>
+);
 
 export function TestimonialCard({ 
   handleShuffle, 
   testimonial, 
   position, 
-  id, 
-  author,
-  image 
-}: TestimonialCardProps) {
+  author}: TestimonialCardProps) {
   const dragRef = React.useRef(0);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -39,8 +57,12 @@ export function TestimonialCard({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Use provided image or fallback to avatar placeholder
-  const imageUrl = image || `https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=387&q=80`;
+  // Render avatar: always show the standard user avatar icon
+  const renderAvatar = () => (
+    <div className="pointer-events-none mx-auto h-12 w-12 sm:h-20 sm:w-20 md:h-24 md:w-24 rounded-full flex items-center justify-center bg-amber-500/10 border-2 border-amber-400/30">
+      <UserAvatarIcon />
+    </div>
+  );
 
   // Calculate position based on mobile or desktop view
   const getXPosition = () => {
@@ -106,11 +128,18 @@ export function TestimonialCard({
       dragElastic={0.35}
       dragListener={true}
       dragConstraints={getDragConstraints()}
-      onDragStart={(e) => {
+      onDragStart={(e: any) => {
+        // Fix type issue with clientX
+        if (e.clientX) {
           dragRef.current = e.clientX;
+        } else if (e.touches && e.touches[0]) {
+          dragRef.current = e.touches[0].clientX;
+        }
       }}
-      onDragEnd={(e) => {
-        if (dragRef.current - e.clientX > 150) {
+      onDragEnd={(e: any) => {
+        // Fix type issue with clientX
+        const currentX = e.clientX || (e.changedTouches && e.changedTouches[0]?.clientX) || 0;
+        if (dragRef.current - currentX > 150) {
           handleShuffle();
         }
         dragRef.current = 0;
@@ -123,15 +152,11 @@ export function TestimonialCard({
       }}
       className={`absolute left-0 top-0 grid min-h-[300px] sm:min-h-[400px] md:min-h-[450px] w-[200px] sm:w-[320px] md:w-[350px] select-none place-content-center space-y-2 sm:space-y-4 md:space-y-6 rounded-2xl border border-amber-400/10 bg-dark-800/30 p-2 sm:p-5 md:p-8 shadow-xl backdrop-blur-md cursor-grab active:cursor-grabbing`}
     >
-      <img
-        src={imageUrl}
-        alt={`${author}`}
-        className="pointer-events-none mx-auto h-12 w-12 sm:h-20 sm:w-20 md:h-24 md:w-24 rounded-full border-2 border-amber-400/20 bg-dark-700 object-cover"
-      />
+      {renderAvatar()}
       <div className="flex flex-col items-center justify-center gap-1 sm:gap-2 md:gap-3">
         <p className="text-center text-xs sm:text-sm md:text-lg italic text-gray-300 line-clamp-4 sm:line-clamp-none">"{testimonial}"</p>
         <p className="text-center text-[10px] sm:text-xs md:text-sm font-medium text-amber-400">{author}</p>
       </div>
     </motion.div>
   );
-}; 
+} 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { Menu, X, Dumbbell } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import MobileMenu from './MobileMenu';
 import AppStoreWidget from './AppStoreWidget';
@@ -132,15 +132,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 }>
                   Home
                 </NavLink>
-                <NavLink to="/about" className={({ isActive }) => 
-                  `px-4 py-2 rounded-xl transition-all duration-300 ${
-                    isActive 
-                      ? 'text-amber-400 bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
-                      : 'text-white hover:text-amber-400 hover:bg-white/5 border border-transparent'
-                  }`
-                }>
-                  About
-                </NavLink>
+                
                 <NavLink to="/programs" className={({ isActive }) => 
                   `px-4 py-2 rounded-xl transition-all duration-300 ${
                     isActive 
@@ -179,6 +171,17 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 }>
                   Membership
                 </NavLink>
+
+                <NavLink to="/blog" className={({ isActive }) => 
+                  `px-4 py-2 rounded-xl transition-all duration-300 ${
+                    isActive 
+                      ? 'text-amber-400 bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
+                      : 'text-white hover:text-amber-400 hover:bg-white/5 border border-transparent'
+                  }`
+                }>
+                  Blogs
+                </NavLink>
+
                 <NavLink to="/contact" className={({ isActive }) => 
                   `px-4 py-2 rounded-xl transition-all duration-300 ${
                     isActive 

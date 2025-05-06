@@ -17,7 +17,7 @@ interface ScheduleCategory {
 }
 
 const SchedulePage = () => {
-  const [activeTab, setActiveTab] = useState<string>('gym');
+  const [activeTab, setActiveTab] = useState<string>('mma');
   const [animatedItems, setAnimatedItems] = useState<boolean>(false);
 
   // Animate items on tab change
@@ -29,39 +29,9 @@ const SchedulePage = () => {
     return () => clearTimeout(timer);
   }, [activeTab]);
 
-  // Schedule data exactly matching the user's specified categories
+  // Schedule data from WhatsApp screenshot
   const scheduleData: Record<string, ScheduleCategory[]> = {
-    gym: [
-      {
-        title: "Morning Gym Hours",
-        icon: <Dumbbell size={20} className="text-amber-400" />,
-        timeSlots: [
-          { title: "Batch 1", time: "06:00am to 07:00am" },
-          { title: "Batch 2", time: "07:00am to 08:00am" },
-          { title: "Batch 3", time: "08:00am to 09:00am" },
-          { title: "Ladies batch", time: "09:30am to 10:30am", notes: "Gym Only", highlight: true }
-        ]
-      },
-      {
-        title: "Gym Operating Hours",
-        icon: <Clock size={20} className="text-amber-400" />,
-        timeSlots: [
-          { title: "Morning", time: "06:00am to 10:30am" },
-          { title: "Evening", time: "05:00pm to 10:00pm" }
-        ]
-      }
-    ],
-    martial: [
-      {
-        title: "Karate Sessions",
-        icon: <Calendar size={20} className="text-amber-400" />,
-        timeSlots: [
-          { title: "Tuesday", time: "06:00pm to 07:30pm" },
-          { title: "Friday", time: "06:00pm to 07:30pm", notes: "MMA" }
-        ]
-      }
-    ],
-    group: [
+    mma: [
       {
         title: "Batch A",
         icon: <Users size={20} className="text-amber-400" />,
@@ -78,6 +48,38 @@ const SchedulePage = () => {
           { title: "Monday", time: "08:30pm to 09:30pm" },
           { title: "Wednesday", time: "08:30pm to 09:30pm" },
           { title: "Thursday", time: "08:00pm to 09:30pm" }
+        ]
+      }
+    ],
+    karate: [
+      {
+        title: "Karate Sessions",
+        icon: <Calendar size={20} className="text-amber-400" />,
+        timeSlots: [
+          { title: "Tuesday", time: "06:00pm to 07:30pm" },
+          { title: "Friday", time: "06:00pm to 07:30pm" }
+        ]
+      }
+    ],
+    gym: [
+      {
+        title: "Gym Only",
+        icon: <Dumbbell size={20} className="text-amber-400" />,
+        timeSlots: [
+          { title: "Morning", time: "06:00am to 10:30am" },
+          { title: "Evening", time: "05:00pm to 10:00pm" }
+        ]
+      }
+    ],
+    group: [
+      {
+        title: "Group Fitness Classes",
+        icon: <Users size={20} className="text-amber-400" />,
+        timeSlots: [
+          { title: "Batch 1", time: "06:00am to 07:00am" },
+          { title: "Batch 2", time: "07:00am to 08:00am" },
+          { title: "Batch 3", time: "08:00am to 09:00am" },
+          { title: "Ladies batch", time: "09:30am to 10:30am", highlight: true }
         ]
       }
     ]
@@ -109,134 +111,154 @@ const SchedulePage = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <Dumbbell size={16} className="text-amber-400" />
-            <span className="font-medium text-amber-400">Group Fitness Classes</span>
+           
+          
           </motion.div>
         </div>
 
         {/* Schedule Tabs */}
         <div className="mb-8">
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
-            <ScheduleTab 
-              label="Gym" 
-              active={activeTab === 'gym'} 
-              onClick={() => setActiveTab('gym')} 
-            />
-            <ScheduleTab 
-              label="MMA/Karate" 
-              active={activeTab === 'martial'} 
-              onClick={() => setActiveTab('martial')} 
-            />
-            <ScheduleTab 
-              label="Group Fitness" 
-              active={activeTab === 'group'} 
-              onClick={() => setActiveTab('group')} 
-            />
+          <div className="inline-flex p-1 bg-black/40 backdrop-blur-md border border-white/10 rounded-full shadow-lg flex-wrap justify-center">
+            <motion.button
+              className={`px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+                activeTab === 'mma' 
+                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black' 
+                  : 'text-white hover:bg-white/10'
+              }`}
+              onClick={() => setActiveTab('mma')}
+              whileHover={activeTab !== 'mma' ? { scale: 1.05 } : {}}
+              whileTap={{ scale: 0.97 }}
+            >
+              MMA
+            </motion.button>
+            
+            <motion.button
+              className={`px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+                activeTab === 'karate' 
+                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black' 
+                  : 'text-white hover:bg-white/10'
+              }`}
+              onClick={() => setActiveTab('karate')}
+              whileHover={activeTab !== 'karate' ? { scale: 1.05 } : {}}
+              whileTap={{ scale: 0.97 }}
+            >
+              Karate
+            </motion.button>
+            
+            <motion.button
+              className={`px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+                activeTab === 'gym' 
+                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black' 
+                  : 'text-white hover:bg-white/10'
+              }`}
+              onClick={() => setActiveTab('gym')}
+              whileHover={activeTab !== 'gym' ? { scale: 1.05 } : {}}
+              whileTap={{ scale: 0.97 }}
+            >
+              Gym Only
+            </motion.button>
+            
+            <motion.button
+              className={`px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+                activeTab === 'group' 
+                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black' 
+                  : 'text-white hover:bg-white/10'
+              }`}
+              onClick={() => setActiveTab('group')}
+              whileHover={activeTab !== 'group' ? { scale: 1.05 } : {}}
+              whileTap={{ scale: 0.97 }}
+            >
+              Group Fitness
+            </motion.button>
           </div>
         </div>
 
         {/* Schedule Content */}
         <motion.div 
-          className="space-y-8"
+          className="space-y-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
           key={activeTab}
         >
           {scheduleData[activeTab].map((category, index) => (
-            <ScheduleSection 
-              key={category.title} 
-              category={category} 
-              index={index}
-              isAnimated={animatedItems}
-            />
+            <motion.div
+              key={category.title}
+              className="backdrop-blur-md bg-black/40 border border-amber-500/20 rounded-xl overflow-hidden hover:shadow-amber-900/20 hover:shadow-lg transition-all duration-300"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ 
+                opacity: animatedItems ? 1 : 0, 
+                y: animatedItems ? 0 : 20 
+              }}
+              transition={{ delay: index * 0.1, duration: 0.4 }}
+            >
+              {/* Category Header */}
+              <div className="bg-gradient-to-r from-amber-500/10 to-amber-800/10 backdrop-blur-lg p-5 border-b border-amber-500/20 relative overflow-hidden">
+                {/* Decorative glow */}
+                <div className="absolute -top-20 -right-20 w-40 h-40 bg-amber-500/10 rounded-full blur-xl opacity-60"></div>
+                
+                <div className="flex items-center gap-3 relative z-10">
+                  <div className="w-10 h-10 rounded-lg bg-black/50 backdrop-blur-sm flex items-center justify-center border border-amber-500/30 shadow-inner shadow-amber-500/5">
+                    {category.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-200">{category.title}</h3>
+                </div>
+              </div>
+              
+              {/* Time Slots */}
+              <div className="p-3 md:p-4">
+                <ul className="divide-y divide-amber-500/10">
+                  {category.timeSlots.map((slot, i) => (
+                    <motion.li 
+                      key={i}
+                      className="group"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ 
+                        opacity: animatedItems ? 1 : 0, 
+                        x: animatedItems ? 0 : -10 
+                      }}
+                      transition={{ delay: (index * 0.1) + (i * 0.05) + 0.2, duration: 0.3 }}
+                    >
+                      <div className="p-3 md:p-4 flex items-center gap-3 rounded-lg group-hover:bg-amber-500/5 transition-all duration-300 relative">
+                        {/* Subtle accent on the left */}
+                        <div className="absolute left-0 top-[10%] bottom-[10%] w-0.5 bg-gradient-to-b from-amber-400/60 to-amber-500/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        
+                        {/* Day/Title */}
+                        {slot.title && (
+                          <div className="text-white font-medium min-w-[100px]">
+                            {slot.title}
+                          </div>
+                        )}
+                        
+                        {/* Time */}
+                        {slot.time && (
+                          <div className="flex items-center text-amber-100/80">
+                            <Clock size={14} className="mr-2 text-amber-400" />
+                            <span>{slot.time}</span>
+                          </div>
+                        )}
+                        
+                        {/* Notes */}
+                        {slot.notes && (
+                          <div className={`ml-auto text-sm px-3 py-1 rounded-full ${
+                            slot.highlight 
+                              ? 'bg-pink-500/10 text-pink-300 border border-pink-500/30' 
+                              : 'bg-amber-500/10 text-amber-300 border border-amber-500/30'
+                          }`}>
+                            {slot.notes}
+                          </div>
+                        )}
+                      </div>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+            </motion.div>
           ))}
         </motion.div>
       </div>
     </div>
   );
 };
-
-// Tab component
-interface ScheduleTabProps {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}
-
-const ScheduleTab = ({ label, active, onClick }: ScheduleTabProps) => (
-  <motion.button
-    className={`px-4 py-2 rounded-xl transition-all duration-300 border ${
-      active 
-        ? 'bg-white/10 border-amber-400/50 text-amber-400 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
-        : 'border-white/10 text-white hover:border-white/30'
-    }`}
-    onClick={onClick}
-    whileHover={{ scale: active ? 1 : 1.05 }}
-    whileTap={{ scale: 0.97 }}
-  >
-    {label}
-  </motion.button>
-);
-
-// Schedule Section component
-interface ScheduleSectionProps {
-  category: ScheduleCategory;
-  index: number;
-  isAnimated: boolean;
-}
-
-const ScheduleSection = ({ category, index, isAnimated }: ScheduleSectionProps) => (
-  <motion.div
-    className="backdrop-blur-md bg-white/5 rounded-2xl border border-white/10 overflow-hidden"
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ 
-      opacity: isAnimated ? 1 : 0, 
-      y: isAnimated ? 0 : 20 
-    }}
-    transition={{ delay: index * 0.1, duration: 0.4 }}
-  >
-    <div className="p-5 border-b border-white/10">
-      <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-black/30 flex items-center justify-center border border-white/10">
-          {category.icon}
-        </div>
-        <h3 className="text-xl font-bold text-white">{category.title}</h3>
-      </div>
-    </div>
-    <div className="p-4">
-      <ul className="space-y-3">
-        {category.timeSlots.map((slot, i) => (
-          <motion.li 
-            key={i}
-            className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/10"
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ 
-              opacity: isAnimated ? 1 : 0, 
-              x: isAnimated ? 0 : -10 
-            }}
-            transition={{ delay: (index * 0.1) + (i * 0.05) + 0.2, duration: 0.3 }}
-          >
-            <div className="flex-shrink-0 w-1.5 h-8 bg-gradient-to-b from-amber-400 to-amber-600 rounded-full opacity-70"></div>
-            <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-              {slot.title && (
-                <div className="text-white font-medium min-w-[100px]">{slot.title}</div>
-              )}
-              <div className="text-white/90">{slot.time}</div>
-              {slot.notes && (
-                <div className={`text-sm ${slot.highlight ? 'text-pink-400' : 'text-amber-400'} font-medium ml-1`}>
-                  {slot.notes}
-                </div>
-              )}
-            </div>
-            <div className="flex-shrink-0">
-              <ChevronRight size={16} className="text-white/50" />
-            </div>
-          </motion.li>
-        ))}
-      </ul>
-    </div>
-  </motion.div>
-);
 
 export default SchedulePage; 

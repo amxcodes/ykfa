@@ -1,12 +1,132 @@
-import { Mail, MapPin, Phone, Facebook, Instagram, Twitter, ChevronRight, Github, Globe } from 'lucide-react';
+import { Mail, MapPin, Phone, Facebook, Instagram, Twitter, ChevronRight, Github, Globe, X } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Program types that match the HomePage.tsx program data
 
 // Create a custom event for program selection
 export const PROGRAM_SELECTED_EVENT = 'programSelected';
+
+// Separate Developer Modal Component
+interface DevModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const DevModal = ({ isOpen, onClose }: DevModalProps) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+  
+  // Handle clicks outside modal
+  const handleOutsideClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+      onClose();
+    }
+  }, [onClose]);
+  
+  // Handle escape key press
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    }
+    
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, onClose]);
+  
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          onClick={handleOutsideClick}
+        >
+          {/* Simple backdrop */}
+          <div className="fixed inset-0 bg-black/70" />
+          
+          {/* Modal container */}
+          <motion.div 
+            ref={modalRef}
+            className="relative w-72 z-10"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+          >
+            {/* Minimal card design */}
+            <div className="bg-black rounded-xl overflow-hidden border border-white/10 shadow-2xl">
+              {/* Header with close button */}
+              <div className="flex justify-between items-center p-4 border-b border-white/10">
+                <h3 className="text-lg font-bold text-white">Developer</h3>
+                <button 
+                  onClick={onClose}
+                  className="p-1 rounded-full bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
+                  aria-label="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              
+              {/* Simple profile content */}
+              <div className="p-5">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-xl font-bold text-white">
+                    A
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white">Aman Anu</h4>
+                    <p className="text-xs text-gray-400">Developer & Designer</p>
+                  </div>
+                </div>
+                
+                {/* Social links */}
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                  {[
+                    { icon: <Instagram className="w-4 h-4" />, label: 'Instagram', href: 'https://instagram.com/amanxnu' },
+                    { icon: <Github className="w-4 h-4" />, label: 'GitHub', href: 'https://github.com/amxcodes' },
+                    { icon: <Globe className="w-4 h-4" />, label: 'Website', href: 'https://amanxnu.space' }
+                  ].map((link, index) => (
+                    <a
+                      key={index}
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex flex-col items-center p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                    >
+                      {link.icon}
+                      <span className="text-[10px] text-gray-400 mt-1">{link.label}</span>
+                    </a>
+                  ))}
+                </div>
+                
+                {/* Portfolio link */}
+                <a
+                  href="https://amanxnu.space/portfolio"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full py-2 rounded-lg bg-amber-500 text-black font-medium text-center text-sm"
+                >
+                  View Portfolio
+                </a>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
 
 const Footer = () => {
   const navigate = useNavigate();
@@ -32,7 +152,7 @@ const Footer = () => {
       navigate('/');
     }
   };
-  
+
   return (
     <footer className="relative bg-black/40 backdrop-blur-xl border-t border-white/10">
       {/* Decorative gradient elements */}
@@ -171,97 +291,16 @@ const Footer = () => {
           <p className="text-gray-500 text-sm">© {new Date().getFullYear()} Yaseen's YKFA. All rights reserved.</p>
           <button 
             onClick={() => setShowDevModal(true)}
-            className="text-gray-500 hover:text-gray-300 text-xs mt-1 transition-colors flex items-center justify-center mx-auto group"
+            className="text-gray-500 hover:text-gray-300 text-xs mt-1 transition-colors flex items-center justify-center mx-auto"
+            aria-label="View developer information"
           >
-            Made with <span className="mx-1 text-red-500 group-hover:animate-pulse">❤️</span> by amanxnu
+            Made with <span className="mx-1 text-red-500 hover:animate-pulse">❤️</span> by amanxnu
           </button>
         </div>
       </div>
 
-      {/* Developer Modal */}
-      <AnimatePresence>
-        {showDevModal && (
-          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/60">
-            <motion.div 
-              className="relative"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            >
-              {/* Modal content */}
-              <div className="relative p-6 backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-xl max-w-md w-full overflow-hidden">
-                {/* Background effects */}
-                <div className="absolute -top-24 -right-24 w-48 h-48 bg-red-500/10 rounded-full blur-2xl"></div>
-                <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/10 rounded-full blur-2xl"></div>
-                
-                {/* Close button */}
-                <button 
-                  onClick={() => setShowDevModal(false)}
-                  className="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-                
-                {/* Profile section */}
-                <div className="text-center mb-5">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-red-500 p-1 mx-auto">
-                    <div className="w-full h-full rounded-full bg-gray-900 flex items-center justify-center text-2xl font-bold text-white">
-                      A
-                    </div>
-                  </div>
-                  <h3 className="mt-4 text-xl font-bold text-white">amanxnu</h3>
-                  <p className="text-gray-300 text-sm mt-1">Developer & Designer</p>
-                </div>
-                
-                {/* Social links */}
-                <div className="grid grid-cols-3 gap-3 mb-6">
-                  <a 
-                    href="https://instagram.com/amanxnu" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex flex-col items-center p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
-                  >
-                    <Instagram className="w-6 h-6 text-pink-400 mb-1" />
-                    <span className="text-xs text-gray-300">Instagram</span>
-                  </a>
-                  <a 
-                    href="https://github.com/amanxnu" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex flex-col items-center p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-gray-300 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-                    </svg>
-                    <span className="text-xs text-gray-300">GitHub</span>
-                  </a>
-                  <a 
-                    href="https://amanxnu.com" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex flex-col items-center p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 text-blue-400 mb-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="2" y1="12" x2="22" y2="12"></line>
-                      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
-                    </svg>
-                    <span className="text-xs text-gray-300">Website</span>
-                  </a>
-                </div>
-                
-                {/* Footer */}
-                <div className="text-center text-xs text-gray-400 border-t border-white/10 pt-4">
-                  <p>Thanks for checking out my work!</p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* Render the separate DevModal component */}
+      <DevModal isOpen={showDevModal} onClose={() => setShowDevModal(false)} />
     </footer>
   );
 };
