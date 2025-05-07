@@ -1338,7 +1338,7 @@ const HomePage = () => {
               <h2 className="mb-6">Welcome to <span className="text-transparent bg-clip-text bg-gold-gradient">YKFA</span></h2>
               <div className="space-y-4 text-gray-300">
                 <p>
-                  Yaseen's Kickboxing and Fitness Academy (YKFA) was founded by Master Yaseen, a passionate martial artist with over 15 years of experience. Our academy offers a range of martial arts and fitness programs designed to cater to all ages and skill levels.
+                  YKFA was founded by Master Yaseen, a passionate martial artist with over 20 years of experience. Our academy offers a range of martial arts and fitness programs designed to cater to all ages and skill levels.
                 </p>
                 <p>
                   At YKFA, we believe in developing not just physical strength, but also mental discipline, self-confidence, and respect. Our instructors are dedicated to providing a supportive and motivating environment where members can achieve their fitness and martial arts goals.
