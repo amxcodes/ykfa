@@ -169,10 +169,18 @@ const Footer = () => {
               <div className="relative w-10 h-10 flex items-center justify-center rounded-lg overflow-hidden bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg group-hover:shadow-amber-400/50 transition-shadow duration-300">
                 <span className="absolute inset-0 bg-gradient-to-br from-amber-300 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                 <img 
-                  src="/icons/dumbbell-small.svg" 
+                  src="https://i.postimg.cc/g0mqFF16/favicon.png" 
                   alt="Dumbbell icon" 
                   className="w-10 h-10 text-black z-10 transform group-hover:scale-105 transition-transform duration-300"
                   style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))' }}
+                  onLoad={(e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                      (e.target as HTMLImageElement).src = "/icons/dumbbell-small.svg";
+                    };
+                    img.onerror = () => {}; // Keep fallback image
+                    img.src = "/icons/dumbbell-small.svg";
+                  }}
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = "https://i.postimg.cc/g0mqFF16/favicon.png";
                   }}

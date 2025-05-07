@@ -146,12 +146,20 @@ const Loader = ({ loadingComplete }: LoaderProps) => {
         >
           <div className="animate-float">
             <img 
-              src="/icons/dumbbell-small.svg" 
+              src="https://i.postimg.cc/g0mqFF16/favicon.png" 
               alt="YKFA" 
               width="60"
               height="60"
               className="w-14 h-14 text-amber-400"
               style={{ filter: 'drop-shadow(0 0 8px rgba(245, 158, 11, 0.3))' }}
+              onLoad={(e) => {
+                const img = new Image();
+                img.onload = () => {
+                  (e.target as HTMLImageElement).src = "/icons/dumbbell-small.svg";
+                };
+                img.onerror = () => {}; // Keep fallback image
+                img.src = "/icons/dumbbell-small.svg";
+              }}
               onError={(e) => {
                 (e.target as HTMLImageElement).src = "https://i.postimg.cc/g0mqFF16/favicon.png";
               }}
