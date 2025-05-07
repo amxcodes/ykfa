@@ -1,4 +1,4 @@
-import { Clock, Calendar, Users, Dumbbell, ChevronRight } from 'lucide-react';
+import { Clock, Calendar, Users, Dumbbell } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 
@@ -117,10 +117,10 @@ const SchedulePage = () => {
         </div>
 
         {/* Schedule Tabs */}
-        <div className="mb-8">
-          <div className="inline-flex p-1 bg-black/40 backdrop-blur-md border border-white/10 rounded-full shadow-lg flex-wrap justify-center">
+        <div className="mb-8 overflow-x-auto overflow-y-hidden -mx-4 px-4 pb-3">
+          <div className="inline-flex p-1 bg-black/40 backdrop-blur-md border border-white/10 rounded-full shadow-lg whitespace-nowrap">
             <motion.button
-              className={`px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+              className={`px-4 sm:px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 flex-shrink-0 ${
                 activeTab === 'mma' 
                   ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black' 
                   : 'text-white hover:bg-white/10'
@@ -133,7 +133,7 @@ const SchedulePage = () => {
             </motion.button>
             
             <motion.button
-              className={`px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+              className={`px-4 sm:px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 flex-shrink-0 ${
                 activeTab === 'karate' 
                   ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black' 
                   : 'text-white hover:bg-white/10'
@@ -146,7 +146,7 @@ const SchedulePage = () => {
             </motion.button>
             
             <motion.button
-              className={`px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+              className={`px-4 sm:px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 flex-shrink-0 ${
                 activeTab === 'gym' 
                   ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black' 
                   : 'text-white hover:bg-white/10'
@@ -159,7 +159,7 @@ const SchedulePage = () => {
             </motion.button>
             
             <motion.button
-              className={`px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 ${
+              className={`px-4 sm:px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 flex-shrink-0 ${
                 activeTab === 'group' 
                   ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black' 
                   : 'text-white hover:bg-white/10'
@@ -172,6 +172,20 @@ const SchedulePage = () => {
             </motion.button>
           </div>
         </div>
+
+        {/* Add custom scrollbar styles */}
+        <style>{`
+          /* Hide scrollbar for Chrome, Safari and Opera */
+          .overflow-x-auto::-webkit-scrollbar {
+            display: none;
+          }
+
+          /* Hide scrollbar for IE, Edge and Firefox */
+          .overflow-x-auto {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+          }
+        `}</style>
 
         {/* Schedule Content */}
         <motion.div 

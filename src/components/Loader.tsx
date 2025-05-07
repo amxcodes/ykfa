@@ -152,6 +152,9 @@ const Loader = ({ loadingComplete }: LoaderProps) => {
               height="60"
               className="w-14 h-14 text-amber-400"
               style={{ filter: 'drop-shadow(0 0 8px rgba(245, 158, 11, 0.3))' }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "https://i.postimg.cc/g0mqFF16/favicon.png";
+              }}
             />
           </div>
         </div>

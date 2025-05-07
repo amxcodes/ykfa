@@ -1,4 +1,4 @@
-import { Mail, MapPin, Phone, Facebook, Instagram, Twitter, ChevronRight, Github, Globe, X } from 'lucide-react';
+import { Mail, MapPin, Phone, Facebook, Instagram, ChevronRight, Github, Globe, X } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -173,6 +173,9 @@ const Footer = () => {
                   alt="Dumbbell icon" 
                   className="w-10 h-10 text-black z-10 transform group-hover:scale-105 transition-transform duration-300"
                   style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))' }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://i.postimg.cc/g0mqFF16/favicon.png";
+                  }}
                 />
               </div>
               <span className="text-xl font-bold font-spaceGrotesk tracking-wide">
