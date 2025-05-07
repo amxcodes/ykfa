@@ -12,6 +12,8 @@ import ContactPage from './pages/ContactPage';
 import TimerPage from './pages/TimerPage';
 import StorePage from './pages/StorePage';
 import SchedulePage from './pages/SchedulePage';
+import ErrorPage from './pages/ErrorPage';
+import NetworkErrorBoundary from './components/NetworkErrorBoundary';
 import { TimerProvider } from './context/TimerContext';
 import CustomCursor from './components/CustomCursor';
 
@@ -247,27 +249,40 @@ function App() {
     <WidgetContext.Provider value={{ activeWidget, setActiveWidget }}>
       <div onContextMenu={handleContextMenu}>
         <CustomCursor />
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<HomePage />} />
-            <Route path="about" element={<AboutPage />} />
-            <Route path="blog" element={<AboutPage />} />
-            <Route path="programs" element={<ProgramsPage />} />
-            <Route path="instructors" element={<InstructorsPage />} />
-            <Route path="membership" element={<MembershipPage />} />
-            <Route path="contact" element={<ContactPage />} />
-            <Route path="store" element={<StorePage />} />
-            <Route path="schedule" element={<SchedulePage />} />
-            <Route 
-              path="timer" 
-              element={
-                <TimerProvider>
-                  <TimerPage />
-                </TimerProvider>
-              } 
-            />
-          </Route>
-        </Routes>
+        <NetworkErrorBoundary>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<HomePage />} />
+              <Route path="about" element={<AboutPage />} />
+              <Route path="blog" element={<AboutPage />} />
+              <Route path="programs" element={<ProgramsPage />} />
+              <Route path="instructors" element={<InstructorsPage />} />
+              <Route path="membership" element={<MembershipPage />} />
+              <Route path="contact" element={<ContactPage />} />
+              <Route path="store" element={<StorePage />} />
+              <Route path="schedule" element={<SchedulePage />} />
+              <Route 
+                path="timer" 
+                element={
+                  <TimerProvider>
+                    <TimerPage />
+                  </TimerProvider>
+                } 
+              />
+            </Route>
+            
+            {/* Error Routes */}
+            <Route path="error">
+              <Route path="network" element={<ErrorPage errorType="network" />} />
+              <Route path="not-found" element={<ErrorPage errorType="notFound" />} />
+              <Route path="server" element={<ErrorPage errorType="server" />} />
+              <Route path="unknown" element={<ErrorPage />} />
+            </Route>
+            
+            {/* Catch 404 errors */}
+            <Route path="*" element={<ErrorPage errorType="notFound" code={404} />} />
+          </Routes>
+        </NetworkErrorBoundary>
         
         {/* Custom Context Menu */}
         {showContextMenu && 
