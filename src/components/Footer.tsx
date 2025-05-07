@@ -152,7 +152,7 @@ const Footer = () => {
       navigate('/');
     }
   };
-
+  
   return (
     <footer className="relative bg-black/40 backdrop-blur-xl border-t border-white/10">
       {/* Decorative gradient elements */}
@@ -183,14 +183,11 @@ const Footer = () => {
               Elite training programs for all fitness levels. Join our community and transform your life through fitness and martial arts.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-amber-400 transition-colors rounded-full p-2 hover:bg-amber-400/10" aria-label="Facebook">
+              <a href="https://www.facebook.com/share/1AKa49mdi5/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-amber-400 transition-colors rounded-full p-2 hover:bg-amber-400/10" aria-label="Facebook">
                 <Facebook className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-amber-400 transition-colors rounded-full p-2 hover:bg-amber-400/10" aria-label="Instagram">
+              <a href="https://www.instagram.com/yaseen.karate?igsh=MWI2aTU5YXFtOXkycg%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-amber-400 transition-colors rounded-full p-2 hover:bg-amber-400/10" aria-label="Instagram">
                 <Instagram className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-amber-400 transition-colors rounded-full p-2 hover:bg-amber-400/10" aria-label="Twitter">
-                <Twitter className="w-5 h-5" />
               </a>
             </div>
           </div>

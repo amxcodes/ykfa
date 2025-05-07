@@ -564,9 +564,14 @@ const ProgramDetailsModal = ({
   return (
     <div 
       ref={modalRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/0 backdrop-blur-0 transition-all"
+      className="fixed inset-0 z-50 flex items-start justify-center"
       style={{
-        paddingTop: 'env(safe-area-inset-top, 16px)'
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        backdropFilter: 'blur(0px)',
+        paddingTop: 'calc(64px + 6vh)', // Increased from 2vh to 6vh to move modal down
+        paddingBottom: '2vh',
+        paddingLeft: '16px',
+        paddingRight: '16px'
       }}
     >
       {/* Backdrop for catching outside clicks */}
@@ -1294,7 +1299,7 @@ const HomePage = () => {
     {
       id: 2,
       title: "MMA ONLY",
-      description: "Access to all MMA classes including boxing, kickboxing, and grappling.",
+      description: "Access to all MMA classes including boxing, kickboxing, and Bjj etc.",
       image: "https://images.pexels.com/photos/4761797/pexels-photo-4761797.jpeg?auto=compress&fit=crop&w=800&q=80",
       link: "/programs",
       category: "mma"
@@ -1325,6 +1330,8 @@ const HomePage = () => {
     }
   ];
 
+  // Add state for about modal
+  const [showAboutModal, setShowAboutModal] = useState(false);
 
   return (
     <>
@@ -1344,9 +1351,12 @@ const HomePage = () => {
                   At YKFA, we believe in developing not just physical strength, but also mental discipline, self-confidence, and respect. Our instructors are dedicated to providing a supportive and motivating environment where members can achieve their fitness and martial arts goals.
                 </p>
                 <div className="pt-2">
-                  <Link to="/about" className="btn btn-primary">
+                  <button 
+                    onClick={() => setShowAboutModal(true)}
+                    className="btn btn-primary"
+                  >
                     Learn More
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1584,6 +1594,12 @@ const HomePage = () => {
         />
       )}
 
+      {/* About Details Modal */}
+      <AboutDetailsModal
+        isOpen={showAboutModal}
+        onClose={() => setShowAboutModal(false)}
+      />
+
       {/* Add custom styles for image stack transitions */}
       <style dangerouslySetInnerHTML={{
         __html: `
@@ -1658,6 +1674,253 @@ const HomePage = () => {
         }
       `}} />
     </>
+  );
+};
+
+// AboutDetailsModal component
+const AboutDetailsModal = ({
+  isOpen,
+  onClose
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const glareRef = useRef<HTMLDivElement>(null);
+  const isMobile = useRef(window.innerWidth < 768);
+
+  // Add animation effect when modal opens/closes
+  useEffect(() => {
+    if (!modalRef.current || !contentRef.current) return;
+
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+    if (isOpen) {
+      // Reset initial state
+      gsap.set(modalRef.current, {
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        backdropFilter: 'blur(0px)'
+      });
+      gsap.set(contentRef.current, {
+        opacity: 0,
+        y: 20,
+        scale: 0.95,
+        rotateX: 5
+      });
+
+      // Animate in
+      tl.to(modalRef.current, {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backdropFilter: 'blur(12px)',
+        duration: 0.5
+      })
+      .to(contentRef.current, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        rotateX: 0,
+        duration: 0.6,
+        ease: "back.out(1.7)"
+      }, "-=0.3");
+
+      // Lock body scroll
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Animate out
+      tl.to(contentRef.current, {
+        opacity: 0,
+        y: -20,
+        scale: 0.95,
+        rotateX: -5,
+        duration: 0.4
+      })
+      .to(modalRef.current, {
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        backdropFilter: 'blur(0px)',
+        duration: 0.3
+      }, "-=0.2");
+
+      // Restore body scroll
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      tl.kill();
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  // Enhanced mouse effects for desktop
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (isMobile.current || !glareRef.current || !contentRef.current) return;
+    
+    const rect = contentRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const xPercent = x / rect.width * 100;
+    const yPercent = y / rect.height * 100;
+    
+    // Enhanced glare effect
+    glareRef.current.style.background = `
+      radial-gradient(circle at ${xPercent}% ${yPercent}%, 
+        rgba(255,255,255,0.15) 0%, 
+        rgba(255,255,255,0.1) 25%, 
+        rgba(255,255,255,0) 50%)
+    `;
+    
+    if (contentRef.current) {
+      // Enhanced 3D rotation with subtle scaling
+      gsap.to(contentRef.current, {
+        rotateX: (yPercent - 50) / 20,
+        rotateY: (xPercent - 50) / 20,
+        scale: 1.02,
+        duration: 0.5,
+        ease: "power2.out"
+      });
+    }
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    if (!isMobile.current && contentRef.current) {
+      gsap.to(contentRef.current, {
+        rotateX: 0,
+        rotateY: 0,
+        scale: 1,
+        duration: 0.6,
+        ease: "elastic.out(1, 0.8)"
+      });
+    }
+  }, []);
+
+  if (!isOpen) return null;
+
+  return (
+    <div 
+      ref={modalRef}
+      className="fixed inset-0 z-50 flex items-start justify-center"
+      style={{
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        backdropFilter: 'blur(0px)',
+        paddingTop: 'calc(64px + 6vh)', // Increased from 2vh to 6vh to move modal down
+        paddingBottom: '2vh',
+        paddingLeft: '16px',
+        paddingRight: '16px'
+      }}
+    >
+      {/* Backdrop for catching outside clicks */}
+      <div 
+        className="absolute inset-0 z-0" 
+        onClick={onClose}
+      ></div>
+      
+      {/* Glare effect container */}
+      <div ref={glareRef} className="absolute inset-0 pointer-events-none"></div>
+      
+      <div 
+        ref={contentRef}
+        className="relative w-full bg-dark-800/30 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden shadow-2xl z-10"
+        style={{ 
+          opacity: 0,
+          transform: 'perspective(1000px)',
+          maxWidth: '360px', // Reduced max width
+          maxHeight: '80vh', // Reduced max height
+          margin: '0 auto',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)'
+        }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        {/* Close button - absolute position */}
+        <button 
+          type="button"
+          onClick={onClose}
+          className="absolute top-2 right-2 z-20 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-dark-800/50 backdrop-blur-md hover:bg-dark-700/50 text-white border border-white/20 shadow-lg transition-all duration-300 group"
+          aria-label="Close modal"
+        >
+          <X size={14} className="text-amber-400 group-hover:scale-110 transition-transform" />
+        </button>
+        
+        {/* Hero section - smaller on mobile */}
+        <div className="relative h-24 overflow-hidden"> {/* Further reduced height */}
+          <div className="absolute inset-0 bg-gradient-to-t from-dark-800/90 via-dark-800/50 to-transparent z-10"></div>
+          <img 
+            src="https://i.postimg.cc/P50QC6rf/IMG-9847.jpg" 
+            alt="YKFA Training" 
+            className="w-full h-full object-cover scale-110 hover:scale-105 transition-transform duration-[2s]"
+            loading="eager"
+          />
+          
+          {/* Light beams - desktop only */}
+          {!isMobile.current && (
+            <div className="absolute inset-0 opacity-30 hidden sm:block mix-blend-soft-light">
+              <div className="absolute top-0 left-1/4 w-[100px] h-[200px] bg-blue-500/30 blur-[30px] transform -rotate-45 animate-pulse"></div>
+              <div className="absolute top-0 right-1/4 w-[100px] h-[200px] bg-amber-500/30 blur-[30px] transform rotate-45 animate-pulse delay-1000"></div>
+            </div>
+          )}
+          
+          <div className="absolute bottom-0 left-0 right-0 p-2.5 z-20"> {/* Reduced padding */}
+            <h2 className="text-base font-bold text-white leading-tight"> {/* Reduced text size */}
+              <span className="relative z-10">About <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-300">YKFA</span></span>
+              <div className="absolute -bottom-1 left-0 h-0.5 w-8 bg-gradient-to-r from-amber-400 to-amber-500 rounded-full"></div>
+            </h2>
+          </div>
+        </div>
+        
+        {/* Content */}
+        <div className="p-2.5 max-h-[calc(80vh-96px)] overflow-y-auto scrollbar-hide bg-dark-800/20 backdrop-blur-sm"> {/* Reduced padding */}
+          <div className="space-y-2.5"> {/* Reduced spacing */}
+            <div className="bg-white/5 backdrop-blur-sm rounded-lg p-2.5 border border-white/10 shadow-inner"> {/* Reduced padding */}
+              <h3 className="text-xs font-semibold text-amber-400 mb-1">Our Mission</h3>
+              <p className="text-gray-300 text-xs leading-relaxed">
+                At YKFA, we empower individuals through martial arts and fitness training, developing physical strength, mental discipline, and self-confidence.
+              </p>
+            </div>
+            
+            <div className="bg-white/5 backdrop-blur-sm rounded-lg p-2.5 border border-white/10 shadow-inner">
+              <h3 className="text-xs font-semibold text-amber-400 mb-1">About Master Yaseen</h3>
+              <p className="text-gray-300 text-xs leading-relaxed">
+                Master Yaseen brings over 20 years of martial arts experience, dedicated to mastering and teaching various disciplines with emphasis on technical precision and character development.
+              </p>
+            </div>
+            
+            <div className="bg-white/5 backdrop-blur-sm rounded-lg p-2.5 border border-white/10 shadow-inner">
+              <h3 className="text-xs font-semibold text-amber-400 mb-1">Training Programs</h3>
+              <ul className="space-y-1">
+                <li className="flex items-start gap-1">
+                  <ChevronRight className="w-3 h-3 text-amber-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-gray-300 text-xs leading-relaxed">MMA training including Boxing, Kickboxing, and Grappling</p>
+                </li>
+                <li className="flex items-start gap-1">
+                  <ChevronRight className="w-3 h-3 text-amber-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-gray-300 text-xs leading-relaxed">Traditional Karate with belt progression system</p>
+                </li>
+                <li className="flex items-start gap-1">
+                  <ChevronRight className="w-3 h-3 text-amber-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-gray-300 text-xs leading-relaxed">Group fitness classes and personal training</p>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="mt-3 pt-2.5 border-t border-white/10 flex flex-wrap gap-2 justify-center"> {/* Reduced spacing */}
+            <Link
+              to="/about"
+              className="px-2.5 py-1 rounded-md bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-medium text-xs transition-all duration-300 transform hover:scale-105 shadow-lg shadow-amber-500/20"
+            >
+              Explore Blog
+            </Link>
+            <Link
+              to="/contact"
+              className="px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-white font-medium text-xs border border-white/10 hover:border-white/20 transition-all duration-300 transform hover:scale-105 shadow-lg backdrop-blur-sm"
+            >
+              Contact Us
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
