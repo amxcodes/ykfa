@@ -1355,7 +1355,7 @@ const HomePage = () => {
                     onClick={() => setShowAboutModal(true)}
                     className="btn btn-primary"
                   >
-                    Learn More
+                    Curious !
                   </button>
                 </div>
               </div>
