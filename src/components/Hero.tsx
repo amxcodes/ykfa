@@ -149,29 +149,33 @@ const Hero = ({ loadingComplete = false }: HeroProps) => {
           
 
           <div ref={statsRef} className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            <div className="text-center p-4 bg-dark-800/50 backdrop-blur-sm rounded-lg transform hover:scale-105 transition-transform">
-              <div className="text-2xl sm:text-3xl font-bold text-amber-400">
+            <div className="flex items-center justify-center px-4 py-4 sm:px-5 bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-lg rounded-xl shadow-xl border border-white/10 transition-all duration-300 hover:rotate-1 hover:translate-x-1 hover:border-amber-400/30 overflow-hidden group relative">
+              <div className="absolute inset-0 bg-amber-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-amber-400 relative z-10 mr-3 sm:mr-4">
                 {animatedNumbers.trainers}+
               </div>
-              <p className="text-sm sm:text-base text-gray-400">Expert Trainers</p>
+              <p className="text-xs sm:text-sm text-gray-300 relative z-10">Expert Trainers</p>
             </div>
-            <div className="text-center p-4 bg-dark-800/50 backdrop-blur-sm rounded-lg transform hover:scale-105 transition-transform">
-              <div className="text-2xl sm:text-3xl font-bold text-amber-400">
+            <div className="flex items-center justify-center px-4 py-4 sm:px-5 bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-lg rounded-xl shadow-xl border border-white/10 transition-all duration-300 hover:rotate-1 hover:translate-x-1 hover:border-amber-400/30 overflow-hidden group relative">
+              <div className="absolute inset-0 bg-amber-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-amber-400 relative z-10 mr-3 sm:mr-4">
                 {animatedNumbers.programs}+
               </div>
-              <p className="text-sm sm:text-base text-gray-400">Training Programs</p>
+              <p className="text-xs sm:text-sm text-gray-300 relative z-10">Training Programs</p>
             </div>
-            <div className="text-center p-4 bg-dark-800/50 backdrop-blur-sm rounded-lg transform hover:scale-105 transition-transform">
-              <div className="text-2xl sm:text-3xl font-bold text-amber-400">
+            <div className="flex items-center justify-center px-4 py-4 sm:px-5 bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-lg rounded-xl shadow-xl border border-white/10 transition-all duration-300 hover:rotate-1 hover:translate-x-1 hover:border-amber-400/30 overflow-hidden group relative">
+              <div className="absolute inset-0 bg-amber-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-amber-400 relative z-10 mr-3 sm:mr-4">
                 {animatedNumbers.members}+
               </div>
-              <p className="text-sm sm:text-base text-gray-400">Members</p>
+              <p className="text-xs sm:text-sm text-gray-300 relative z-10">Active Members</p>
             </div>
-            <div className="text-center p-4 bg-dark-800/50 backdrop-blur-sm rounded-lg transform hover:scale-105 transition-transform">
-              <div className="text-2xl sm:text-3xl font-bold text-amber-400">
+            <div className="flex items-center justify-center px-4 py-4 sm:px-5 bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-lg rounded-xl shadow-xl border border-white/10 transition-all duration-300 hover:rotate-1 hover:translate-x-1 hover:border-amber-400/30 overflow-hidden group relative">
+              <div className="absolute inset-0 bg-amber-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-amber-400 relative z-10 mr-3 sm:mr-4">
                 {animatedNumbers.years}+
               </div>
-              <p className="text-sm sm:text-base text-gray-400">Years Experience</p>
+              <p className="text-xs sm:text-sm text-gray-300 relative z-10">Years Experience</p>
             </div>
           </div>
         </div>

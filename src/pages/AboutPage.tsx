@@ -319,7 +319,7 @@ const BlogPage = () => {
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
-                
+
                 <div className="absolute bottom-0 left-0 right-0 p-6">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-xs font-medium text-amber-400 py-1 px-3 rounded-full bg-amber-400/10 border border-amber-400/20 backdrop-blur-sm">{selectedArticle.category}</span>

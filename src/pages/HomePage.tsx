@@ -259,6 +259,23 @@ const FloatingButtons = () => {
                     .scrollbar-hide::-webkit-scrollbar {
                       display: none;
                     }
+                    
+                    /* Global scrollbar hiding styles */
+                    ::-webkit-scrollbar {
+                      width: 0px;
+                      background: transparent;
+                    }
+                    
+                    * {
+                      scrollbar-width: none;
+                      -ms-overflow-style: none;
+                    }
+                    
+                    body {
+                      overflow-y: scroll;
+                      scrollbar-width: none;
+                      -ms-overflow-style: none;
+                    }
                   `
                 }}
               ></style>

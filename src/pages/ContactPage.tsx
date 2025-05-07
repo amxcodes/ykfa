@@ -1,6 +1,7 @@
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, useRef, FormEvent, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { MapPin, Phone, Mail, Clock, SendIcon, CheckCircle } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, SendIcon, ChevronRight, ArrowRight, CheckCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ContactPage = () => {
   const [searchParams] = useSearchParams();
@@ -17,44 +18,32 @@ const ContactPage = () => {
   
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formError, setFormError] = useState('');
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   
-  // Add custom styling for select element
+  // Scroll to top when component mounts
   useEffect(() => {
-    // Target the select element and its options
-    const customizeSelect = () => {
-      const selectElement = document.getElementById('interest');
-      if (selectElement) {
-        // Apply styles to options via CSS
+    window.scrollTo(0, 0);
+  }, []);
+  
+  useEffect(() => {
+    // Add select styles
         const style = document.createElement('style');
         style.textContent = `
           #interest option {
-            background-color: rgba(0, 0, 0, 0.9);
+        background-color: rgba(0, 0, 0, 0.95);
             color: white;
-            padding: 10px;
-          }
-          #interest option:hover {
-            background-color: rgba(251, 191, 36, 0.2);
+        padding: 12px;
           }
           #interest option:checked {
-            background-color: rgba(251, 191, 36, 0.3);
+        background-color: rgba(251, 191, 36, 0.2);
             color: rgb(251, 191, 36);
-            font-weight: 500;
           }
         `;
         document.head.appendChild(style);
-      }
-    };
     
-    customizeSelect();
-    
-    // Cleanup on component unmount
     return () => {
-      const styles = document.head.querySelectorAll('style');
-      styles.forEach(style => {
-        if (style.textContent?.includes('#interest option')) {
           document.head.removeChild(style);
-        }
-      });
     };
   }, []);
   
@@ -66,15 +55,19 @@ const ContactPage = () => {
     });
   };
   
+  // Prevent default context menu to avoid animation glitches on right-click
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    return false;
+  };
+  
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    // Basic validation
     if (!formData.name || !formData.email || !formData.message) {
       setFormError('Please fill in all required fields.');
       return;
     }
     
-    // Format message for WhatsApp
     const formattedMessage = `
 *YKFA Contact Form Submission*
 -----------------------------
@@ -88,127 +81,264 @@ ${formData.message}
 -----------------------------
     `.trim();
 
-    // Encode the message for WhatsApp URL
     const encodedMessage = encodeURIComponent(formattedMessage);
-    
-    // Create WhatsApp URL with the phone number +91 77364 88858
     const whatsappURL = `https://wa.me/917736488858?text=${encodedMessage}`;
     
-    // For demo purposes, we'll set form submitted to true before redirecting
     setFormSubmitted(true);
-    setFormError(''); // Clear any previous error messages
+    setFormError('');
     
-    // Redirect to WhatsApp after a short delay to show the success message
     setTimeout(() => {
       window.open(whatsappURL, '_blank');
     }, 1500);
   };
 
+  // Input field component with stable animation (no blinking on focus)
+  const InputField = ({ index, name, label, type = "text", value, placeholder, required = false, as = "input", rows = 4 }: { 
+    index: number, 
+    name: string, 
+    label: string, 
+    type?: string, 
+    value: string, 
+    placeholder: string, 
+    required?: boolean, 
+    as?: "input" | "textarea" | "select",
+    rows?: number
+  }) => {
+    const isFocused = focusedInput === name;
+    const borderClass = isFocused ? 'border-amber-400' : 'border-white/20';
+    const labelClass = isFocused ? 'text-amber-400' : 'text-white/60';
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-dark-900 to-dark-800 pt-24 pb-16">
-      {/* Glassmorphic overlay */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/3 -left-40 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 right-1/3 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="container max-w-6xl mx-auto px-4">
-        {/* Simple Header */}
-        <div className="text-center mb-12 md:mb-16">
+      <div className="relative">
+        <div className={`relative border-b ${borderClass} transition-colors pb-2`}>
+          {as === "input" && (
+            <input 
+              type={type} 
+              id={name} 
+              name={name} 
+              value={value}
+              onChange={handleChange}
+              onFocus={() => setFocusedInput(name)}
+              onBlur={() => setFocusedInput(null)}
+              className="w-full bg-transparent text-white placeholder-white/30 focus:outline-none pt-6"
+              placeholder={placeholder}
+              required={required}
+            />
+          )}
           
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Get in <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">Touch</span></h1>
-          <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-            Have questions or ready to start your fitness journey? We're here to help you.
-          </p>
+          {as === "textarea" && (
+            <textarea 
+              id={name} 
+              name={name}
+              value={value}
+              onChange={handleChange}
+              onFocus={() => setFocusedInput(name)}
+              onBlur={() => setFocusedInput(null)}
+              rows={rows} 
+              className="w-full bg-transparent text-white placeholder-white/30 focus:outline-none resize-none pt-6"
+              placeholder={placeholder}
+              required={required}
+            ></textarea>
+          )}
+          
+          {as === "select" && (
+            <>
+              <select 
+                id={name} 
+                name={name}
+                value={value}
+                onChange={handleChange}
+                onFocus={() => setFocusedInput(name)}
+                onBlur={() => setFocusedInput(null)}
+                className="w-full appearance-none bg-transparent text-white focus:outline-none pt-6"
+              >
+                <option value="General Inquiry">General Inquiry</option>
+                <option value="MMA + GYM">MMA + GYM</option>
+                <option value="MMA ONLY">MMA ONLY</option>
+                <option value="GROUP FITNESS">GROUP FITNESS</option>
+                <option value="KARATE">KARATE</option>
+                <option value="GYM ONLY">GYM ONLY</option>
+                <option value="PERSONAL TRAINING">PERSONAL TRAINING</option>
+                <option value="Trial Class">Trial Class</option>
+              </select>
+              <ChevronRight className="absolute right-0 bottom-2 w-4 h-4 text-amber-400/70 rotate-90 pointer-events-none" />
+            </>
+          )}
+          
+          <label 
+            htmlFor={name} 
+            className={`absolute top-0 left-0 text-xs font-medium ${labelClass} transition-colors pointer-events-none`}
+          >
+            {label} {required && <span className="text-amber-400">*</span>}
+          </label>
         </div>
+      </div>
+    );
+  };
 
-        {/* Contact Content */}
-        <div className="grid lg:grid-cols-5 gap-8">
-          {/* Contact Info Card */}
-          <div className="lg:col-span-2">
-            <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-6 h-full">
-              <h2 className="text-xl font-bold mb-6 flex items-center">
-                <span className="bg-amber-400/20 p-2 rounded-lg mr-3">
-                  <Mail className="w-5 h-5 text-amber-400" />
-                </span>
-                Contact Information
-              </h2>
-              
-              <div className="space-y-6 text-gray-300">
-                <div className="flex items-start gap-4">
-                  <div className="bg-amber-400/10 p-2 rounded-lg flex-shrink-0">
-                    <MapPin className="w-5 h-5 text-amber-400" />
+  // Contact card component for DRY code
+  const ContactCard = ({ icon, title, content, href }: { 
+    icon: React.ReactNode, 
+    title: string, 
+    content: React.ReactNode, 
+    href?: string 
+  }) => {
+    const CardComponent = href ? 'a' : 'div';
+    const hrefProps = href ? { href, target: "_blank", rel: "noopener noreferrer" } : {};
+    
+    return (
+      <CardComponent 
+        {...hrefProps}
+        className={`block p-4 backdrop-blur-md bg-white/[0.03] border border-white/10 rounded-xl hover:bg-white/[0.05] transition-all group`}
+      >
+        <div className="flex items-start gap-3">
+          <div className="rounded-full p-2.5 bg-amber-400/10 text-amber-400">
+            {icon}
                   </div>
-                  <div>
-                    <h3 className="font-medium text-white">Our Location</h3>
-                    <p className="text-sm">Y&Y Arcade, Vp Marakkar Road, Edappally Po, Kochi 682024</p>
+          <div className="flex-1">
+            <div className="flex items-center mb-0.5">
+              <h3 className="font-medium text-white group-hover:text-amber-400 transition-colors text-sm">
+                {title}
+              </h3>
+              {href && (
+                <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <ArrowRight className="w-3.5 h-3.5 text-amber-400" />
+                </div>
+              )}
+                  </div>
+            <div className="text-white/60 text-xs">{content}</div>
+                  </div>
+                </div>
+      </CardComponent>
+    );
+  };
+
+  return (
+    <div className="bg-black text-white relative overflow-hidden">
+      {/* Animated background gradients */}
+      <motion.div 
+        className="fixed inset-0 -z-10 overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.5 }}
+      >
+        <div className="absolute top-0 right-0 w-[900px] h-[900px] rounded-full bg-amber-500/10 blur-[120px] translate-x-1/4 -translate-y-1/4"></div>
+        <div className="absolute bottom-0 left-0 w-[700px] h-[700px] rounded-full bg-amber-500/5 blur-[100px] -translate-x-1/3 translate-y-1/4"></div>
+      </motion.div>
+
+      <div className="w-full">
+        {/* Header */}
+        <div className="pt-32 pb-8 px-4">
+          <div className="max-w-5xl mx-auto text-center">
+            <h1 className="text-5xl md:text-6xl font-bold mb-2">
+              <span className="relative">
+                <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">Let's Connect</span>
+                <motion.span 
+                  className="absolute bottom-0 left-0 right-0 h-2 bg-gradient-to-r from-amber-500/20 to-amber-400/10 rounded-full"
+                  initial={{ width: "0%" }}
+                  animate={{ width: "100%" }}
+                  transition={{ delay: 0.5, duration: 0.8, ease: "easeInOut" }}
+                ></motion.span>
+              </span>
+            </h1>
                   </div>
                 </div>
                 
-                <div className="flex items-start gap-4">
-                  <div className="bg-amber-400/10 p-2 rounded-lg flex-shrink-0">
-                    <Phone className="w-5 h-5 text-amber-400" />
-                  </div>
+        {/* Contact Form and Info */}
+        <div className="px-4 md:px-6 lg:px-8 pb-8 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Left Column: Contact Info */}
+            <div className="md:col-span-1">
+              <div className="h-full backdrop-blur-md bg-white/[0.03] border border-white/10 rounded-3xl p-6 flex flex-col justify-between">
                   <div>
-                    <h3 className="font-medium text-white">Phone Number</h3>
-                    <p className="text-sm">+91 7736488858</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="bg-amber-400/10 p-2 rounded-lg flex-shrink-0">
-                    <Mail className="w-5 h-5 text-amber-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-white">Email Address</h3>
-                    <p className="text-sm">yaseenkfa@gmail.com</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-4">
-                  <div className="bg-amber-400/10 p-2 rounded-lg flex-shrink-0">
-                    <Clock className="w-5 h-5 text-amber-400" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-white">Hours of Operation</h3>
-                    <p className="text-sm">Monday - Saturday: 6:00 AM - 10:00 PM<br />
-                   
-                    Sunday: Closed</p>
-                  </div>
+                  <h2 className="text-2xl font-bold mb-4">
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">Contact</span> Us
+                  </h2>
+                  <p className="text-white/70 text-sm mb-6">
+                    Have questions about our programs? Ready to start your fitness journey? We're here to help you transform your life through fitness and martial arts.
+                  </p>
+                  
+                  <div className="grid gap-3">
+                    <ContactCard 
+                      icon={<MapPin className="w-4 h-4" />}
+                      title="Our Location"
+                      content="Y&Y Arcade, Vp Marakkar Road, Edappally Po, Kochi 682024"
+                      href="https://maps.app.goo.gl/iQtxQtAiXhDihKpc6"
+                    />
+                    
+                    <ContactCard 
+                      icon={<Phone className="w-4 h-4" />}
+                      title="Phone Number"
+                      content="+91 7736488858"
+                      href="tel:+917736488858"
+                    />
+                    
+                    <ContactCard 
+                      icon={<Mail className="w-4 h-4" />}
+                      title="Email Address"
+                      content="yaseenkfa@gmail.com"
+                      href="mailto:yaseenkfa@gmail.com"
+                    />
+                    
+                    <ContactCard 
+                      icon={<Clock className="w-4 h-4" />}
+                      title="Hours of Operation"
+                      content={<>Monday - Saturday: 6:00 AM - 10:00 PM<br />Sunday: Closed</>}
+                    />
                 </div>
               </div>
               
-              <div className="mt-8 pt-6 border-t border-white/10">
-                <h3 className="font-medium mb-3 text-white">Follow Us</h3>
-                <div className="flex space-x-3">
-                  <a href="#" className="bg-white/5 hover:bg-white/10 p-2 rounded-lg text-amber-400 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-                  </a>
-                  <a href="#" className="bg-white/5 hover:bg-white/10 p-2 rounded-lg text-amber-400 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-                  </a>
-                  <a href="#" className="bg-white/5 hover:bg-white/10 p-2 rounded-lg text-amber-400 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
-                  </a>
-                </div>
-              </div>
+                {/* Light decoration at bottom */}
+                <div className="mt-6 h-1 bg-gradient-to-r from-amber-400/20 to-transparent rounded-full"></div>
             </div>
           </div>
           
-          {/* Contact Form Card */}
-          <div className="lg:col-span-3">
-            <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
+            {/* Right Column: Form */}
+            <div className="md:col-span-2">
+              <div className="backdrop-blur-md bg-white/[0.03] border border-white/10 rounded-3xl overflow-hidden relative">
+                {/* Accent corners */}
+                <div className="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-amber-400/40 rounded-tl-3xl"></div>
+                <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-amber-400/40 rounded-br-3xl"></div>
+                
+                <AnimatePresence mode="wait">
               {formSubmitted ? (
-                <div className="text-center py-10">
-                  <div className="inline-flex items-center justify-center w-16 h-16 mb-6 rounded-full bg-amber-400/20">
-                    <CheckCircle className="w-8 h-8 text-amber-400" />
-                  </div>
-                  <h2 className="text-2xl font-bold mb-3">Message Ready!</h2>
-                  <p className="text-gray-300 mb-8 max-w-md mx-auto">
+                    <motion.div 
+                      key="success"
+                      className="p-10 text-center"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <motion.div 
+                        className="inline-flex items-center justify-center w-20 h-20 md:w-24 md:h-24 mb-8 rounded-full bg-amber-400/10"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ 
+                          type: "spring",
+                          stiffness: 260,
+                          damping: 20
+                        }}
+                      >
+                        <CheckCircle className="w-10 h-10 md:w-12 md:h-12 text-amber-400" />
+                      </motion.div>
+                      <motion.h2 
+                        className="text-2xl md:text-3xl font-bold mb-4"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                      >
+                        Message Ready!
+                      </motion.h2>
+                      <motion.p 
+                        className="text-gray-300 mb-10 max-w-md mx-auto"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                      >
                     Your message is being redirected to our WhatsApp. Please complete the process in the WhatsApp window that will open.
-                  </p>
-                  <button 
+                      </motion.p>
+                      <motion.button 
                     onClick={() => {
                       setFormSubmitted(false);
                       setFormData({
@@ -220,169 +350,133 @@ ${formData.message}
                         interest: 'General Inquiry'
                       });
                     }}
-                    className="px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-medium rounded-lg hover:shadow-[0_0_15px_rgba(251,191,36,0.5)] transition-all"
+                        className="px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-medium rounded-xl hover:shadow-[0_0_25px_rgba(251,191,36,0.4)] transition-all"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.4 }}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
                   >
                     Send Another Message
-                  </button>
-                </div>
+                      </motion.button>
+                    </motion.div>
               ) : (
-                <>
-                  <h2 className="text-xl font-bold mb-6 flex items-center">
+                    <div className="p-8">
+                      <h2 className="text-2xl font-bold mb-6 flex items-center">
                     <span className="bg-amber-400/20 p-2 rounded-lg mr-3">
                       <SendIcon className="w-5 h-5 text-amber-400" />
                     </span>
                     Send Us a Message
                   </h2>
                   
-                  {formError && (
-                    <div className="bg-red-900/20 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">
-                      {formError}
-                    </div>
-                  )}
-                  
-                  <form onSubmit={handleSubmit} className="space-y-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div>
-                        <label htmlFor="name" className="block text-sm font-medium mb-2">Name *</label>
-                        <input 
-                          type="text" 
-                          id="name" 
+                      <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">                   
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <InputField 
+                            index={0}
                           name="name" 
+                            label="Name"
                           value={formData.name}
-                          onChange={handleChange}
-                          className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-400/50 transition-all"
+                            placeholder="Your name"
                           required
                         />
-                      </div>
-                      <div>
-                        <label htmlFor="email" className="block text-sm font-medium mb-2">Email *</label>
-                        <input 
+                          
+                          <InputField 
+                            index={1}
+                            name="email"
+                            label="Email"
                           type="email" 
-                          id="email" 
-                          name="email"
                           value={formData.email}
-                          onChange={handleChange}
-                          className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-400/50 transition-all"
+                            placeholder="your@email.com"
                           required
                         />
-                      </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      <div>
-                        <label htmlFor="phone" className="block text-sm font-medium mb-2">Phone</label>
-                        <input 
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <InputField 
+                            index={2}
+                            name="phone"
+                            label="Phone"
                           type="tel" 
-                          id="phone" 
-                          name="phone"
                           value={formData.phone}
-                          onChange={handleChange}
-                          className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-400/50 transition-all"
+                            placeholder="Your phone number"
                         />
-                      </div>
-                      <div>
-                        <label htmlFor="interest" className="block text-sm font-medium mb-2">I'm interested in</label>
-                        <div className="relative group">
-                          <select 
-                            id="interest" 
+                          
+                          <InputField 
+                            index={3}
                             name="interest"
+                            label="I'm interested in"
+                            as="select"
                             value={formData.interest}
-                            onChange={handleChange}
-                            className="w-full appearance-none bg-white/5 border border-white/10 rounded-lg p-3 pr-10 text-white focus:outline-none focus:ring-2 focus:ring-amber-400/50 hover:border-amber-400/30 group-hover:bg-white/[0.07] transition-all"
-                          >
-                            <option value="General Inquiry">General Inquiry</option>
-                            <option value="MMA + GYM">MMA + GYM</option>
-                            <option value="MMA ONLY">MMA ONLY</option>
-                            <option value="GROUP FITNESS">GROUP FITNESS</option>
-                            <option value="KARATE">KARATE</option>
-                            <option value="GYM ONLY">GYM ONLY</option>
-                            <option value="PERSONAL TRAINING">PERSONAL TRAINING</option>
-                            <option value="Trial Class">Trial Class</option>
-                          </select>
-                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-amber-400 group-hover:text-amber-300 transition-colors">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
+                            placeholder=""
+                          />
                     </div>
                     
-                    <div>
-                      <label htmlFor="subject" className="block text-sm font-medium mb-2">Subject</label>
-                      <input 
-                        type="text" 
-                        id="subject" 
+                        <InputField 
+                          index={4}
                         name="subject"
+                          label="Subject"
                         value={formData.subject}
-                        onChange={handleChange}
-                        className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-400/50 transition-all"
+                          placeholder="What's this about?"
                       />
-                    </div>
-                    
-                    <div>
-                      <label htmlFor="message" className="block text-sm font-medium mb-2">Message *</label>
-                      <textarea 
-                        id="message" 
+                        
+                        <InputField 
+                          index={5}
                         name="message"
+                          label="Message"
+                          as="textarea"
                         value={formData.message}
-                        onChange={handleChange}
-                        rows={4} 
-                        className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-amber-400/50 transition-all"
+                          placeholder="Your message here..."
                         required
-                      ></textarea>
-                    </div>
-                    
-                    <button 
+                        />
+                        
+                        <AnimatePresence>
+                          {formError && (
+                            <motion.div 
+                              className="bg-red-900/20 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm"
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              {formError}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                        
+                        <div>
+                          <motion.button 
                       type="submit" 
-                      className="px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-medium rounded-lg hover:shadow-[0_0_15px_rgba(251,191,36,0.5)] transition-all flex items-center"
+                            className="px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-medium rounded-xl hover:shadow-[0_0_25px_rgba(251,191,36,0.4)] transition-all flex items-center justify-center gap-2 group"
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
                     >
                       Send via WhatsApp
-                      <SendIcon className="ml-2 w-4 h-4" />
-                    </button>
+                            <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                          </motion.button>
+                        </div>
                   </form>
-                </>
+                    </div>
               )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
         </div>
         
-        {/* Map Section */}
-        <div className="mt-16">
-          <h2 className="text-xl md:text-2xl font-bold mb-6 text-center">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500">Find Us</span> Here
-          </h2>
-          <div className="backdrop-blur-md bg-white/5 border border-amber-400/20 rounded-2xl overflow-hidden shadow-[0_0_25px_rgba(251,191,36,0.1)] transition-all hover:shadow-[0_0_35px_rgba(251,191,36,0.15)]">
-            <div className="aspect-[16/9] w-full p-1">
+        {/* Map section in container matching form width */}
+        <div className="px-4 md:px-6 lg:px-8 pb-16 pt-0 max-w-7xl mx-auto">
+          <div className="backdrop-blur-md bg-white/[0.03] border border-white/10 rounded-3xl overflow-hidden">
+            <div className="h-[450px] relative">
               <iframe 
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3928.799007875132!2d76.30706187478484!3d10.033438272459017!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b080db13c8a2ebb%3A0x5d160de4e8d3440f!2sYaseen%E2%80%99s%20Karate%20%26%20Fitness%20Academy%20-%20YKFA%20(Since%202014)!5e0!3m2!1sen!2sin!4v1746354479225!5m2!1sen!2sin" 
-                width="100%" 
-                height="100%" 
-                style={{ border: 0, borderRadius: '12px' }} 
+                className="w-full h-full"
+                style={{ border: 0 }}
                 allowFullScreen={true} 
                 loading="lazy" 
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Yaseen's Karate & Fitness Academy - YKFA (Since 2014) - Edappally, Kochi"
-                className="rounded-xl shadow-lg"
+                title="Yaseen's Karate & Fitness Academy Location"
               ></iframe>
             </div>
-          </div>
-          <div className="flex justify-center mt-4">
-            <a 
-              href="https://maps.app.goo.gl/iQtxQtAiXhDihKpc6" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-amber-400 hover:text-amber-300 transition-colors text-sm"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
-                <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
-                <line x1="6" y1="1" x2="6" y2="4"></line>
-                <line x1="10" y1="1" x2="10" y2="4"></line>
-                <line x1="14" y1="1" x2="14" y2="4"></line>
-              </svg>
-              Get Directions
-            </a>
           </div>
         </div>
       </div>
