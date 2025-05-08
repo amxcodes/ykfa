@@ -338,7 +338,7 @@ const MembershipPage = () => {
       {
         id: 3,
         name: "GROUP FITNESS",
-        price: 2500,
+        price: 3000,
         period: "month",
         description: "High-energy group fitness sessions for improved strength and endurance.",
         programType: "GROUP FITNESS",
