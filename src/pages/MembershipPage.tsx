@@ -17,6 +17,7 @@ interface PricingPlan {
   name: string;
   price: number;
   originalPrice?: number;
+  perMonthPrice?: string;
   period: string;
   description: string;
   features: PlanFeature[];
@@ -104,7 +105,7 @@ const ModernPricingCard = ({
         <div className="mb-5">
           <h3 className="text-xl font-bold">{plan.name}</h3>
           {plan.originalPrice ? (
-            <div className="mt-1 h-7 relative">
+            <div className="mt-1 h-11 relative">
               {showOfferPrice ? (
                 // Offer price
                 <div className="flex items-baseline transition-opacity duration-500 animate-fadeIn">
@@ -112,7 +113,10 @@ const ModernPricingCard = ({
                     ₹{plan.price.toLocaleString()}
                   </span>
                   <span className="text-gray-400 text-xs ml-1">/{plan.period}</span>
-                  <span className="ml-2 text-xs text-green-400">Save ₹{(plan.originalPrice - plan.price).toLocaleString()}</span>
+                  <div className="ml-2 flex flex-col text-xs">
+                    <span className="text-green-400">Only</span>
+                    <span className="text-green-400">₹{plan.perMonthPrice}/mo</span>
+                  </div>
                 </div>
               ) : (
                 // Original price with striking animation
@@ -290,7 +294,7 @@ const MembershipPage = () => {
     image: "https://images.pexels.com/photos/7045573/pexels-photo-7045573.jpeg?auto=compress&fit=crop&w=800&q=80",
     features: [
       { name: "2 classes per week", included: true },
-      { name: "Belt progression system", included: true },
+      { name: "Belt progression and certification system", included: true },
       { name: "Kata and kumite practice", included: true },
       { name: "Self-defense techniques", included: true },
       { name: "Mental discipline focus", included: true }
@@ -309,9 +313,10 @@ const MembershipPage = () => {
         programType: "MMA + GYM",
         image: "https://images.pexels.com/photos/4761798/pexels-photo-4761798.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
-          { name: "Access to gym", included: true },
-          { name: "3 martial arts classes per week", included: true },
+          { name: "Access to gym, 3 days per week", included: true },
+          { name: "3 mixed martial arts classes per week", included: true },
           { name: "Basic fitness assessment", included: true },
+          { name: "Strength and conditioning, HIIT and cardio sessions", included: true },
           { name: "Access to gym app", included: true },
           { name: "All MMA disciplines included", included: true }
         ],
@@ -327,9 +332,10 @@ const MembershipPage = () => {
         programType: "MMA ONLY",
         image: "https://images.pexels.com/photos/4761797/pexels-photo-4761797.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
-          { name: "3 martial arts classes per week", included: true },
+          { name: "3 mixed martial arts classes per week", included: true },
           { name: "Boxing, Kickboxing, Muay Thai", included: true },
           { name: "Wrestling, Judo, BJJ", included: true },
+          { name: "Strength and conditioning, HIIT and cardio sessions", included: true },
           { name: "Technical sessions", included: true },
           { name: "Sparring sessions", included: true }
         ],
@@ -348,7 +354,7 @@ const MembershipPage = () => {
           { name: "Access to gym app", included: true },
           { name: "2 days cardio and HIIT", included: true },
           { name: "4 days strength training", included: true },
-          { name: "Personalized fitness guidance", included: true }
+          { name: "Basic fitness assessment", included: true }
         ],
         cta: "Choose Plan"
       },
@@ -362,7 +368,7 @@ const MembershipPage = () => {
         image: "https://images.pexels.com/photos/7045573/pexels-photo-7045573.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
           { name: "2 classes per week", included: true },
-          { name: "Belt progression system", included: true },
+          { name: "Belt progression and certification system", included: true },
           { name: "Kata and kumite practice", included: true },
           { name: "Self-defense techniques", included: true },
           { name: "Mental discipline focus", included: true }
@@ -381,8 +387,7 @@ const MembershipPage = () => {
           { name: "Access to gym", included: true },
           { name: "Access to gym app", included: true },
           { name: "Full range of equipment", included: true },
-          { name: "Free weights and machines", included: true },
-          { name: "Cardio section", included: true }
+          { name: "Free weights and machines", included: true }
         ],
         cta: "Choose Plan"
       }
@@ -391,16 +396,18 @@ const MembershipPage = () => {
       {
         id: 1,
         name: "MMA + GYM",
-        price: 9500,
+        price: 7500,
         originalPrice: 10500,
+        perMonthPrice: "2,500",
         period: "quarter",
         description: "Complete package with access to all MMA classes and gym facilities.",
         programType: "MMA + GYM",
         image: "https://images.pexels.com/photos/4761798/pexels-photo-4761798.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
-          { name: "Access to gym", included: true },
-          { name: "3 martial arts classes per week", included: true },
+          { name: "Access to gym, 3 days per week", included: true },
+          { name: "3 mixed martial arts classes per week", included: true },
           { name: "Basic fitness assessment", included: true },
+          { name: "Strength and conditioning, HIIT and cardio sessions", included: true },
           { name: "Access to gym app", included: true },
           { name: "All MMA disciplines included", included: true }
         ],
@@ -412,14 +419,16 @@ const MembershipPage = () => {
         name: "MMA ONLY",
         price: 5500,
         originalPrice: 7500,
+        perMonthPrice: "1,833",
         period: "quarter",
         description: "Access to all MMA classes including boxing, kickboxing, and grappling.",
         programType: "MMA ONLY",
         image: "https://images.pexels.com/photos/4761797/pexels-photo-4761797.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
-          { name: "3 martial arts classes per week", included: true },
+          { name: "3 mixed martial arts classes per week", included: true },
           { name: "Boxing, Kickboxing, Muay Thai", included: true },
           { name: "Wrestling, Judo, BJJ", included: true },
+          { name: "Strength and conditioning, HIIT and cardio sessions", included: true },
           { name: "Technical sessions", included: true },
           { name: "Sparring sessions", included: true }
         ],
@@ -428,8 +437,9 @@ const MembershipPage = () => {
       {
         id: 3,
         name: "GROUP FITNESS",
-        price: 5500,
-        originalPrice: 7500,
+        price: 6500,
+        originalPrice: 9000,
+        perMonthPrice: "2,167",
         period: "quarter",
         description: "High-energy group fitness sessions for improved strength and endurance.",
         programType: "GROUP FITNESS",
@@ -439,7 +449,7 @@ const MembershipPage = () => {
           { name: "Access to gym app", included: true },
           { name: "2 days cardio and HIIT", included: true },
           { name: "4 days strength training", included: true },
-          { name: "Personalized fitness guidance", included: true }
+          { name: "Basic fitness assessment", included: true }
         ],
         cta: "Choose Plan"
       },
@@ -448,6 +458,7 @@ const MembershipPage = () => {
         name: "GYM ONLY",
         price: 5500,
         originalPrice: 7500,
+        perMonthPrice: "1,833",
         period: "quarter",
         description: "Unlimited access to our modern gym with top-tier equipment.",
         programType: "GYM ONLY",
@@ -456,8 +467,7 @@ const MembershipPage = () => {
           { name: "Access to gym", included: true },
           { name: "Access to gym app", included: true },
           { name: "Full range of equipment", included: true },
-          { name: "Free weights and machines", included: true },
-          { name: "Cardio section", included: true }
+          { name: "Free weights and machines", included: true }
         ],
         cta: "Choose Plan"
       }
@@ -473,9 +483,10 @@ const MembershipPage = () => {
         programType: "MMA + GYM",
         image: "https://images.pexels.com/photos/4761798/pexels-photo-4761798.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
-          { name: "Access to gym", included: true },
-          { name: "3 martial arts classes per week", included: true },
+          { name: "Access to gym, 3 days per week", included: true },
+          { name: "3 mixed martial arts classes per week", included: true },
           { name: "Basic fitness assessment", included: true },
+          { name: "Strength and conditioning, HIIT and cardio sessions", included: true },
           { name: "Access to gym app", included: true },
           { name: "All MMA disciplines included", included: true }
         ],
@@ -492,9 +503,10 @@ const MembershipPage = () => {
         programType: "MMA ONLY",
         image: "https://images.pexels.com/photos/4761797/pexels-photo-4761797.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
-          { name: "3 martial arts classes per week", included: true },
+          { name: "3 mixed martial arts classes per week", included: true },
           { name: "Boxing, Kickboxing, Muay Thai", included: true },
           { name: "Wrestling, Judo, BJJ", included: true },
+          { name: "Strength and conditioning, HIIT and cardio sessions", included: true },
           { name: "Technical sessions", included: true },
           { name: "Sparring sessions", included: true }
         ],
@@ -514,7 +526,7 @@ const MembershipPage = () => {
           { name: "Access to gym app", included: true },
           { name: "2 days cardio and HIIT", included: true },
           { name: "4 days strength training", included: true },
-          { name: "Personalized fitness guidance", included: true }
+          { name: "Basic fitness assessment", included: true }
         ],
         cta: "Choose Plan"
       },
@@ -531,8 +543,7 @@ const MembershipPage = () => {
           { name: "Access to gym", included: true },
           { name: "Access to gym app", included: true },
           { name: "Full range of equipment", included: true },
-          { name: "Free weights and machines", included: true },
-          { name: "Cardio section", included: true }
+          { name: "Free weights and machines", included: true }
         ],
         cta: "Choose Plan"
       }
@@ -548,9 +559,10 @@ const MembershipPage = () => {
         programType: "MMA + GYM",
         image: "https://images.pexels.com/photos/4761798/pexels-photo-4761798.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
-          { name: "Access to gym", included: true },
-          { name: "3 martial arts classes per week", included: true },
+          { name: "Access to gym, 3 days per week", included: true },
+          { name: "3 mixed martial arts classes per week", included: true },
           { name: "Basic fitness assessment", included: true },
+          { name: "Strength and conditioning, HIIT and cardio sessions", included: true },
           { name: "Access to gym app", included: true },
           { name: "All MMA disciplines included", included: true }
         ],
@@ -567,9 +579,10 @@ const MembershipPage = () => {
         programType: "MMA ONLY",
         image: "https://images.pexels.com/photos/4761797/pexels-photo-4761797.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
-          { name: "3 martial arts classes per week", included: true },
+          { name: "3 mixed martial arts classes per week", included: true },
           { name: "Boxing, Kickboxing, Muay Thai", included: true },
           { name: "Wrestling, Judo, BJJ", included: true },
+          { name: "Strength and conditioning, HIIT and cardio sessions", included: true },
           { name: "Technical sessions", included: true },
           { name: "Sparring sessions", included: true }
         ],
@@ -589,7 +602,7 @@ const MembershipPage = () => {
           { name: "Access to gym app", included: true },
           { name: "2 days cardio and HIIT", included: true },
           { name: "4 days strength training", included: true },
-          { name: "Personalized fitness guidance", included: true }
+          { name: "Basic fitness assessment", included: true }
         ],
         cta: "Choose Plan"
       },
@@ -606,8 +619,7 @@ const MembershipPage = () => {
           { name: "Access to gym", included: true },
           { name: "Access to gym app", included: true },
           { name: "Full range of equipment", included: true },
-          { name: "Free weights and machines", included: true },
-          { name: "Cardio section", included: true }
+          { name: "Free weights and machines", included: true }
         ],
         cta: "Choose Plan"
       }
@@ -738,7 +750,7 @@ const MembershipPage = () => {
                       title={selectedProgram === 'KARATE' ? 'KARATE is available monthly only' : ''}
                     >
                       <span className={`block text-base ${planDuration === 'quarterly' ? 'text-black' : 'text-gray-200'}`}>Quarterly</span>
-                      <span className={`block text-xs mt-1 ${planDuration === 'quarterly' ? 'text-black/80' : 'text-gray-400'}`}>Save 17%</span>
+                      <span className={`block text-xs mt-1 ${planDuration === 'quarterly' ? 'text-black/80' : 'text-gray-400'}`}>Save 28%</span>
                       {planDuration === 'quarterly' && (
                         <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white/30"></span>
                       )}
