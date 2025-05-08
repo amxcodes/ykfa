@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Wifi, Home, RefreshCw, AlertTriangle, Server, SearchX } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -15,6 +15,7 @@ interface ErrorConfig {
   primaryColor: string;
 }
 
+// Static config moved outside component for better memory usage
 const errorConfigs: Record<ErrorType, ErrorConfig> = {
   network: {
     title: 'Network Error',
@@ -50,6 +51,54 @@ const errorConfigs: Record<ErrorType, ErrorConfig> = {
   }
 };
 
+// Animation constants
+const ANIMATIONS = {
+  container: {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.4 }
+  },
+  icon: {
+    initial: { scale: 0.8, opacity: 0 },
+    animate: { scale: 1, opacity: 1 },
+    transition: { delay: 0.2, duration: 0.4 }
+  },
+  title: {
+    initial: { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0 },
+    transition: { delay: 0.3, duration: 0.4 }
+  },
+  description: {
+    initial: { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0 },
+    transition: { delay: 0.4, duration: 0.4 }
+  },
+  suggestion: {
+    initial: { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0 },
+    transition: { delay: 0.5, duration: 0.4 }
+  },
+  primaryButton: {
+    initial: { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0 },
+    transition: { delay: 0.6, duration: 0.4 },
+    whileHover: { scale: 1.03 },
+    whileTap: { scale: 0.97 }
+  },
+  secondaryButton: {
+    initial: { opacity: 0, y: 10 },
+    animate: { opacity: 1, y: 0 },
+    transition: { delay: 0.7, duration: 0.4 },
+    whileHover: { scale: 1.03 },
+    whileTap: { scale: 0.97 }
+  },
+  info: {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    transition: { delay: 0.8, duration: 0.4 }
+  }
+};
+
 interface ErrorPageProps {
   errorType?: ErrorType;
   code?: number;
@@ -67,8 +116,6 @@ const ErrorPage = ({
   const [retryCount, setRetryCount] = useState(0);
   const [offlineStatus, setOfflineStatus] = useState(!navigator.onLine);
   
-  const errorConfig = errorConfigs[errorType];
-
   // Handle automatic error detection
   useEffect(() => {
     // If error type isn't specified but there's a code, determine the error type
@@ -93,12 +140,18 @@ const ErrorPage = ({
     };
   }, [code, navigate]);
 
-  // Override error type if offline
-  const effectiveErrorType = offlineStatus ? 'network' : errorType;
+  // Override error type if offline - using useMemo to avoid unnecessary calculations
+  const effectiveErrorType = useMemo(() => 
+    offlineStatus ? 'network' : errorType, 
+    [offlineStatus, errorType]
+  );
+  
   const config = errorConfigs[effectiveErrorType];
 
   // Handle primary action
   const handleAction = () => {
+    if (isRetrying) return;
+    
     setIsRetrying(true);
     setRetryCount(prev => prev + 1);
     
@@ -125,9 +178,7 @@ const ErrorPage = ({
       
       <motion.div 
         className="relative max-w-md w-full rounded-2xl backdrop-blur-xl bg-black/40 border border-white/10 shadow-2xl overflow-hidden"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+        {...ANIMATIONS.container}
       >
         {/* Decorative header line */}
         <div className="h-1 w-full bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
@@ -135,11 +186,7 @@ const ErrorPage = ({
         <div className="p-8 text-center">
           <div className="flex justify-center mb-6">
             <div className="p-4 rounded-2xl bg-black/40 border border-white/10">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2, duration: 0.4 }}
-              >
+              <motion.div {...ANIMATIONS.icon}>
                 {config.icon}
               </motion.div>
             </div>
@@ -147,27 +194,21 @@ const ErrorPage = ({
           
           <motion.h1 
             className="text-2xl md:text-3xl font-bold text-white mb-2"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.4 }}
+            {...ANIMATIONS.title}
           >
             {config.title}
           </motion.h1>
           
           <motion.p 
             className="text-gray-400 mb-4"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.4 }}
+            {...ANIMATIONS.description}
           >
             {message || config.description}
           </motion.p>
           
           <motion.p 
             className="text-sm text-white/60 mb-8"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.4 }}
+            {...ANIMATIONS.suggestion}
           >
             {config.suggestion}
           </motion.p>
@@ -177,11 +218,7 @@ const ErrorPage = ({
               className={`px-6 py-3 rounded-xl ${config.primaryColor} text-black font-medium flex items-center justify-center gap-2 hover:shadow-lg transition-all`}
               onClick={handleAction}
               disabled={isRetrying}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.4 }}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
+              {...ANIMATIONS.primaryButton}
             >
               {isRetrying ? (
                 <RefreshCw className="w-5 h-5 animate-spin" />
@@ -201,11 +238,7 @@ const ErrorPage = ({
               <motion.button
                 className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all flex items-center justify-center gap-2"
                 onClick={() => navigate('/')}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, duration: 0.4 }}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+                {...ANIMATIONS.secondaryButton}
               >
                 <Home className="w-5 h-5" />
                 Go Home
@@ -213,13 +246,11 @@ const ErrorPage = ({
             )}
           </div>
           
-          {/* Additional information */}
+          {/* Additional information - only render when needed */}
           {(code || retryCount > 0) && (
             <motion.div 
               className="mt-8 text-xs text-gray-500"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 0.4 }}
+              {...ANIMATIONS.info}
             >
               {code && <p>Error code: {code}</p>}
               {retryCount > 0 && <p>Retry attempts: {retryCount}</p>}

@@ -3,12 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Yaseen's YKFA - You are currently offline">
+  <meta name="theme-color" content="#000000">
   <title>Offline - Yaseen's YKFA</title>
+  <link rel="icon" href="https://i.postimg.cc/g0mqFF16/favicon.png" type="image/png">
   <style>
+    /* Critical CSS inlined for fastest render */
+    :root {
+      --primary: #f59e0b;
+      --primary-light: #fbbf24;
+      --primary-dark: #d97706;
+      --text: #ffffff;
+      --text-secondary: #aaaaaa;
+      --text-light: #666666;
+      --background: #000000;
+      --border: rgba(255,255,255,0.1);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      background-color: #000;
-      color: #fff;
+      background-color: var(--background);
+      color: var(--text);
       margin: 0;
       padding: 0;
       display: flex;
@@ -17,17 +38,22 @@
       align-items: center;
       justify-content: center;
       text-align: center;
+      overflow-x: hidden;
     }
+    
     .container {
+      width: 90%;
       max-width: 500px;
       padding: 2rem;
       position: relative;
       z-index: 10;
+      animation: fadeIn 0.5s ease-out;
     }
+    
     .logo {
       width: 90px;
       height: 90px;
-      background-color: #f59e0b;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
       border-radius: 12px;
       display: flex;
       align-items: center;
@@ -36,22 +62,45 @@
       font-weight: bold;
       font-size: 1.5rem;
       box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+      position: relative;
+      overflow: hidden;
+      color: #000;
     }
+    
+    .logo:after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+      );
+      transform: rotate(30deg);
+      animation: shimmer 3s infinite;
+    }
+    
     h1 {
       font-size: 2rem;
       margin-bottom: 1rem;
-      background: linear-gradient(to right, #f59e0b, #fbbf24);
+      background: linear-gradient(to right, var(--primary), var(--primary-light));
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
+      animation: pulse 5s infinite;
     }
+    
     p {
       margin-bottom: 1.5rem;
-      color: #aaa;
+      color: var(--text-secondary);
       line-height: 1.6;
     }
+    
     .button {
-      background: linear-gradient(to right, #f59e0b, #d97706);
+      background: linear-gradient(to right, var(--primary), var(--primary-dark));
       color: #000;
       font-weight: 600;
       padding: 0.75rem 1.5rem;
@@ -64,11 +113,24 @@
       text-decoration: none;
       font-size: 1rem;
       transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
     }
+    
     .button:hover {
       box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
       transform: translateY(-2px);
     }
+    
+    .button:active {
+      transform: translateY(1px);
+    }
+    
+    .button .icon {
+      margin-right: 8px;
+      animation: spin 1.5s linear infinite;
+    }
+    
     .decorative-circle {
       position: absolute;
       border-radius: 50%;
@@ -76,6 +138,7 @@
       opacity: 0.15;
       z-index: 0;
     }
+    
     .circle-1 {
       width: 400px;
       height: 400px;
@@ -83,6 +146,7 @@
       top: -100px;
       right: -200px;
     }
+    
     .circle-2 {
       width: 300px;
       height: 300px;
@@ -90,6 +154,7 @@
       bottom: -100px;
       left: -150px;
     }
+    
     .status-bar {
       position: fixed;
       bottom: 20px;
@@ -97,18 +162,72 @@
       right: 0;
       text-align: center;
       font-size: 0.75rem;
-      color: #666;
+      color: var(--text-light);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.5rem;
     }
+    
     .status-indicator {
       width: 8px;
       height: 8px;
       border-radius: 50%;
       background-color: #f87171;
       display: inline-block;
+      animation: blink 1.5s infinite;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-100%) rotate(30deg); }
+      100% { transform: translateX(100%) rotate(30deg); }
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.2); }
+    }
+    
+    /* Loading indicator */
+    .loading {
+      display: inline-block;
+      position: relative;
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+    }
+    
+    .loading div {
+      box-sizing: border-box;
+      display: block;
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border: 2px solid #000;
+      border-radius: 50%;
+      animation: loading 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+      border-color: #000 transparent transparent transparent;
+    }
+    
+    @keyframes loading {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
@@ -122,27 +241,117 @@
     </div>
     <h1>You're currently offline</h1>
     <p>The Yaseen's YKFA website is not available because you are not connected to the internet. Please check your connection and try again.</p>
-    <button class="button" onclick="window.location.reload()">
-      Try Again
+    <button id="retryButton" class="button" onclick="retryConnection()">
+      <span class="loading"><div></div></span>
+      <span id="buttonText">Try Again</span>
     </button>
   </div>
   
   <div class="status-bar">
     <span class="status-indicator"></span>
-    <span>Offline Mode</span>
+    <span id="statusText">Offline Mode</span>
   </div>
 
   <script>
-    // Auto-retry connection every 30 seconds
-    setInterval(() => {
+    // Variables for tracking state
+    let isRetrying = false;
+    let retryAttempts = 0;
+    let retryTimer;
+    const MAX_AUTOMATIC_RETRIES = 5;
+    const RETRY_INTERVAL = 10000; // 10 seconds
+    
+    // DOM elements
+    const button = document.getElementById('retryButton');
+    const buttonText = document.getElementById('buttonText');
+    const statusText = document.getElementById('statusText');
+    
+    // Check connection status initially
+    updateConnectionStatus();
+    
+    // Setup auto retry
+    startAutoRetry();
+    
+    // Manual retry connection
+    function retryConnection() {
+      if (isRetrying) return;
+      
+      isRetrying = true;
+      retryAttempts++;
+      buttonText.textContent = "Checking...";
+      button.classList.add("retrying");
+      
+      // Simulate fetch to trigger connection check
+      fetch('/', { method: 'HEAD', cache: 'no-store' })
+        .then(response => {
+          if (response.ok) {
+            // Connected! Reload the page
+            buttonText.textContent = "Connected!";
+            statusText.textContent = "Connection restored";
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
+          } else {
+            failedRetry();
+          }
+        })
+        .catch(error => {
+          failedRetry();
+        });
+    }
+    
+    // Update UI for failed retry
+    function failedRetry() {
+      isRetrying = false;
+      buttonText.textContent = "Try Again";
+      button.classList.remove("retrying");
+      statusText.textContent = `Offline Mode (${retryAttempts} ${retryAttempts === 1 ? 'retry' : 'retries'})`;
+    }
+    
+    // Automatic periodic retry
+    function startAutoRetry() {
+      retryTimer = setInterval(() => {
+        // Only auto-retry a limited number of times
+        if (retryAttempts < MAX_AUTOMATIC_RETRIES) {
+          // Check if we're online without UI changes
+          if (navigator.onLine) {
+            fetch('/', { method: 'HEAD', cache: 'no-store' })
+              .then(response => {
+                if (response.ok) {
+                  window.location.reload();
+                }
+              })
+              .catch(() => {
+                // Still offline
+                updateConnectionStatus();
+              });
+          } else {
+            updateConnectionStatus();
+          }
+        }
+      }, RETRY_INTERVAL);
+    }
+    
+    // Update connection status based on navigator.onLine
+    function updateConnectionStatus() {
       if (navigator.onLine) {
-        window.location.reload();
+        statusText.textContent = "Checking connection...";
+      } else {
+        statusText.textContent = `Offline Mode${retryAttempts > 0 ? ` (${retryAttempts} ${retryAttempts === 1 ? 'retry' : 'retries'})` : ''}`;
       }
-    }, 30000);
+    }
     
     // Listen for online status changes
     window.addEventListener('online', () => {
-      window.location.reload();
+      retryConnection();
+    });
+    
+    window.addEventListener('offline', () => {
+      updateConnectionStatus();
+    });
+    
+    // Clean up on unload
+    window.addEventListener('beforeunload', () => {
+      clearInterval(retryTimer);
     });
   </script>
 </body>

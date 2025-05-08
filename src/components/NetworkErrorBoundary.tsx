@@ -7,7 +7,7 @@ interface Props {
 
 interface State {
   hasError: boolean;
-  errorType: 'network' | 'server' | 'unknown';
+  errorType: 'network' | 'server' | 'unknown' | 'notFound';
   errorCode?: number;
   errorMessage?: string;
 }
@@ -27,24 +27,42 @@ class NetworkErrorBoundary extends Component<Props, State> {
     };
   }
 
+  /**
+   * Analyzes the error and determines its type
+   */
   static getDerivedStateFromError(error: any): State {
-    // Update state to show fallback UI
-    let errorType: 'network' | 'server' | 'unknown' = 'unknown';
+    // Update state to show appropriate fallback UI based on error type
+    let errorType: State['errorType'] = 'unknown';
     let errorCode: number | undefined = undefined;
     let errorMessage: string | undefined = error?.message;
 
-    // Handle network errors
-    if (error instanceof TypeError && error.message.includes('fetch')) {
+    // Check if error is a TypeError related to network
+    if (
+      error instanceof TypeError && 
+      (error.message.includes('fetch') || 
+       error.message.includes('network') ||
+       error.message.includes('Failed to fetch'))
+    ) {
       errorType = 'network';
     } 
-    // Handle server errors from fetch response
-    else if (error?.status >= 500 || (error?.name === 'HttpError' && error?.statusCode >= 500)) {
+    // Server errors (500+) from fetch responses or other sources
+    else if (
+      error?.status >= 500 || 
+      (error?.name === 'HttpError' && error?.statusCode >= 500) ||
+      error?.message?.includes('server error') ||
+      error?.message?.includes('500')
+    ) {
       errorType = 'server';
-      errorCode = error?.status || error?.statusCode;
+      errorCode = error?.status || error?.statusCode || 500;
     }
-    // Handle known error objects with status codes
-    else if (error?.status === 404 || (error?.name === 'HttpError' && error?.statusCode === 404)) {
-      errorType = 'unknown';
+    // Not found errors (404)
+    else if (
+      error?.status === 404 || 
+      (error?.name === 'HttpError' && error?.statusCode === 404) ||
+      error?.message?.includes('not found') ||
+      error?.message?.includes('404')
+    ) {
+      errorType = 'notFound';
       errorCode = 404;
     }
 
@@ -56,13 +74,42 @@ class NetworkErrorBoundary extends Component<Props, State> {
     };
   }
 
+  /**
+   * Log error information for debugging
+   */
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // You can log the error to an error reporting service
-    console.error('NetworkErrorBoundary caught an error:', error, errorInfo);
+    // Log error to console (could be replaced with external error reporting service)
+    console.error(
+      '🚨 NetworkErrorBoundary caught an error:',
+      {
+        error,
+        type: typeof error,
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        componentStack: errorInfo.componentStack
+      }
+    );
+  }
+
+  /**
+   * Reset error state when new children are received
+   */
+  componentDidUpdate(prevProps: Props) {
+    // If children change and we have an error, reset the error state
+    if (prevProps.children !== this.props.children && this.state.hasError) {
+      this.setState({
+        hasError: false,
+        errorType: 'unknown',
+        errorCode: undefined,
+        errorMessage: undefined
+      });
+    }
   }
 
   render() {
     if (this.state.hasError) {
+      // Redirect to appropriate error page with error details
       return (
         <Navigate 
           to={`/error/${this.state.errorType}`} 
@@ -75,6 +122,7 @@ class NetworkErrorBoundary extends Component<Props, State> {
       );
     }
 
+    // No error, render children normally
     return this.props.children;
   }
 }

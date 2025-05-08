@@ -1906,10 +1906,10 @@ const AboutDetailsModal = ({
           
           <div className="mt-3 pt-2.5 border-t border-white/10 flex flex-wrap gap-2 justify-center"> {/* Reduced spacing */}
             <Link
-              to="/about"
+              to="/about-us"
               className="px-2.5 py-1 rounded-md bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-medium text-xs transition-all duration-300 transform hover:scale-105 shadow-lg shadow-amber-500/20"
             >
-              Explore Blog
+              Know More
             </Link>
             <Link
               to="/contact"

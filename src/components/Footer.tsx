@@ -211,14 +211,12 @@ const Footer = () => {
                 <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Home
               </Link>
               <Link to="/about" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
-                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />About
+                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Blogs
               </Link>
               <Link to="/programs" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
                 <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Gallery
               </Link>
-              <Link to="/instructors" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
-                <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Instructors
-              </Link>
+              
               <Link to="/store" className="text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center">
                 <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Store
               </Link>

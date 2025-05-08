@@ -289,27 +289,27 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
   if (fullscreen) {
     if (isSmallScreen) {
       containerSize = "w-[85%] max-w-[300px] mt-8"; // Reduced top margin for mobile
-      timeSize = "text-4xl";
-      progressSize = "text-5xl";
+      timeSize = "text-4xl"; // Kept as is
+      progressSize = "text-2xl"; // Reduced from text-3xl
       labelSize = "text-sm";
       strokeWidth = 12;
     } else if (isMediumScreen) {
       containerSize = "w-[85%] max-w-[400px] mt-16";
-      timeSize = "text-5xl";
-      progressSize = "text-6xl";
+      timeSize = "text-5xl"; // Kept as is
+      progressSize = "text-3xl"; // Reduced from text-4xl
       labelSize = "text-base";
       strokeWidth = 16;
     } else {
       containerSize = "w-[85%] max-w-[500px] mt-24";
-      timeSize = "text-6xl";
-      progressSize = "text-7xl";
+      timeSize = "text-6xl"; // Kept as is
+      progressSize = "text-4xl"; // Reduced from text-5xl
       labelSize = "text-lg";
       strokeWidth = 20;
     }
   } else {
     containerSize = "w-full max-w-[350px] mt-8";
-    timeSize = "text-3xl";
-    progressSize = "text-4xl";
+    timeSize = "text-3xl"; // Kept as is
+    progressSize = "text-xl"; // Reduced from text-2xl
     labelSize = "text-sm";
     strokeWidth = 14;
   }
@@ -413,18 +413,18 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
           {/* Center Content */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="flex flex-col items-center justify-center bg-black rounded-full w-[65%] h-[65%]">
-              {/* Progress percentage */}
-              <div ref={timeDisplayRef} className={`${progressSize} font-bold text-white`}>
-                {displayProgress}<span className="text-lg md:text-xl align-top">%</span>
+              {/* Progress percentage - less margin below */}
+              <div ref={timeDisplayRef} className={`${progressSize} font-medium text-white opacity-70 mb-0.5`}>
+                {displayProgress}<span className="text-xs md:text-sm align-top">%</span>
               </div>
               
-              {/* Time value */}
-              <div className={`${timeSize} font-medium text-white opacity-90 mt-0`}>
+              {/* Time value - pushed up with negative margin */}
+              <div className={`${timeSize} font-bold text-white -mt-1`}>
                 {displayMinutes}:{displaySeconds}
               </div>
               
-              {/* Current phase label */}
-              <div className={`${labelSize} font-medium text-white opacity-70 mt-1 phase-label`}>
+              {/* Current phase label - added a bit more margin above */}
+              <div className={`${labelSize} font-medium text-white opacity-70 mt-2 phase-label`}>
                 {currentPhase === 'round'
                   ? `Round ${currentRound}/${totalRounds}`
                   : currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)}

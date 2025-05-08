@@ -1,4 +1,4 @@
-import { useEffect, useState, memo } from 'react';
+import { useEffect, useState, memo, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
 interface LoaderProps {
@@ -9,9 +9,24 @@ const Loader = ({ loadingComplete }: LoaderProps) => {
   const [progress, setProgress] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
   const location = useLocation();
+  const loaderRef = useRef<HTMLDivElement>(null);
   
   // Only show loader on home page
   const isHomePage = location.pathname === '/';
+
+  // Force hide loader after 5 seconds no matter what
+  useEffect(() => {
+    const forceHideTimer = setTimeout(() => {
+      setIsVisible(false);
+      
+      // Also directly modify the DOM element to ensure it disappears
+      if (loaderRef.current) {
+        loaderRef.current.style.display = 'none';
+      }
+    }, 5000);
+    
+    return () => clearTimeout(forceHideTimer);
+  }, []);
 
   // Animate progress bar (simulate loading) - reduced to 1 second total
   useEffect(() => {
@@ -48,6 +63,7 @@ const Loader = ({ loadingComplete }: LoaderProps) => {
 
   return (
     <div 
+      ref={loaderRef}
       className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black"
       style={{
         opacity: progress === 100 ? 0 : 1,

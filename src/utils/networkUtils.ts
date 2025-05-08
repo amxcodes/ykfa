@@ -3,13 +3,19 @@
  * and monitoring site loading status
  */
 
+// Default timeout values in milliseconds
+const DEFAULT_TIMEOUTS = {
+  FETCH: 10000,  // 10 seconds
+  RESOURCE_TEST: 5000,  // 5 seconds
+  HEALTH_CHECK: 3000,   // 3 seconds
+  HEALTH_INTERVAL: 30000 // 30 seconds
+};
+
 /**
  * Check if the browser is currently online
  * @returns boolean indicating online status
  */
-export const isOnline = (): boolean => {
-  return navigator.onLine;
-};
+export const isOnline = (): boolean => navigator.onLine;
 
 /**
  * Monitor network status and call provided callbacks when status changes
@@ -21,9 +27,17 @@ export const monitorNetworkStatus = (
   onOffline: () => void, 
   onOnline: () => void
 ): () => void => {
+  // Initial check
+  if (!isOnline()) {
+    // Run on next tick to avoid immediate execution during setup
+    setTimeout(onOffline, 0);
+  }
+  
+  // Set up event listeners
   window.addEventListener('offline', onOffline);
   window.addEventListener('online', onOnline);
   
+  // Return cleanup function
   return () => {
     window.removeEventListener('offline', onOffline);
     window.removeEventListener('online', onOnline);
@@ -37,7 +51,10 @@ export const monitorNetworkStatus = (
  */
 export const timeout = (ms: number): Promise<never> => {
   return new Promise((_, reject) => {
-    setTimeout(() => reject(new Error(`Request timed out after ${ms}ms`)), ms);
+    const id = setTimeout(() => {
+      clearTimeout(id);
+      reject(new Error(`Request timed out after ${ms}ms`));
+    }, ms);
   });
 };
 
@@ -51,13 +68,45 @@ export const timeout = (ms: number): Promise<never> => {
 export const fetchWithTimeout = async (
   url: string, 
   options: RequestInit = {}, 
-  timeoutMs: number = 10000
+  timeoutMs: number = DEFAULT_TIMEOUTS.FETCH
 ): Promise<Response> => {
-  return Promise.race([
-    fetch(url, options),
-    timeout(timeoutMs)
-  ]);
+  // Use AbortController for cleaner timeout handling
+  const controller = new AbortController();
+  const { signal } = controller;
+  
+  // Set up timeout
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, timeoutMs);
+  
+  try {
+    // Merge provided options with signal
+    const fetchOptions = {
+      ...options,
+      signal
+    };
+    
+    const response = await fetch(url, fetchOptions);
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    // Check if error is due to timeout/abort or something else
+    if ((error as Error).name === 'AbortError') {
+      throw new Error(`Request to ${url} timed out after ${timeoutMs}ms`);
+    }
+    throw error;
+  }
 };
+
+/**
+ * Result interface for resource testing
+ */
+export interface ResourceTestResult {
+  success: boolean;
+  failedUrl?: string;
+  error?: Error;
+}
 
 /**
  * Test if critical resources are available by trying to fetch them
@@ -67,13 +116,38 @@ export const fetchWithTimeout = async (
  */
 export const testCriticalResources = async (
   urls: string[] = ['/'],
-  timeoutMs: number = 5000
-): Promise<{ success: boolean, failedUrl?: string, error?: Error }> => {
+  timeoutMs: number = DEFAULT_TIMEOUTS.RESOURCE_TEST
+): Promise<ResourceTestResult> => {
   try {
+    // If offline, fail immediately
+    if (!isOnline()) {
+      return {
+        success: false,
+        error: new Error('Device is offline')
+      };
+    }
+    
     // Try HEAD requests to each URL to check availability
     for (const url of urls) {
       try {
-        await fetchWithTimeout(url, { method: 'HEAD' }, timeoutMs);
+        const response = await fetchWithTimeout(
+          url, 
+          { 
+            method: 'HEAD',
+            // Disable cache for accurate checks
+            headers: { 'Cache-Control': 'no-cache' }
+          }, 
+          timeoutMs
+        );
+        
+        // Check response status
+        if (!response.ok) {
+          return { 
+            success: false, 
+            failedUrl: url,
+            error: new Error(`Resource ${url} returned status ${response.status}`)
+          };
+        }
       } catch (error) {
         return { 
           success: false, 
@@ -82,6 +156,7 @@ export const testCriticalResources = async (
         };
       }
     }
+    
     return { success: true };
   } catch (error) {
     return { 
@@ -101,25 +176,55 @@ export const testCriticalResources = async (
  */
 export const createHealthCheck = (
   url: string = '/',
-  intervalMs: number = 30000,
+  intervalMs: number = DEFAULT_TIMEOUTS.HEALTH_INTERVAL,
   onError: (error: Error) => void,
   onSuccess: () => void
 ): () => void => {
+  let isRunning = true;
+  let timeoutId: number;
+  
+  // Check function
   const check = async () => {
+    // Skip checks if offline
+    if (!isOnline()) {
+      if (isRunning) {
+        timeoutId = window.setTimeout(check, intervalMs);
+      }
+      return;
+    }
+    
     try {
-      await fetchWithTimeout(url, { method: 'HEAD' }, 3000);
-      onSuccess();
+      const response = await fetchWithTimeout(
+        url, 
+        { 
+          method: 'HEAD',
+          // Add cache-busting parameter
+          headers: { 'Cache-Control': 'no-cache, no-store' }
+        }, 
+        DEFAULT_TIMEOUTS.HEALTH_CHECK
+      );
+      
+      if (response.ok) {
+        onSuccess();
+      } else {
+        onError(new Error(`Health check returned status ${response.status}`));
+      }
     } catch (error) {
       onError(error instanceof Error ? error : new Error('Health check failed'));
+    }
+    
+    // Schedule next check if still running
+    if (isRunning) {
+      timeoutId = window.setTimeout(check, intervalMs);
     }
   };
   
   // Run initial check
   check();
   
-  // Set up interval for subsequent checks
-  const intervalId = setInterval(check, intervalMs);
-  
   // Return cleanup function
-  return () => clearInterval(intervalId);
+  return () => {
+    isRunning = false;
+    clearTimeout(timeoutId);
+  };
 }; 
