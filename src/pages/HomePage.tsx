@@ -774,7 +774,7 @@ const ProgramCard = ({
                   duration: duration,
                   delay: delay,
                   ease: "power2.out",
-                  clearProps: "transform"
+                  clearProps: "all" // FIXED: Clear ALL transform properties after animation
                 }
               );
             } else {
@@ -797,7 +797,7 @@ const ProgramCard = ({
                   delay: delay,
                   ease: easing,
                   transformOrigin: "center bottom",
-                  clearProps: "transform" // Clear transform after animation
+                  clearProps: "all" // FIXED: Clear ALL transform properties after animation
                 }
               );
             }
@@ -815,7 +815,8 @@ const ProgramCard = ({
                 stagger: isMobile ? 0.05 : 0.1,
                 duration: isMobile ? 0.5 : 0.8,
                 delay: 0.1 + delay,
-                ease: "power3.out"
+                ease: "power3.out",
+                clearProps: "all" // FIXED: Clear ALL transform properties after animation
               }
             );
           }
@@ -857,7 +858,11 @@ const ProgramCard = ({
         // Desktop: mouse events
         if (!isMobile) {
           card.addEventListener("mouseenter", () => hoverTl.play());
-          card.addEventListener("mouseleave", () => hoverTl.reverse());
+          card.addEventListener("mouseleave", () => {
+            hoverTl.reverse();
+            // FIXED: Force reset card position when hover is done
+            gsap.to(card, { clearProps: "all", delay: 0.4 });
+          });
         } 
         // Mobile: touch events with proper handling
         else {
@@ -871,6 +876,8 @@ const ProgramCard = ({
             // Auto-reverse after delay (simulates "touch away")
             touchTimeout = window.setTimeout(() => {
               hoverTl.reverse();
+              // FIXED: Force reset card position after touch animation is done
+              gsap.to(card, { clearProps: "all", delay: 0.4 });
             }, 2000);
           };
           
@@ -883,7 +890,7 @@ const ProgramCard = ({
           card.addEventListener("touchstart", handleTouchStart, { passive: true });
           
           // Clean up
-    return () => {
+          return () => {
             observer.disconnect();
             if (!isMobile) {
               card.removeEventListener("mouseenter", () => hoverTl.play());
@@ -891,7 +898,7 @@ const ProgramCard = ({
             } else {
               card.removeEventListener("touchstart", handleTouchStart);
               clearTimeout(touchTimeout);
-      }
+            }
           };
         }
       }
@@ -911,7 +918,8 @@ const ProgramCard = ({
       style={{
         minWidth: compact ? 0 : undefined,
         maxWidth: compact ? '100%' : undefined,
-        opacity: 0 // Start invisible, GSAP will handle visibility
+        opacity: 0, // Start invisible, GSAP will handle visibility
+        transform: 'translateZ(0)' // FIXED: Force hardware acceleration to prevent card drift
       }}
     >
       {/* Gradient border effect on hover */}
@@ -925,6 +933,7 @@ const ProgramCard = ({
           alt={title} 
           className={`w-full h-full object-cover object-center ${compact ? 'rounded-xl' : ''} animate-item`}
           loading="lazy"
+          style={{ transform: 'translateZ(0)' }} /* FIXED: Force hardware acceleration */
         />
         <div className="absolute bottom-0 left-0 right-0 p-2 z-20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
           <button 
