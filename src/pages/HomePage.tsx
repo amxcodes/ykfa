@@ -415,8 +415,8 @@ const ProgramDetailsModal = ({
   // Generate details for each program based on MembershipPage.tsx data
   const getProgramDetails = useCallback(() => {
     const details = {
-      schedule: program.title === "MMA + GYM" ? "24/7 gym access, 3 martial arts classes per week" :
-                program.title === "MMA ONLY" ? "3 martial arts classes per week" :
+      schedule: program.title === "MMA + GYM" ? "24/7 gym access (3 days per week), 3 mixed martial arts classes per week" :
+                program.title === "MMA ONLY" ? "3 mixed martial arts classes per week" :
                 program.title === "GROUP FITNESS" ? "2 days cardio, 4 days strength training" :
                 program.title === "KARATE" ? "2 classes per week" : "24/7 access",
       trainer: program.title === "MMA + GYM" ? "Yaseen & Team" :
@@ -424,28 +424,36 @@ const ProgramDetailsModal = ({
                program.title === "GROUP FITNESS" ? "Fitness Coach" :
                program.title === "KARATE" ? "Master Yaseen" : "Self-guided with assistance",
       features: program.title === "MMA + GYM" ? [
-                  "Access to gym", 
-                  "3 martial arts classes per week", 
+                  "Access to gym, 3 days per week", 
+                  "3 mixed martial arts classes per week", 
+                  "Strength and conditioning, HIIT and cardio sessions",
+                  "Basic fitness assessment",
                   "All MMA disciplines included"
                 ] :
                 program.title === "MMA ONLY" ? [
+                  "3 mixed martial arts classes per week",
                   "Boxing, Kickboxing, Muay Thai", 
                   "Wrestling, Judo, BJJ", 
+                  "Strength and conditioning, HIIT and cardio sessions",
                   "Technical sessions" 
                 ] :
                 program.title === "GROUP FITNESS" ? [
                   "Group cardio sessions with coach", 
-                  "Access to gym app", 
-                  "2 days cardio and HIIT" 
+                  "2 days cardio and HIIT",
+                  "4 days strength training", 
+                  "Basic fitness assessment" 
                 ] :
                 program.title === "KARATE" ? [
-                  "Belt progression system", 
+                  "2 classes per week",
+                  "Belt progression and certification system", 
                   "Kata and kumite practice", 
-                  "Self-defense techniques" 
+                  "Self-defense techniques",
+                  "Mental discipline focus"
                 ] : [
                   "Access to gym", 
+                  "Access to gym app",
                   "Full range of equipment", 
-                  "Cardio section"
+                  "Free weights and machines"
                 ]
     };
     return details;
@@ -1299,7 +1307,7 @@ const HomePage = () => {
     {
       id: 2,
       title: "MMA ONLY",
-      description: "Access to all MMA classes including boxing, kickboxing, and Bjj etc.",
+      description: "Access to all MMA classes including boxing, kickboxing, and grappling techniques.",
       image: "https://images.pexels.com/photos/4761797/pexels-photo-4761797.jpeg?auto=compress&fit=crop&w=800&q=80",
       link: "/programs",
       category: "mma"
@@ -1315,7 +1323,7 @@ const HomePage = () => {
     {
       id: 4,
       title: "KARATE",
-      description: "Traditional Karate training with belt progression system.",
+      description: "Traditional Karate training with belt progression and certification system.",
       image: "https://images.pexels.com/photos/7045573/pexels-photo-7045573.jpeg?auto=compress&fit=crop&w=800&q=80",
       link: "/programs",
       category: "karate"

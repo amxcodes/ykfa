@@ -5,6 +5,9 @@ import { CURSOR_ATTRIBUTES } from '../types/cursor';
 // Cursor interaction types
 type CursorType = 'default' | 'hover' | 'click' | 'hidden';
 
+// Fallback cursor image URL
+const FALLBACK_CURSOR_URL = 'https://i.postimg.cc/3rqFCsgp/cursor.png';
+
 const CustomCursor = () => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [cursorType, setCursorType] = useState<CursorType>('default');
@@ -13,6 +16,7 @@ const CustomCursor = () => {
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [showGlassBreak, setShowGlassBreak] = useState(false);
   const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 });
+  const [cursorImageError, setCursorImageError] = useState(false);
   const cursorRef = useRef<HTMLDivElement>(null);
   const controls = useAnimationControls();
   const glassBreakControls = useAnimationControls();
@@ -56,8 +60,21 @@ const CustomCursor = () => {
   useEffect(() => {
     if (typeof window === 'undefined' || isTouchDevice) return;
     
+    // Preload primary cursor image
     const preloadImage = new Image();
     preloadImage.src = '/cursor.svg';
+    preloadImage.onerror = () => {
+      console.warn('Failed to load primary cursor image, using fallback');
+      setCursorImageError(true);
+      
+      // Try to preload the fallback image
+      const fallbackImage = new Image();
+      fallbackImage.src = FALLBACK_CURSOR_URL;
+    };
+    
+    // Also preload fallback image just in case
+    const fallbackImage = new Image();
+    fallbackImage.src = FALLBACK_CURSOR_URL;
   }, [isTouchDevice]);
 
   // Option to disable custom cursor with media query
@@ -310,6 +327,9 @@ const CustomCursor = () => {
     });
   };
 
+  // Determine which cursor image URL to use
+  const cursorImageUrl = cursorImageError ? FALLBACK_CURSOR_URL : '/cursor.svg';
+
   return (
     <>
       <motion.div
@@ -328,9 +348,13 @@ const CustomCursor = () => {
         }}
       >
         <img 
-          src="/cursor.svg" 
+          src={cursorImageUrl}
           alt="" 
           className="w-full h-full"
+          onError={() => {
+            console.warn('Error loading cursor image, using fallback');
+            setCursorImageError(true);
+          }}
           style={{ 
             filter: cursorType === 'hover' || cursorType === 'click' 
               ? 'drop-shadow(0 0 2px rgba(251, 191, 36, 0.7))' 

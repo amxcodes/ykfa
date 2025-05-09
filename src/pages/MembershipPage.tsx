@@ -67,6 +67,18 @@ const ModernPricingCard = ({
     };
   }, [plan.originalPrice]);
   
+  // Format per month price if available
+  const renderPerMonthPrice = () => {
+    if (plan.perMonthPrice) {
+      return (
+        <div className="text-xs text-green-400 mt-1">
+          {plan.perMonthPrice}
+        </div>
+      );
+    }
+    return null;
+  };
+  
   return (
     <div 
       className={`rounded-xl overflow-hidden ${
@@ -105,29 +117,30 @@ const ModernPricingCard = ({
         <div className="mb-5">
           <h3 className="text-xl font-bold">{plan.name}</h3>
           {plan.originalPrice ? (
-            <div className="mt-1 h-11 relative">
+            <div className="mt-1 min-h-16 relative">
               {showOfferPrice ? (
                 // Offer price
-                <div className="flex items-baseline transition-opacity duration-500 animate-fadeIn">
-                  <span className={`text-2xl font-bold ${plan.recommended ? 'text-amber-400' : isKarateDummy ? 'text-gray-400' : 'text-white'}`}>
-                    ₹{plan.price.toLocaleString()}
-                  </span>
-                  <span className="text-gray-400 text-xs ml-1">/{plan.period}</span>
-                  <div className="ml-2 flex flex-col text-xs">
-                    <span className="text-green-400">Only</span>
-                    <span className="text-green-400">₹{plan.perMonthPrice}/mo</span>
+                <div className="flex flex-col transition-opacity duration-500 animate-fadeIn">
+                  <div className="flex items-baseline">
+                    <span className={`text-2xl font-bold ${plan.recommended ? 'text-amber-400' : isKarateDummy ? 'text-gray-400' : 'text-white'}`}>
+                      ₹{plan.price.toLocaleString()}
+                    </span>
+                    <span className="text-gray-400 text-xs ml-1">/{plan.period}</span>
                   </div>
+                  {renderPerMonthPrice()}
                 </div>
               ) : (
                 // Original price with striking animation
-                <div className="flex items-baseline">
-                  <span className="text-2xl font-bold text-gray-200 relative">
-                    ₹{plan.originalPrice.toLocaleString()}
-                    <span key={animationKey} className="absolute inset-0 flex items-center">
-                      <span className="h-0.5 w-full bg-red-500 animate-grow-strikethrough"></span>
+                <div className="flex flex-col">
+                  <div className="flex items-baseline">
+                    <span className="text-2xl font-bold text-gray-200 relative">
+                      ₹{plan.originalPrice.toLocaleString()}
+                      <span key={animationKey} className="absolute inset-0 flex items-center">
+                        <span className="h-0.5 w-full bg-red-500 animate-grow-strikethrough"></span>
+                      </span>
                     </span>
-                  </span>
-                  <span className="text-gray-400 text-xs ml-1">/{plan.period}</span>
+                    <span className="text-gray-400 text-xs ml-1">/{plan.period}</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -398,7 +411,7 @@ const MembershipPage = () => {
         name: "MMA + GYM",
         price: 7500,
         originalPrice: 10500,
-        perMonthPrice: "2,500",
+        perMonthPrice: "₹2,500 per month",
         period: "quarter",
         description: "Complete package with access to all MMA classes and gym facilities.",
         programType: "MMA + GYM",
@@ -419,7 +432,7 @@ const MembershipPage = () => {
         name: "MMA ONLY",
         price: 5500,
         originalPrice: 7500,
-        perMonthPrice: "1,833",
+        perMonthPrice: "₹1,833 per month",
         period: "quarter",
         description: "Access to all MMA classes including boxing, kickboxing, and grappling.",
         programType: "MMA ONLY",
@@ -439,7 +452,7 @@ const MembershipPage = () => {
         name: "GROUP FITNESS",
         price: 6500,
         originalPrice: 9000,
-        perMonthPrice: "2,167",
+        perMonthPrice: "₹2,167 per month",
         period: "quarter",
         description: "High-energy group fitness sessions for improved strength and endurance.",
         programType: "GROUP FITNESS",
@@ -458,7 +471,7 @@ const MembershipPage = () => {
         name: "GYM ONLY",
         price: 5500,
         originalPrice: 7500,
-        perMonthPrice: "1,833",
+        perMonthPrice: "₹1,833 per month",
         period: "quarter",
         description: "Unlimited access to our modern gym with top-tier equipment.",
         programType: "GYM ONLY",
@@ -476,8 +489,9 @@ const MembershipPage = () => {
       {
         id: 1,
         name: "MMA + GYM",
-        price: 15000,
+        price: 13800,
         originalPrice: 21000,
+        perMonthPrice: "₹2,300 per month",
         period: "6mo",
         description: "Complete package with access to all MMA classes and gym facilities.",
         programType: "MMA + GYM",
@@ -498,6 +512,7 @@ const MembershipPage = () => {
         name: "MMA ONLY",
         price: 10000,
         originalPrice: 15000,
+        perMonthPrice: "₹1,667 per month",
         period: "6mo",
         description: "Access to all MMA classes including boxing, kickboxing, and grappling.",
         programType: "MMA ONLY",
@@ -515,8 +530,9 @@ const MembershipPage = () => {
       {
         id: 3,
         name: "GROUP FITNESS",
-        price: 10000,
-        originalPrice: 15000,
+        price: 12000,
+        originalPrice: 18000,
+        perMonthPrice: "₹2,000 per month",
         period: "6mo",
         description: "High-energy group fitness sessions for improved strength and endurance.",
         programType: "GROUP FITNESS",
@@ -535,6 +551,7 @@ const MembershipPage = () => {
         name: "GYM ONLY",
         price: 10000,
         originalPrice: 15000,
+        perMonthPrice: "₹1,667 per month",
         period: "6mo",
         description: "Unlimited access to our modern gym with top-tier equipment.",
         programType: "GYM ONLY",
@@ -552,8 +569,9 @@ const MembershipPage = () => {
       {
         id: 1,
         name: "MMA + GYM",
-        price: 25000,
+        price: 24000,
         originalPrice: 42000,
+        perMonthPrice: "₹2,000 per month",
         period: "year",
         description: "Complete package with access to all MMA classes and gym facilities.",
         programType: "MMA + GYM",
@@ -574,6 +592,7 @@ const MembershipPage = () => {
         name: "MMA ONLY",
         price: 15000,
         originalPrice: 30000,
+        perMonthPrice: "₹1,250 per month",
         period: "year",
         description: "Access to all MMA classes including boxing, kickboxing, and grappling.",
         programType: "MMA ONLY",
@@ -591,8 +610,9 @@ const MembershipPage = () => {
       {
         id: 3,
         name: "GROUP FITNESS",
-        price: 15000,
-        originalPrice: 30000,
+        price: 18000,
+        originalPrice: 36000,
+        perMonthPrice: "₹1,500 per month",
         period: "year",
         description: "High-energy group fitness sessions for improved strength and endurance.",
         programType: "GROUP FITNESS",
@@ -611,6 +631,7 @@ const MembershipPage = () => {
         name: "GYM ONLY",
         price: 15000,
         originalPrice: 30000,
+        perMonthPrice: "₹1,250 per month",
         period: "year",
         description: "Unlimited access to our modern gym with top-tier equipment.",
         programType: "GYM ONLY",
@@ -773,7 +794,7 @@ const MembershipPage = () => {
                       title={selectedProgram === 'KARATE' ? 'KARATE is available monthly only' : ''}
                     >
                       <span className={`block text-base ${planDuration === 'halfYearly' ? 'text-black' : 'text-gray-200'}`}>Half Yearly</span>
-                      <span className={`block text-xs mt-1 ${planDuration === 'halfYearly' ? 'text-black/80' : 'text-green-400'}`}>Save 25%</span>
+                      <span className={`block text-xs mt-1 ${planDuration === 'halfYearly' ? 'text-black/80' : 'text-green-400'}`}>Save 34%</span>
                       {planDuration === 'halfYearly' && (
                         <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white/30"></span>
                       )}
@@ -796,7 +817,7 @@ const MembershipPage = () => {
                       title={selectedProgram === 'KARATE' ? 'KARATE is available monthly only' : ''}
                     >
                       <span className={`block text-base ${planDuration === 'annual' ? 'text-black' : 'text-gray-200'}`}>Annual</span>
-                      <span className={`block text-xs mt-1 ${planDuration === 'annual' ? 'text-black/80' : 'text-green-400'}`}>Save 30%</span>
+                      <span className={`block text-xs mt-1 ${planDuration === 'annual' ? 'text-black/80' : 'text-green-400'}`}>Save 50%</span>
                       {planDuration === 'annual' && (
                         <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white/30"></span>
                       )}

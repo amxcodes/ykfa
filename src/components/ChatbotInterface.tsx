@@ -163,8 +163,8 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     },
     // Membership and pricing
     {
-      keywords: ["membership", "pricing", "cost", "fee", "price", "package", "join", "subscription", "payment", "monthly", "annual"],
-      response: "We offer various membership options including monthly, quarterly, half-yearly, and annual plans. Our monthly plans start at ₹1,000 for Karate, ₹2,500 for MMA-Only, Group Fitness, or Gym-Only, and ₹3,500 for our comprehensive MMA+GYM package. We offer significant discounts on longer-term commitments.",
+      keywords: ["membership", "pricing", "cost", "fee", "price", "package", "join", "subscription", "payment", "monthly", "quarterly", "half-yearly", "annual"],
+      response: "We offer various membership options including monthly, quarterly, half-yearly, and annual plans. Our monthly plans start at ₹1,000 for Karate, ₹2,500 for MMA-Only, Group Fitness, or Gym-Only, and ₹3,500 for our comprehensive MMA+GYM package. For quarterly, half-yearly, and annual plans, we offer significant discounts - save up to 28% on quarterly, 34% on half-yearly, and 50% on annual plans.",
       actions: [
         { 
           label: "Membership Details", 
@@ -203,7 +203,7 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     // MMA specific
     {
       keywords: ["mma", "mixed martial arts", "boxing", "kickboxing", "grappling", "bjj", "judo", "wrestling"],
-      response: "Our MMA program combines various martial arts disciplines including Boxing, Kickboxing, Muay Thai, Wrestling, Judo, and Brazilian Jiu-Jitsu (BJJ). We offer both technical training and sparring sessions. Classes are available 3 times per week, with separate batches for beginners and advanced practitioners.",
+      response: "Our MMA program combines various martial arts disciplines including Boxing, Kickboxing, Muay Thai, Wrestling, Judo, and Brazilian Jiu-Jitsu (BJJ). We offer both technical training and sparring sessions, along with strength and conditioning, HIIT and cardio sessions. Classes are available 3 times per week, with separate batches for beginners and advanced practitioners.",
       actions: [
         { 
           label: "MMA Program", 
@@ -216,7 +216,7 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     // Karate specific
     {
       keywords: ["karate", "kata", "kumite", "belt", "traditional", "martial art"],
-      response: "Our Karate program focuses on traditional techniques with a belt progression system. Classes include kata (forms), kumite (sparring), and self-defense applications. We offer 2 classes per week, and the program emphasizes both physical development and character building. Monthly membership for Karate is ₹1,000.",
+      response: "Our Karate program focuses on traditional techniques with a belt progression and certification system. Classes include kata (forms), kumite (sparring), and self-defense applications. We offer 2 classes per week, and the program emphasizes both physical development and character building. Monthly membership for Karate is ₹1,000.",
       actions: [
         { 
           label: "Karate Program", 
@@ -228,8 +228,8 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     },
     // Gym specific
     {
-      keywords: ["gym", "weights", "equipment", "machines", "workout", "fitness center", "weight training", "cardio"],
-      response: "Our gym features modern equipment for both strength training and cardio workouts. Members have access to free weights, machines, and dedicated workout areas. Gym-Only membership costs ₹2,500 per month with access from 6:00 AM to 10:30 AM and 5:00 PM to 10:00 PM.",
+      keywords: ["gym", "weights", "equipment", "machines", "workout", "fitness center", "weight training"],
+      response: "Our gym features modern equipment for both strength training and weight workouts. Members have access to free weights, machines, and dedicated workout areas. Gym-Only membership costs ₹2,500 per month, with quarterly, half-yearly, and annual plans offering significant savings.",
       actions: [
         { 
           label: "Gym Membership", 
@@ -242,7 +242,7 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     // Group Fitness specific
     {
       keywords: ["group fitness", "group training", "cardio", "hiit", "strength", "class", "group workout"],
-      response: "Our Group Fitness program includes high-energy sessions focusing on strength and endurance. We offer 2 days of cardio/HIIT and 4 days of strength training per week. Classes are available in multiple batches from 6:00 AM to 10:30 AM, including a special ladies batch.",
+      response: "Our Group Fitness program includes high-energy sessions focusing on strength and endurance. We offer 2 days of cardio/HIIT and 4 days of strength training per week, plus a basic fitness assessment. Classes are available in multiple batches from 6:00 AM to 10:30 AM, including a special ladies batch.",
       actions: [
         { 
           label: "Group Fitness", 
