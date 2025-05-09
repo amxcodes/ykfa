@@ -714,116 +714,66 @@ const ProgramCard = ({
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const descRef = useRef<HTMLParagraphElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
-  // Check for mobile device and reduced motion preference
+  // Check if device is mobile
   useEffect(() => {
-    // Check if device is mobile
     const checkMobile = () => {
-      const mobile = window.innerWidth < 768 || 
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      setIsMobile(mobile);
-    };
-    
-    // Check if user prefers reduced motion
-    const checkReducedMotion = () => {
-      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      setPrefersReducedMotion(prefersReduced);
+      setIsMobile(window.innerWidth < 768);
     };
     
     checkMobile();
-    checkReducedMotion();
-    
-    window.addEventListener('resize', checkMobile);
+    window.addEventListener('resize', checkMobile, { passive: true });
     
     return () => {
       window.removeEventListener('resize', checkMobile);
     };
   }, []);
 
-  // Set up GSAP animations when card becomes visible
+  // Use IntersectionObserver for smooth blur reveal
   useEffect(() => {
-    // IntersectionObserver to detect when card is in view
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !isVisible) {
+          // Set the card visible first
           setIsVisible(true);
-          observer.unobserve(entry.target);
           
-          // Start animations once visible
-          if (cardRef.current) {
-            // Different animation settings based on device and preferences
-            const duration = isMobile || prefersReducedMotion ? 0.8 : 1.2;
-            const delay = (isMobile ? index * 0.08 : index * 0.15) + (prefersReducedMotion ? 0 : 0);
-            const easing = prefersReducedMotion ? "power2.out" : "elastic.out(1, 0.75)";
-            
-            // Use simpler animation for mobile or reduced motion
-            if (isMobile || prefersReducedMotion) {
-              // Simpler animation for mobile/reduced motion
-              gsap.fromTo(cardRef.current,
-                { 
-                  y: 30, 
-                  opacity: 0
-                },
-                { 
-                  y: 0, 
-                  opacity: 1,
-                  duration: duration,
-                  delay: delay,
-                  ease: "power2.out",
-                  clearProps: "all" // FIXED: Clear ALL transform properties after animation
-                }
-              );
-            } else {
-              // Full animation for desktop
-              gsap.fromTo(cardRef.current,
-                { 
-                  y: 60, 
-                  opacity: 0, 
-                  scale: 0.9, 
-                  rotationX: 5, 
-                  rotationY: -5
-                },
-                { 
-                  y: 0, 
-                  opacity: 1, 
-                  scale: 1, 
-                  rotationX: 0, 
-                  rotationY: 0,
-                  duration: duration,
-                  delay: delay,
-                  ease: easing,
-                  transformOrigin: "center bottom",
-                  clearProps: "all" // FIXED: Clear ALL transform properties after animation
-                }
-              );
-            }
-            
-            // Staggered animation for card contents - simplified for mobile
-            const content = cardRef.current.querySelectorAll('.animate-item');
-            gsap.fromTo(content,
-              { 
-                y: isMobile ? 15 : 30, 
-                opacity: 0 
-              },
-              { 
-                y: 0, 
-                opacity: 1, 
-                stagger: isMobile ? 0.05 : 0.1,
-                duration: isMobile ? 0.5 : 0.8,
-                delay: 0.1 + delay,
-                ease: "power3.out",
-                clearProps: "all" // FIXED: Clear ALL transform properties after animation
-              }
-            );
+          // Then sequence the visibility of children with delays
+          const card = cardRef.current;
+          if (card) {
+            // Add transition delay to the card container
+            card.style.transitionDelay = `${index * 150}ms`;
           }
+          
+          // Add visible class to image with delay
+          if (imageRef.current) {
+            setTimeout(() => {
+              imageRef.current?.classList.add('visible');
+            }, index * 150 + 200);
+          }
+          
+          // Add visible class to title with delay
+          if (titleRef.current) {
+            setTimeout(() => {
+              titleRef.current?.classList.add('visible');
+            }, index * 150 + 350);
+          }
+          
+          // Add visible class to description with delay
+          if (descRef.current) {
+            setTimeout(() => {
+              descRef.current?.classList.add('visible');
+            }, index * 150 + 450);
+          }
+          
+          observer.unobserve(entry.target);
         }
       },
       {
-        threshold: 0.1,
+        threshold: 0.15,
         rootMargin: '0px 0px -50px 0px'
       }
     );
@@ -832,122 +782,63 @@ const ProgramCard = ({
       observer.observe(cardRef.current);
     }
 
-    // Set up hover/touch animation - only if not reduced motion
-    if (!prefersReducedMotion) {
-      const card = cardRef.current;
-      const image = imageRef.current;
-      
-      if (card && image) {
-        // Create hover animation timeline - lighter on mobile
-        const hoverTl = gsap.timeline({ paused: true });
-        
-        hoverTl
-          .to(card, { 
-            y: isMobile ? -4 : -8, 
-            scale: isMobile ? 1.01 : 1.02, 
-            boxShadow: isMobile ? "0 10px 25px rgba(0, 0, 0, 0.2)" : "0 20px 40px rgba(0, 0, 0, 0.3)",
-            duration: isMobile ? 0.3 : 0.4,
-            ease: "power2.out"
-          })
-          .to(image, { 
-            scale: isMobile ? 1.05 : 1.1, 
-            duration: isMobile ? 0.4 : 0.6, 
-            ease: "power1.out" 
-          }, 0);
-        
-        // Desktop: mouse events
-        if (!isMobile) {
-          card.addEventListener("mouseenter", () => hoverTl.play());
-          card.addEventListener("mouseleave", () => {
-            hoverTl.reverse();
-            // FIXED: Force reset card position when hover is done
-            gsap.to(card, { clearProps: "all", delay: 0.4 });
-          });
-        } 
-        // Mobile: touch events with proper handling
-        else {
-          // For touch devices, play on touch and reverse on card blur
-          let touchTimeout: number;
-          
-          const handleTouch = () => {
-            clearTimeout(touchTimeout);
-            hoverTl.play();
-            
-            // Auto-reverse after delay (simulates "touch away")
-            touchTimeout = window.setTimeout(() => {
-              hoverTl.reverse();
-              // FIXED: Force reset card position after touch animation is done
-              gsap.to(card, { clearProps: "all", delay: 0.4 });
-            }, 2000);
-          };
-          
-          const handleTouchStart = (e: TouchEvent) => {
-            // Only handle single touch
-            if (e.touches.length !== 1) return;
-            handleTouch();
-          };
-          
-          card.addEventListener("touchstart", handleTouchStart, { passive: true });
-          
-          // Clean up
-          return () => {
-            observer.disconnect();
-            if (!isMobile) {
-              card.removeEventListener("mouseenter", () => hoverTl.play());
-              card.removeEventListener("mouseleave", () => hoverTl.reverse());
-            } else {
-              card.removeEventListener("touchstart", handleTouchStart);
-              clearTimeout(touchTimeout);
-            }
-          };
-        }
-      }
-    }
-    
     return () => {
       observer.disconnect();
     };
-  }, [index, isVisible, isMobile, prefersReducedMotion]);
+  }, [isVisible, index]);
 
   return (
     <div 
       ref={cardRef}
-      className={`card group relative overflow-hidden backdrop-blur-sm border border-transparent will-change-transform
-        ${compact ? 'p-2' : 'p-2 md:p-4'}
-      `}
+      className={`card-container ${isVisible ? 'visible' : ''} group`}
       style={{
         minWidth: compact ? 0 : undefined,
-        maxWidth: compact ? '100%' : undefined,
-        opacity: 0, // Start invisible, GSAP will handle visibility
-        transform: 'translateZ(0)' // FIXED: Force hardware acceleration to prevent card drift
+        maxWidth: compact ? '100%' : undefined
       }}
     >
-      {/* Gradient border effect on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-400/30 via-amber-500/30 to-dark-600/50 opacity-0 group-hover:opacity-100 transition-opacity duration-700 rounded-2xl -z-10"></div>
-      
-      <div className={`overflow-hidden rounded-xl mb-2 relative ${compact ? 'h-52 sm:h-48 md:h-36' : 'h-64 md:h-64'}`}> 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
-        <img 
-          ref={imageRef}
-          src={image} 
-          alt={title} 
-          className={`w-full h-full object-cover object-center ${compact ? 'rounded-xl' : ''} animate-item`}
-          loading="lazy"
-          style={{ transform: 'translateZ(0)' }} /* FIXED: Force hardware acceleration */
-        />
-        <div className="absolute bottom-0 left-0 right-0 p-2 z-20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
-          <button 
-            onClick={() => onDetailsClick(program)}
-            className="inline-flex items-center text-black bg-gradient-to-r from-amber-400/90 to-amber-500/90 hover:from-amber-400 hover:to-amber-500 px-2 py-1 rounded-lg transition-all text-xs animate-item"
-            aria-label={`Learn more about ${title}`}
-          >
-            Learn more <ArrowRight className="ml-1 w-3 h-3" />
-          </button>
+      <div className={`card relative overflow-hidden backdrop-blur-sm border border-transparent
+        ${compact ? 'p-2' : 'p-2 md:p-4'}
+        group-hover:border-amber-500/20
+      `}>
+        {/* Enhanced gradient border effect on hover */}
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-400/30 via-amber-500/30 to-dark-600/50 opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-2xl -z-10"></div>
+        
+        {/* Subtle glow effect on hover */}
+        <div className="absolute -inset-1 bg-amber-500/5 opacity-0 group-hover:opacity-100 blur-xl transition-all duration-1000 rounded-3xl -z-20"></div>
+        
+        <div className={`overflow-hidden rounded-xl mb-2 relative ${compact ? 'h-52 sm:h-48 md:h-36' : 'h-64 md:h-64'}`}> 
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10 transition-opacity duration-500 group-hover:opacity-70"></div>
+          <img 
+            ref={imageRef}
+            src={image} 
+            alt={title} 
+            className={`w-full h-full object-cover object-center ${compact ? 'rounded-xl' : ''} img-active transition-transform duration-1000 group-hover:scale-105`}
+            loading="lazy"
+          />
+          <div className="absolute bottom-0 left-0 right-0 p-2 z-20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+            <button 
+              onClick={() => onDetailsClick(program)}
+              className="inline-flex items-center text-black bg-gradient-to-r from-amber-400/90 to-amber-500/90 hover:from-amber-400 hover:to-amber-500 px-2 py-1 rounded-lg transition-all text-xs shadow hover:shadow-amber-400/30"
+              aria-label={`Learn more about ${title}`}
+            >
+              Learn more <ArrowRight className="ml-1 w-3 h-3" />
+            </button>
+          </div>
         </div>
-      </div>
-      <div ref={contentRef} className="p-0 mb-2">
-        <h3 className={`font-bold mb-1 animate-item ${compact ? 'text-sm md:text-base' : 'text-base md:text-xl'}`}>{title}</h3>
-        <p className={`text-gray-400 mb-2 animate-item ${compact ? 'text-xs' : 'text-xs md:text-sm'} line-clamp-3`}>{description}</p>
+        <div className="p-0 mb-2">
+          <h3 
+            ref={titleRef}
+            className={`font-bold mb-1 ${compact ? 'text-sm md:text-base' : 'text-base md:text-xl'} text-active group-hover:text-amber-400 transition-colors duration-300`}
+          >
+            {title}
+          </h3>
+          <p 
+            ref={descRef}
+            className={`text-gray-400 mb-2 ${compact ? 'text-xs' : 'text-xs md:text-sm'} line-clamp-3 text-active group-hover:text-gray-300 transition-colors duration-300`}
+          >
+            {description}
+          </p>
+        </div>
       </div>
     </div>
   );
