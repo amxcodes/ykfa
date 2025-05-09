@@ -10,249 +10,122 @@
 // This service worker configuration provides offline capabilities, 
 // faster loading of cached resources, and background updates.
 
-// Type definitions for service worker
-interface WorkerGlobalScope {
-  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
-  location: Location;
-}
+// Ultra-minimal service worker implementation
+// Only focused on current page resources with strict memory limits
 
-interface Clients {
-  claim(): Promise<void>;
-}
+// Using minimal type declarations for service worker APIs
+declare const self: any;
 
-interface ServiceWorkerGlobalScope extends WorkerGlobalScope {
-  skipWaiting(): Promise<void>;
-  clients: Clients;
-  registration: ServiceWorkerRegistration;
-  caches: CacheStorage;
-}
+// Single cache for current page only
+const CURRENT_PAGE_CACHE = 'current-page-only-v1';
 
-declare const self: ServiceWorkerGlobalScope;
-
-// Custom type definitions
-interface ExtendableEvent extends Event {
-  waitUntil(promise: Promise<any>): void;
-}
-
-interface FetchEvent extends Event {
-  request: Request;
-  respondWith(response: Promise<Response> | Response): void;
-}
-
-// Performance configuration - minimalist mode
-const ENABLE_LOGGING = false;
-const ULTRA_LIGHT_MODE = true;
-
-// Very limited cache configuration
-const CACHE_NAMES = {
-  STATIC: 'ykfa-static-v6',
-  IMAGES: 'ykfa-images-v6'
-};
-
-// Extremely small cache limits to prevent memory growth
-const CACHE_LIMITS = {
-  STATIC: 5,  // Only essential files
-  IMAGES: 5   // Only essential images
-};
-
-// Only the absolute essentials
-const CRITICAL_ASSETS = [
-  '/',
-  '/index.html'
-];
-
-// Minimal network timeout
-const FETCH_TIMEOUT = 2000;
-
-// Track active fetch operations
-let activeFetchCount = 0;
-const MAX_CONCURRENT_FETCHES = 2; // Strictly limit concurrent fetches
-
-// Very simplified logging - errors only
-function logError(message: string, ...args: any[]) {
-  console.error(message, ...args);
-}
-
-// Minimal fetch with timeout
-const fetchWithTimeout = (request: Request, timeoutMs = FETCH_TIMEOUT) => {
-  // Skip all image requests except favicon and logo
-  if (request.destination === 'image') {
-    const url = request.url;
-    if (!url.includes('favicon') && !url.includes('logo')) {
-      // Return empty transparent GIF for all non-essential images
-      return Promise.resolve(new Response(
-        'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-        { 
-          status: 200, 
-          headers: { 'Content-Type': 'image/gif;base64' }
-        }
-      ));
-    }
-  }
-
-  // Strictly limit concurrent requests
-  if (activeFetchCount >= MAX_CONCURRENT_FETCHES) {
-    // Skip non-essential requests when at limit
-    if (request.destination !== 'document' && !request.url.includes('index.html')) {
-      return Promise.resolve(new Response('Too many requests', { status: 429 }));
-    }
-  }
-  
-  activeFetchCount++;
-  
-  return new Promise<Response>((resolve, reject) => {
-    const controller = new AbortController();
-    const { signal } = controller;
-    
-    const timeout = setTimeout(() => {
-      controller.abort();
-      activeFetchCount--;
-      reject(new Error('Timeout'));
-    }, timeoutMs);
-    
-    fetch(request, { 
-      signal,
-      credentials: 'omit', // Skip credentials for better performance
-      mode: 'cors',
-      cache: 'force-cache' // Prefer browser cache when available
-    })
-    .then(response => {
-      clearTimeout(timeout);
-      activeFetchCount--;
-      resolve(response);
-    })
-    .catch(error => {
-      clearTimeout(timeout);
-      activeFetchCount--;
-      reject(error);
-    });
-  });
-};
-
-// Extremely minimal cache trimming
-const trimCache = async (cacheName: string, maxItems: number) => {
-  try {
-    const cache = await caches.open(cacheName);
-    const keys = await cache.keys();
-    
-    if (keys.length <= maxItems) return;
-    
-    // Delete all but the most recent items
-    const itemsToDelete = keys.slice(0, keys.length - maxItems);
-    await Promise.all(itemsToDelete.map(key => cache.delete(key)));
-  } catch (error) {
-    // Ignore errors
-  }
-};
-
-// Minimalist configuration - focus on static content only
-const CACHE_NAME = 'ykfa-static-v7';
-const HOMEPAGE_URL = '/';
-
-// Install handler - only cache homepage
-self.addEventListener('install', (event => {
-  const extEvent = event as ExtendableEvent;
+// Installation - do nothing but activate immediately
+self.addEventListener('install', (event: any) => {
   self.skipWaiting();
-  
-  // Only cache the homepage
-  extEvent.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.add(HOMEPAGE_URL))
-      .catch(() => {})
-  );
-}) as EventListener);
+});
 
-// Activate handler - clean up old caches
-self.addEventListener('activate', (event => {
-  const extEvent = event as ExtendableEvent;
-  
-  extEvent.waitUntil(
+// Activation - clean all caches except current
+self.addEventListener('activate', (event: any) => {
+  event.waitUntil(
     caches.keys()
       .then(cacheNames => {
         return Promise.all(
           cacheNames
-            .filter(name => name !== CACHE_NAME)
+            .filter(name => name !== CURRENT_PAGE_CACHE)
             .map(name => caches.delete(name))
         );
       })
       .then(() => self.clients.claim())
       .catch(() => {})
   );
-}) as EventListener);
+});
 
-// Transparent 1x1 GIF (much smaller than base64)
-const TRANSPARENT_GIF_URL = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+// Transparent 1x1 GIF inline data (40 bytes total)
+const TRANSPARENT_GIF = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
-// Fetch handler - ultra minimal
-self.addEventListener('fetch', (event => {
-  const fetchEvent = event as FetchEvent;
-  const request = fetchEvent.request;
+// Main fetch handler - extremely restricted
+self.addEventListener('fetch', (event: any) => {
+  const request = event.request;
   
   // Skip non-GET requests
   if (request.method !== 'GET') return;
-  
-  // Handle different types of requests
+
+  // Check if this is current page navigation
   if (request.mode === 'navigate') {
-    // For navigation requests, use cache with network fallback
-    fetchEvent.respondWith(
-      caches.match(request)
+    // For navigation, use simple pass-through to network
+    return;
+  }
+  
+  // Skip all third-party requests
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+  
+  // Skip all background requests
+  if (request.destination === 'image' && 
+     !request.url.includes('favicon') && 
+     !request.url.includes('logo') && 
+     !request.url.includes('icon')) {
+    // Return tiny transparent GIF for all non-critical images
+    event.respondWith(
+      new Response(
+        TRANSPARENT_GIF.substr(TRANSPARENT_GIF.indexOf(',') + 1),
+        { 
+          status: 200, 
+          headers: { 'Content-Type': 'image/gif' }
+        }
+      )
+    );
+    return;
+  }
+  
+  // Only cache current page HTML and critical resources
+  if (request.destination === 'document') {
+    event.respondWith(
+      fetch(request)
         .then(response => {
-          // Explicitly handle undefined case
-          return response || fetch(request)
-            .catch(() => {
-              // If fetch fails, fallback to homepage
-              return caches.match(HOMEPAGE_URL)
-                .then(homeResponse => {
-                  // Handle possible undefined
-                  return homeResponse || new Response('', { 
-                    status: 200, 
-                    headers: { 'Content-Type': 'text/html' }
+          // Clone the response to store in cache
+          const responseToCache = response.clone();
+          
+          // Update cache for current page only
+          caches.open(CURRENT_PAGE_CACHE)
+            .then(cache => {
+              // Only store HTML and its essential resources
+              cache.put(request, responseToCache);
+              
+              // Limit cache size to 5 entries
+              cache.keys().then(keys => {
+                if (keys.length > 5) {
+                  // Delete oldest entries
+                  keys.slice(0, keys.length - 5).forEach(key => {
+                    cache.delete(key);
                   });
-                });
-            });
+                }
+              });
+            })
+            .catch(() => {});
+          
+          return response;
+        })
+        .catch(() => {
+          // If network fails, try cache
+          return caches.match(request) as Promise<Response>;
         })
     );
     return;
   }
   
-  // For images, return transparent GIF for most requests to save memory/bandwidth
-  if (request.destination === 'image') {
-    const url = request.url;
-    // Only fetch critical images
-    if (!url.includes('favicon') && !url.includes('logo') && !url.includes('icon')) {
-      fetchEvent.respondWith(
-        new Response(
-          // Use smallest possible transparent GIF
-          TRANSPARENT_GIF_URL.substr(TRANSPARENT_GIF_URL.indexOf(',') + 1),
-          { 
-            status: 200, 
-            headers: { 'Content-Type': 'image/gif' }
-          }
-        )
-      );
-      return;
-    }
-  }
-  
-  // For all other requests, use cache-first approach
-  fetchEvent.respondWith(
-    caches.match(request)
-      .then(cachedResponse => {
-        // Return cached response if available
-        if (cachedResponse) return cachedResponse;
-        
-        // Otherwise fetch from network but don't cache the result
-        return fetch(request)
-          .catch(() => new Response('', { status: 408 }));
-      })
-  );
-}) as EventListener);
+  // For other resources (scripts, styles), just pass through to network
+  // Don't attempt to cache or intercept
+});
 
-// Delayed registration
+// Minimal registration function
 export function register() {
   if ('serviceWorker' in navigator) {
-    // Register after a long delay
+    // Only register after page is fully loaded
     window.addEventListener('load', () => {
+      // Delay registration to prioritize page resources loading first
       setTimeout(() => {
         navigator.serviceWorker.register('/serviceWorker.js')
           .catch(() => {});
@@ -261,7 +134,7 @@ export function register() {
   }
 }
 
-// Only unregister is needed - other functions are removed to reduce code size
+// Unregister function (only one we need)
 export function unregister() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready

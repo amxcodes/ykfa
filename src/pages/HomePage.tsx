@@ -744,37 +744,37 @@ const ProgramCard = ({
           // Then sequence the visibility of children with delays
           const card = cardRef.current;
           if (card) {
-            // Add transition delay to the card container
-            card.style.transitionDelay = `${index * 150}ms`;
+            // Add transition delay to the card container based on position
+            card.style.transitionDelay = `${index * 120}ms`;
           }
           
           // Add visible class to image with delay
           if (imageRef.current) {
             setTimeout(() => {
               imageRef.current?.classList.add('visible');
-            }, index * 150 + 200);
+            }, index * 120 + 250);
           }
           
           // Add visible class to title with delay
           if (titleRef.current) {
             setTimeout(() => {
               titleRef.current?.classList.add('visible');
-            }, index * 150 + 350);
+            }, index * 120 + 400);
           }
           
           // Add visible class to description with delay
           if (descRef.current) {
             setTimeout(() => {
               descRef.current?.classList.add('visible');
-            }, index * 150 + 450);
+            }, index * 120 + 500);
           }
           
           observer.unobserve(entry.target);
         }
       },
       {
-        threshold: 0.15,
-        rootMargin: '0px 0px -50px 0px'
+        threshold: 0.12, // Slightly reduce threshold for earlier triggering
+        rootMargin: '0px 0px -40px 0px' // Adjust margin to trigger a bit sooner
       }
     );
 
@@ -800,11 +800,11 @@ const ProgramCard = ({
         ${compact ? 'p-2' : 'p-2 md:p-4'}
         group-hover:border-amber-500/20
       `}>
-        {/* Enhanced gradient border effect on hover */}
+        {/* Enhanced gradient border effect on hover with smoother transitions */}
         <div className="absolute inset-0 bg-gradient-to-br from-amber-400/30 via-amber-500/30 to-dark-600/50 opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-2xl -z-10"></div>
         
-        {/* Subtle glow effect on hover */}
-        <div className="absolute -inset-1 bg-amber-500/5 opacity-0 group-hover:opacity-100 blur-xl transition-all duration-1000 rounded-3xl -z-20"></div>
+        {/* Subtle glow effect on hover with longer duration */}
+        <div className="absolute -inset-1 bg-amber-500/5 opacity-0 group-hover:opacity-100 blur-xl transition-all duration-1200 rounded-3xl -z-20"></div>
         
         <div className={`overflow-hidden rounded-xl mb-2 relative ${compact ? 'h-52 sm:h-48 md:h-36' : 'h-64 md:h-64'}`}> 
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10 transition-opacity duration-500 group-hover:opacity-70"></div>
@@ -812,10 +812,10 @@ const ProgramCard = ({
             ref={imageRef}
             src={image} 
             alt={title} 
-            className={`w-full h-full object-cover object-center ${compact ? 'rounded-xl' : ''} img-active transition-transform duration-1000 group-hover:scale-105`}
+            className="w-full h-full object-cover object-center img-active group-hover:scale-105"
             loading="lazy"
           />
-          <div className="absolute bottom-0 left-0 right-0 p-2 z-20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+          <div className="absolute bottom-0 left-0 right-0 p-2 z-20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">
             <button 
               onClick={() => onDetailsClick(program)}
               className="inline-flex items-center text-black bg-gradient-to-r from-amber-400/90 to-amber-500/90 hover:from-amber-400 hover:to-amber-500 px-2 py-1 rounded-lg transition-all text-xs shadow hover:shadow-amber-400/30"
@@ -828,13 +828,19 @@ const ProgramCard = ({
         <div className="p-0 mb-2">
           <h3 
             ref={titleRef}
-            className={`font-bold mb-1 ${compact ? 'text-sm md:text-base' : 'text-base md:text-xl'} text-active group-hover:text-amber-400 transition-colors duration-300`}
+            className="font-bold mb-1 text-active group-hover:text-amber-400 transition-colors duration-300"
+            style={{
+              fontSize: compact ? (isMobile ? '0.875rem' : '1rem') : (isMobile ? '1rem' : '1.25rem')
+            }}
           >
             {title}
           </h3>
           <p 
             ref={descRef}
-            className={`text-gray-400 mb-2 ${compact ? 'text-xs' : 'text-xs md:text-sm'} line-clamp-3 text-active group-hover:text-gray-300 transition-colors duration-300`}
+            className="text-gray-400 mb-2 line-clamp-3 text-active group-hover:text-gray-300 transition-colors duration-300"
+            style={{
+              fontSize: compact ? '0.75rem' : (isMobile ? '0.75rem' : '0.875rem')
+            }}
           >
             {description}
           </p>
