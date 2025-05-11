@@ -292,60 +292,75 @@ const CustomCursor = () => {
     
     // Use a throttled version of mousemove to improve performance
     let lastUpdateTime = 0;
-    const updateThreshold = 16; // Only update every ~16ms (60fps)
+    const updateThreshold = 20; // Increased threshold to 20ms (~50fps) to reduce updates
+    let rafId: number | null = null;
     
-    // Function to update cursor position - throttled
+    // Function to update cursor position - throttled and using requestAnimationFrame
     const updatePosition = (e: MouseEvent) => {
       const now = Date.now();
       if (now - lastUpdateTime < updateThreshold) return;
       
-      lastUpdateTime = now;
-      setPosition({ x: e.clientX, y: e.clientY });
-      
-      // Check cursor interaction type based on element attributes
-      const target = e.target as HTMLElement;
-      
-      // First check for custom attributes
-      if (target.hasAttribute(CURSOR_ATTRIBUTES.HIDDEN) || target.closest(`[${CURSOR_ATTRIBUTES.HIDDEN}]`)) {
-        setCursorType('hidden');
-      } else if (target.hasAttribute(CURSOR_ATTRIBUTES.CLICK) || target.closest(`[${CURSOR_ATTRIBUTES.CLICK}]`)) {
-        setCursorType('click');
-      } else if (target.hasAttribute(CURSOR_ATTRIBUTES.HOVER) || target.closest(`[${CURSOR_ATTRIBUTES.HOVER}]`)) {
-        setCursorType('hover');
-      } else {
-        // Fallback to CSS cursor property detection
-        const isPointer = 
-          target.tagName === 'BUTTON' || 
-          target.tagName === 'A' || 
-          target.closest('button') || 
-          target.closest('a') ||
-          window.getComputedStyle(target).cursor === 'pointer';
-          
-        // Always maintain cursor visibility even on hover elements
-        setCursorType(isPointer ? 'hover' : 'default');
-        
-        // Ensure cursor remains visible on all elements
-        if (isVisible && isCursorEnabled) {
-          setIsVisible(true);
-        }
+      // Cancel any pending animation frame
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
       }
+      
+      // Use requestAnimationFrame to batch DOM updates
+      rafId = requestAnimationFrame(() => {
+        lastUpdateTime = now;
+        setPosition({ x: e.clientX, y: e.clientY });
+        
+        // Check cursor interaction type based on element attributes
+        const target = e.target as HTMLElement;
+        
+        // First check for custom attributes
+        if (target.hasAttribute(CURSOR_ATTRIBUTES.HIDDEN) || target.closest(`[${CURSOR_ATTRIBUTES.HIDDEN}]`)) {
+          setCursorType('hidden');
+        } else if (target.hasAttribute(CURSOR_ATTRIBUTES.CLICK) || target.closest(`[${CURSOR_ATTRIBUTES.CLICK}]`)) {
+          setCursorType('click');
+        } else if (target.hasAttribute(CURSOR_ATTRIBUTES.HOVER) || target.closest(`[${CURSOR_ATTRIBUTES.HOVER}]`)) {
+          setCursorType('hover');
+        } else {
+          // Simplified pointer detection to reduce DOM operations
+          const isPointer = 
+            target.tagName === 'BUTTON' || 
+            target.tagName === 'A' || 
+            target.closest('button') || 
+            target.closest('a');
+          
+          // Only check computed style if necessary (expensive operation)
+          const isPointerStyle = isPointer || window.getComputedStyle(target).cursor === 'pointer';
+          
+          // Always maintain cursor visibility even on hover elements
+          setCursorType(isPointerStyle ? 'hover' : 'default');
+          
+          // Ensure cursor remains visible on all elements
+          if (isVisible && isCursorEnabled) {
+            setIsVisible(true);
+          }
+        }
+        
+        rafId = null;
+      });
     };
 
-    // Tracking mouse movement - options for better performance
+    // Tracking mouse movement with passive listener for better performance
     window.addEventListener('mousemove', updatePosition, { passive: true });
     
     // Track mouse leave
     const handleMouseLeave = () => {
       setIsVisible(false);
     };
-    window.addEventListener('mouseleave', handleMouseLeave);
+    window.addEventListener('mouseleave', handleMouseLeave, { passive: true });
     
     // Track mouse enter
     const handleMouseEnter = () => setIsVisible(true);
-    window.addEventListener('mouseenter', handleMouseEnter);
+    window.addEventListener('mouseenter', handleMouseEnter, { passive: true });
     
     // Track mouse clicks with glass break effect - optimized
     let breakEffectActive = false;
+    let breakEffectTimeoutId: number | null = null;
+    
     const handleMouseDown = (e: MouseEvent) => {
       setIsClicking(true);
       
@@ -355,26 +370,41 @@ const CustomCursor = () => {
         setClickPosition({ x: e.clientX, y: e.clientY });
         setShowGlassBreak(true);
         
-        // Reset glass break after animation completes
-        setTimeout(() => {
+        // Clear any existing timeout to prevent memory leaks
+        if (breakEffectTimeoutId !== null) {
+          clearTimeout(breakEffectTimeoutId);
+        }
+        
+        // Reset after animation completes
+        breakEffectTimeoutId = window.setTimeout(() => {
           setShowGlassBreak(false);
           breakEffectActive = false;
-        }, 500); // Duration of animation
+          breakEffectTimeoutId = null;
+        }, 800); // Match this with the animation duration
       }
     };
+    window.addEventListener('mousedown', handleMouseDown, { passive: true });
     
     const handleMouseUp = () => setIsClicking(false);
-    window.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mouseup', handleMouseUp);
-    
-    // Cleanup
+    window.addEventListener('mouseup', handleMouseUp, { passive: true });
+
     return () => {
-      document.body.style.cursor = 'auto';
+      // Clean up all event listeners
       window.removeEventListener('mousemove', updatePosition);
       window.removeEventListener('mouseleave', handleMouseLeave);
       window.removeEventListener('mouseenter', handleMouseEnter);
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
+      
+      // Cancel any pending animation frames
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      
+      // Clear any active timeouts
+      if (breakEffectTimeoutId !== null) {
+        clearTimeout(breakEffectTimeoutId);
+      }
     };
   }, [isTouchDevice, isVisible, isCursorEnabled]);
 

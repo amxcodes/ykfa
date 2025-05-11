@@ -14,14 +14,14 @@ import { PROGRAM_SELECTED_EVENT } from '../components/Footer';
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
-// Moved static arrays outside components
+// Moved static arrays outside components and optimized image dimensions
 const ABOUT_IMAGES_DATA = [
-  "https://i.postimg.cc/Cxr6mHh9/IMG-9857.jpg", 
-  "https://i.postimg.cc/JnVx2p9Y/IMG-9840.jpg", 
-  "https://i.postimg.cc/P50QC6rf/IMG-9847.jpg", 
-  "https://i.postimg.cc/dtx8fWCR/IMG-9853.jpg", 
-  "https://i.postimg.cc/GpkGHd5z/IMG-9860.jpg", 
-  "https://i.postimg.cc/5ytC7vNk/Screenshot-2025-05-07-010532.png"
+  "https://i.postimg.cc/Cxr6mHh9/IMG-9857.jpg?auto=compress&w=800&q=75", 
+  "https://i.postimg.cc/JnVx2p9Y/IMG-9840.jpg?auto=compress&w=800&q=75", 
+  "https://i.postimg.cc/P50QC6rf/IMG-9847.jpg?auto=compress&w=800&q=75", 
+  "https://i.postimg.cc/dtx8fWCR/IMG-9853.jpg?auto=compress&w=800&q=75", 
+  "https://i.postimg.cc/GpkGHd5z/IMG-9860.jpg?auto=compress&w=800&q=75", 
+  "https://i.postimg.cc/5ytC7vNk/Screenshot-2025-05-07-010532.png?auto=compress&w=800&q=75"
 ];
 
 const PROGRAMS_DATA = [
@@ -528,68 +528,126 @@ const ProgramDetailsModal = ({
     const modalElement = modalRef.current;
     const contentElement = contentRef.current;
 
-    if (gsapTimelineRef.current) {
-      gsapTimelineRef.current.kill();
-      gsapTimelineRef.current = null;
+    // Clean up previous timeline to prevent memory leaks
+    try {
+      if (gsapTimelineRef.current) {
+        // Use optional chaining to safely access the kill method
+        gsapTimelineRef.current?.kill?.();
+        gsapTimelineRef.current = null;
+      }
+    } catch (error) {
+      console.error('Error cleaning up GSAP timeline:', error);
     }
 
     if (isOpen) {
+      // Manage scroll behavior
       if (!didHideScrollRef.current) {
         originalBodyOverflowRef.current = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
         didHideScrollRef.current = true;
       }
 
-      gsap.set(modalElement, { display: 'flex', opacity: 1 });
-      gsap.set(contentElement, { opacity: 0, y: 30, scale: 0.95 });
+      // Set initial states without creating new GSAP instances
+      modalElement.style.display = 'flex';
+      modalElement.style.opacity = '1';
+      contentElement.style.opacity = '0';
+      contentElement.style.transform = 'translateY(30px) scale(0.95)';
+      
+      // Create a single timeline for better memory management
+      gsapTimelineRef.current = gsap.timeline({
+        paused: true,
+        onComplete: () => {
+          // Clear references when animation completes
+          if (!isOpen) {
+            gsapTimelineRef.current = null;
+          }
+        }
+      });
 
-      gsapTimelineRef.current = gsap.timeline();
-
-      if (isMobile.current) {
-        gsapTimelineRef.current
-          .to(modalElement, { backgroundColor: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(8px)', duration: 0.3 })
-          .to(contentElement, { opacity: 1, y: 0, scale: 1, duration: 0.3 }, "-=0.2");
-    } else {
-        gsapTimelineRef.current
-          .to(modalElement, {
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        backdropFilter: 'blur(8px)',
-        duration: 0.4,
-        ease: 'power2.out'
-          })
-          .to(contentElement, 
-            { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'back.out(1.7)' }, 
-            "-=0.2"
-      );
-      }
+      // Use simpler animations with fewer properties
+      gsapTimelineRef.current
+        .to(modalElement, { 
+          backgroundColor: 'rgba(0, 0, 0, 0.7)', 
+          backdropFilter: 'blur(8px)', 
+          duration: 0.3,
+          overwrite: 'auto' // Prevents conflicting animations
+        })
+        .to(contentElement, { 
+          opacity: 1, 
+          y: 0, 
+          scale: 1, 
+          duration: 0.3,
+          overwrite: 'auto'
+        }, "-=0.2");
+        
+      // Start the paused timeline
+      gsapTimelineRef.current.play();
     } else {
       if (modalElement.style.display === 'flex') {
+        // Clean up previous timeline to prevent memory leaks
+        try {
+          if (gsapTimelineRef.current) {
+            // Use optional chaining to safely access the kill method
+            gsapTimelineRef.current?.kill?.();
+          }
+        } catch (error) {
+          console.error('Error cleaning up GSAP timeline:', error);
+        }
+        
+        // Create a new timeline with memory cleanup
         gsapTimelineRef.current = gsap.timeline({
+          paused: true,
           onComplete: () => {
+            // Restore scroll behavior
             if (didHideScrollRef.current) {
               document.body.style.overflow = originalBodyOverflowRef.current;
               didHideScrollRef.current = false;
             }
-            gsap.set(modalElement, { display: 'none', opacity: 0 });
+            
+            // Set final state directly without creating new GSAP instances
+            modalElement.style.display = 'none';
+            modalElement.style.opacity = '0';
+            
+            // Clear the timeline reference to free memory
+            try {
+              if (gsapTimelineRef.current) {
+                // Use optional chaining to safely access the kill method
+                gsapTimelineRef.current?.kill?.();
+                gsapTimelineRef.current = null;
+              }
+            } catch (error) {
+              console.error('Error cleaning up GSAP timeline:', error);
+            }
           }
         });
 
+        // Simplified animation with fewer properties
         gsapTimelineRef.current
           .to(contentElement, {
-            opacity: 0, y: 20, scale: 0.95, duration: 0.3, ease: 'power2.in'
+            opacity: 0, 
+            y: 20, 
+            scale: 0.95, 
+            duration: 0.25,
+            overwrite: 'auto'
           })
           .to(modalElement, {
             backgroundColor: 'rgba(0, 0, 0, 0)',
             backdropFilter: 'blur(0px)',
-        opacity: 0,
-            duration: 0.3, ease: 'power2.in'
+            opacity: 0,
+            duration: 0.25,
+            overwrite: 'auto'
           }, "-=0.1");
+          
+        // Start the paused timeline
+        gsapTimelineRef.current.play();
       } else {
+        // Handle case when modal is already hidden
         if (didHideScrollRef.current) {
-             document.body.style.overflow = originalBodyOverflowRef.current;
-             didHideScrollRef.current = false;
+          document.body.style.overflow = originalBodyOverflowRef.current;
+          didHideScrollRef.current = false;
         }
-        gsap.set(modalElement, { display: 'none', opacity: 0 });
+        modalElement.style.display = 'none';
+        modalElement.style.opacity = '0';
       }
     }
     
@@ -632,7 +690,7 @@ const ProgramDetailsModal = ({
         opacity: 0,      // Start transparent; GSAP controls opacity
         backgroundColor: 'rgba(0, 0, 0, 0)', // Initial
         backdropFilter: 'blur(0px)',      // Initial
-        paddingTop: 'calc(64px + 12vh)', // Pushed down more
+        paddingTop: 'calc(64px + 8vh)', // Reduced top padding for mobile
         paddingBottom: '2vh',
         paddingLeft: '16px',
         paddingRight: '16px'
@@ -646,7 +704,7 @@ const ProgramDetailsModal = ({
           opacity: 0,
           transform: 'translateY(30px) scale(0.95)', // Initial state for GSAP entrance
           maxWidth: isMobile.current ? '90%' : '500px',
-          marginTop: '0px',
+          marginTop: isMobile.current ? '-20px' : '0px', // Negative margin to push up on mobile
         }}
       >
         {/* Enhanced close button */}
