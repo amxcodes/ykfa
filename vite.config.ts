@@ -36,7 +36,8 @@ export default defineConfig({
         ]
       },
       workbox: {
-        disableGeneratePrompt: true,
+        // Fixed property name as per error message
+        disableDevLogs: true,
       },
       devOptions: {
         enabled: false,
