@@ -402,7 +402,7 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
 
       {/* Settings Grid */}
       <div className="space-y-2">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="sync">
           {settingSections.map((section, index) => (
             <motion.div
               key={section.key}

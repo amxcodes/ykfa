@@ -15,10 +15,24 @@ const ContactPage = () => {
   const subjectRef = useRef<HTMLInputElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
   const interestRef = useRef<HTMLSelectElement>(null);
+  const isMounted = useRef(true);
+  const whatsappTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Only keep UI state in React state 
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formError, setFormError] = useState('');
+  
+  // Cleanup timeouts and set isMounted flag
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+      if (whatsappTimeout.current) {
+        clearTimeout(whatsappTimeout.current);
+        whatsappTimeout.current = null;
+      }
+    };
+  }, []);
   
   // Initialize form values
   useEffect(() => {
@@ -108,8 +122,16 @@ ${message}
     setFormSubmitted(true);
     setFormError('');
     
-    setTimeout(() => {
+    // Clear any existing timeout
+    if (whatsappTimeout.current) {
+      clearTimeout(whatsappTimeout.current);
+    }
+    
+    // Set new timeout with ref for cleanup
+    whatsappTimeout.current = setTimeout(() => {
+      if (isMounted.current) {
       window.open(whatsappURL, '_blank');
+      }
     }, 1500);
   };
 
@@ -325,7 +347,7 @@ ${message}
                 <div className="absolute top-0 left-0 w-16 h-16 border-t-2 border-l-2 border-amber-400/40 rounded-tl-3xl"></div>
                 <div className="absolute bottom-0 right-0 w-16 h-16 border-b-2 border-r-2 border-amber-400/40 rounded-br-3xl"></div>
                 
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="sync">
                   {formSubmitted ? (
                     <motion.div 
                       key="success"

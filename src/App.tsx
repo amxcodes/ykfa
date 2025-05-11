@@ -181,10 +181,65 @@ function App() {
   const [showContextMenu, setShowContextMenu] = useState(false);
   const [contextMenuPos, setContextMenuPos] = useState({ x: 0, y: 0 });
   const [activeWidget, setActiveWidget] = useState<WidgetType>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const pageLoadedRef = useRef(false);
+  const animFrameRef = useRef<number | null>(null);
+
+  // Signal page load completion
+  useEffect(() => {
+    let loadTimeoutId: number | undefined;
+    
+    if (!pageLoadedRef.current) {
+      pageLoadedRef.current = true;
+      
+      // Cancel any pending animation frames
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+      
+      // Force browser to complete loading state 
+      loadTimeoutId = window.setTimeout(() => {
+        // Signal to browser that the page has finished loading
+        if (document && window) {
+          // Cannot assign to readyState since it's read-only
+          // Just dispatch the events to indicate page is loaded
+          window.dispatchEvent(new Event('load'));
+          window.dispatchEvent(new Event('pageshow'));
+          
+          // Set page loaded state in history
+          window.history.replaceState(
+            { ...(window.history.state || {}), pageLoaded: true },
+            document.title
+          );
+          
+          // Set a flag on window to indicate page is fully loaded
+          (window as any).__YKFA_LOADED__ = true;
+        }
+      }, 100);
+    }
+    
+    return () => {
+      // Clean up any pending operations when component unmounts
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+        animFrameRef.current = null;
+      }
+      // Clear the timeout to prevent memory leaks
+      if (loadTimeoutId) {
+        clearTimeout(loadTimeoutId);
+      }
+      pageLoadedRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     // Initialize animation observer
     const initializeObserver = () => {
+      // Clean up any existing observer first
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+      
       const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
@@ -201,30 +256,59 @@ function App() {
         }
       );
 
-      // Observe all elements with animate-fade-up class
-      document.querySelectorAll('.animate-fade-up').forEach((element) => {
-        // Remove any existing active class to reset animation
-        element.classList.remove('active');
-        observer.observe(element);
+      observerRef.current = observer;
+      
+      try {
+        // Limit the number of elements to observe to prevent performance issues
+        const elements = document.querySelectorAll('.animate-fade-up');
+        const maxElements = 20; // Arbitrary limit to avoid performance issues
         
-        // Add active class immediately if element is already in viewport
-        const rect = element.getBoundingClientRect();
-        if (rect.top < window.innerHeight && rect.bottom >= 0) {
-          element.classList.add('active');
-          observer.unobserve(element);
-        }
-      });
+        // Observe elements with a limit
+        Array.from(elements).slice(0, maxElements).forEach((element) => {
+          // Remove any existing active class to reset animation
+          element.classList.remove('active');
+          observer.observe(element);
+          
+          // Add active class immediately if element is already in viewport
+          const rect = element.getBoundingClientRect();
+          if (rect.top < window.innerHeight && rect.bottom >= 0) {
+            element.classList.add('active');
+            observer.unobserve(element);
+          }
+        });
+      } catch (error) {
+        console.error('Error initializing IntersectionObserver:', error);
+      }
 
       return observer;
     };
 
     // Small delay to ensure DOM is updated after route change
     const timeoutId = setTimeout(() => {
-      const observer = initializeObserver();
-      return () => observer.disconnect();
+      // Use a safe requestAnimationFrame pattern
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+      
+      animFrameRef.current = requestAnimationFrame(() => {
+        initializeObserver();
+        animFrameRef.current = null;
+      });
     }, 100);
 
-    return () => clearTimeout(timeoutId);
+    return () => {
+      clearTimeout(timeoutId);
+      // Clean up observer on unmount
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
+      // Cancel any pending animation frames
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+        animFrameRef.current = null;
+      }
+    };
   }, [location.pathname]); // Re-run when route changes
 
   // Reset active widget when navigating away from home page
@@ -232,7 +316,12 @@ function App() {
     if (location.pathname !== '/' && activeWidget !== null) {
       setActiveWidget(null);
     }
-  }, [location.pathname]);
+    
+    // Close context menu when route changes
+    if (showContextMenu) {
+      setShowContextMenu(false);
+    }
+  }, [location.pathname, activeWidget, showContextMenu]);
 
   // Handle right-click to show custom context menu
   const handleContextMenu = (e: ReactMouseEvent<HTMLDivElement, MouseEvent>) => {

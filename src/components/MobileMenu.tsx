@@ -29,6 +29,7 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
     width: window.innerWidth,
     height: window.innerHeight
   });
+  const [isMobile, setIsMobile] = useState(false);
 
   // Track screen size changes with debounce for better performance
   useEffect(() => {
@@ -102,6 +103,21 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
     };
   }, [isOpen, onClose]);
 
+  // Check if device is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    // Use passive listener for better performance
+    window.addEventListener('resize', checkMobile, { passive: true });
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+    };
+  }, []);
+  
   // Calculate responsive dimensions
   const getContainerStyles = () => {
     const width = screenSize.width;
@@ -163,20 +179,19 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
     }
   };
 
-  // Only render the portal when menu is open
-  if (!isOpen) return null;
-
   // Use portal to render outside the component hierarchy
   return ReactDOM.createPortal(
-    <AnimatePresence mode="wait" key="mobile-menu">
-      <div 
-        className="fixed inset-0 flex items-center justify-center z-[999]"
-        style={{ 
-          willChange: 'opacity',
-          overscrollBehavior: 'none',
-          touchAction: 'none'
-        }}
-      >
+    <AnimatePresence mode="sync">
+      {isOpen && (
+        <div 
+          key="mobile-menu-container"
+          className="fixed inset-0 flex items-center justify-center z-[999]"
+          style={{ 
+            willChange: 'opacity',
+            overscrollBehavior: 'none',
+            touchAction: 'none'
+          }}
+        >
         {/* Backdrop with blur */}
         <motion.div
           className="absolute inset-0 bg-black/80 backdrop-blur-xl"
@@ -304,10 +319,13 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
                 <AppleStoreIcon />
                 <span className="whitespace-nowrap">Download on App Store</span>
               </motion.a>
+              
+              {/* App store links section ends here */}
             </div>
           </div>
         </motion.div>
       </div>
+      )}
       
       {/* CSS animation for menu items */}
       <style>{`

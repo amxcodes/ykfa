@@ -342,8 +342,10 @@ const ProgramsPage = () => {
   // State management
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [scrollY, setScrollY] = useState<number>(0);
-  const [cardsVisible, setCardsVisible] = useState<boolean[]>([]);
+  // Track scroll position for animations
+  const [scrollPosition, setScrollPosition] = useState<number>(0);
+  // Track which cards are visible for animations
+  const [visibleCards, setVisibleCards] = useState<boolean[]>([]);
   const [activeFilter, setActiveFilter] = useState<'all' | 'images' | 'videos'>('all');
   
   // Refs for animation elements
@@ -361,17 +363,20 @@ const ProgramsPage = () => {
   // Initialize card refs
   useEffect(() => {
     cardRefs.current = Array(galleryImages.length).fill(null);
-    setCardsVisible(Array(galleryImages.length).fill(false));
+    setVisibleCards(Array(galleryImages.length).fill(false));
   }, []);
 
-  // Load images
+  // Load images with proper cleanup
   useEffect(() => {
+    const imageElements: HTMLImageElement[] = [];
     const loadImages = async () => {
       try {
         await Promise.all(
           galleryImages.map((img) => {
             return new Promise((resolve) => {
               const image = new Image();
+              imageElements.push(image);
+              
               image.onload = () => resolve(null);
               image.onerror = () => {
                 image.src = img.fallbackSrc;
@@ -389,12 +394,20 @@ const ProgramsPage = () => {
     };
 
     loadImages();
+    
+    // Cleanup function to remove event listeners from image elements
+    return () => {
+      imageElements.forEach(img => {
+        img.onload = null;
+        img.onerror = null;
+      });
+    };
   }, []);
 
   // Track scroll position with simplified footer awareness
   useEffect(() => {
     const handleScroll = () => {
-      setScrollY(window.scrollY);
+      setScrollPosition(window.scrollY);
     };
     
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -410,7 +423,7 @@ const ProgramsPage = () => {
     if (isLoading) return;
     
     // When filter changes, make all cards visible immediately
-    setCardsVisible(Array(filteredGalleryImages.length).fill(true));
+    setVisibleCards(Array(filteredGalleryImages.length).fill(true));
     
   }, [isLoading, activeFilter, filteredGalleryImages.length]);
 
@@ -429,7 +442,7 @@ const ProgramsPage = () => {
         if (entry.isIntersecting) {
           const index = cardRefs.current.findIndex(ref => ref === entry.target);
           if (index !== -1) {
-            setCardsVisible(prev => {
+            setVisibleCards((prev: boolean[]) => {
               const newState = [...prev];
               newState[index] = true;
               return newState;

@@ -1,0 +1,143 @@
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Navigate } from 'react-router-dom';
+
+interface Props {
+  children: ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+  errorType: 'network' | 'server' | 'unknown' | 'notFound';
+  errorCode?: number;
+  errorMessage?: string;
+  isRedirecting: boolean; // Track if we're already redirecting to prevent loops
+}
+
+/**
+ * NetworkErrorBoundary catches network related errors and JavaScript errors
+ * in the component tree, displaying an appropriate error page
+ */
+class NetworkErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      hasError: false,
+      errorType: 'unknown',
+      errorCode: undefined,
+      errorMessage: undefined,
+      isRedirecting: false
+    };
+  }
+
+  /**
+   * Analyzes the error and determines its type
+   */
+  static getDerivedStateFromError(error: any): State {
+    // Update state to show appropriate fallback UI based on error type
+    let errorType: State['errorType'] = 'unknown';
+    let errorCode: number | undefined = undefined;
+    let errorMessage: string | undefined = error?.message;
+
+    // Check if error is a TypeError related to network
+    if (
+      error instanceof TypeError && 
+      (error.message.includes('fetch') || 
+       error.message.includes('network') ||
+       error.message.includes('Failed to fetch'))
+    ) {
+      errorType = 'network';
+    } 
+    // Server errors (500+) from fetch responses or other sources
+    else if (
+      error?.status >= 500 || 
+      (error?.name === 'HttpError' && error?.statusCode >= 500) ||
+      error?.message?.includes('server error') ||
+      error?.message?.includes('500')
+    ) {
+      errorType = 'server';
+      errorCode = error?.status || error?.statusCode || 500;
+    }
+    // Not found errors (404)
+    else if (
+      error?.status === 404 || 
+      (error?.name === 'HttpError' && error?.statusCode === 404) ||
+      error?.message?.includes('not found') ||
+      error?.message?.includes('404')
+    ) {
+      errorType = 'notFound';
+      errorCode = 404;
+    }
+
+    return { 
+      hasError: true, 
+      errorType,
+      errorCode,
+      errorMessage,
+      isRedirecting: false
+    };
+  }
+
+  /**
+   * Log error information for debugging
+   */
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // Log error to console (could be replaced with external error reporting service)
+    console.error(
+      '🚨 NetworkErrorBoundary caught an error:',
+      {
+        error,
+        type: typeof error,
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        componentStack: errorInfo.componentStack
+      }
+    );
+  }
+
+  /**
+   * Reset error state when new children are received
+   */
+  componentDidUpdate(prevProps: Props) {
+    // If children change and we have an error, reset the error state
+    if (prevProps.children !== this.props.children && this.state.hasError) {
+      this.setState({
+        hasError: false,
+        errorType: 'unknown',
+        errorCode: undefined,
+        errorMessage: undefined,
+        isRedirecting: false
+      });
+    }
+  }
+
+  render() {
+    if (this.state.hasError && !this.state.isRedirecting) {
+      // Set isRedirecting flag to prevent infinite loops
+      this.setState({ isRedirecting: true });
+      
+      // Check if we're already on an error page
+      const currentPath = window.location.pathname;
+      if (currentPath.startsWith('/error/')) {
+        return this.props.children; // Don't redirect if already on error page
+      }
+      
+      // Redirect to appropriate error page with error details
+      return (
+        <Navigate 
+          to={`/error/${this.state.errorType}`} 
+          state={{ 
+            code: this.state.errorCode,
+            message: this.state.errorMessage
+          }} 
+          replace
+        />
+      );
+    }
+
+    // No error, render children normally
+    return this.props.children;
+  }
+}
+
+export default NetworkErrorBoundary; 

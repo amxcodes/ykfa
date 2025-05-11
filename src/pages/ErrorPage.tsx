@@ -121,9 +121,15 @@ const ErrorPage = ({
     // If error type isn't specified but there's a code, determine the error type
     if (code) {
       if (code === 404) {
+        // Only navigate if we're not already on the not-found page
+        if (location.pathname !== '/error/not-found') {
         navigate('/error/not-found', { replace: true });
+        }
       } else if (code >= 500) {
+        // Only navigate if we're not already on the server error page
+        if (location.pathname !== '/error/server') {
         navigate('/error/server', { replace: true });
+        }
       }
     }
     
@@ -138,7 +144,20 @@ const ErrorPage = ({
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [code, navigate]);
+  }, [code, navigate, location.pathname]);
+
+  // Extract error data from location if available
+  useEffect(() => {
+    if (location.state) {
+      const stateCode = (location.state as any).code;
+      const stateMessage = (location.state as any).message;
+      
+      if (stateCode || stateMessage) {
+        // We have state from a redirect but won't trigger another navigation
+        console.log('Error page received state:', location.state);
+      }
+    }
+  }, [location]);
 
   // Override error type if offline - using useMemo to avoid unnecessary calculations
   const effectiveErrorType = useMemo(() => 
@@ -158,7 +177,9 @@ const ErrorPage = ({
     if (effectiveErrorType === 'network' || effectiveErrorType === 'server' || effectiveErrorType === 'unknown') {
       // Retry current page
       setTimeout(() => {
-        window.location.reload();
+        // Clear previous browser history to avoid history pollution
+        window.history.replaceState({}, document.title, '/');
+        window.location.href = '/'; // Hard redirect to home
       }, 500);
     } else if (effectiveErrorType === 'notFound') {
       // Navigate home

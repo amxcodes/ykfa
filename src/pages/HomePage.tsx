@@ -1,4 +1,4 @@
-import { ArrowRight, Timer, MessageCircle, Bot, Calculator, X, ChevronRight, Calendar, Users } from 'lucide-react';
+import { ArrowRight, Timer, MessageCircle, Bot, Calculator, X, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Hero from '../components/Hero';
 import { useState, useEffect, useRef, useContext, useCallback } from 'react';
@@ -14,6 +14,59 @@ import { PROGRAM_SELECTED_EVENT } from '../components/Footer';
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
+// Moved static arrays outside components
+const ABOUT_IMAGES_DATA = [
+  "https://i.postimg.cc/Cxr6mHh9/IMG-9857.jpg", 
+  "https://i.postimg.cc/JnVx2p9Y/IMG-9840.jpg", 
+  "https://i.postimg.cc/P50QC6rf/IMG-9847.jpg", 
+  "https://i.postimg.cc/dtx8fWCR/IMG-9853.jpg", 
+  "https://i.postimg.cc/GpkGHd5z/IMG-9860.jpg", 
+  "https://i.postimg.cc/5ytC7vNk/Screenshot-2025-05-07-010532.png"
+];
+
+const PROGRAMS_DATA = [
+  {
+    id: 1,
+    title: "MMA + GYM",
+    description: "Complete package with access to all MMA classes and gym facilities.",
+    image: "https://images.pexels.com/photos/4761798/pexels-photo-4761798.jpeg?auto=compress&fit=crop&w=800&q=80",
+    link: "/programs",
+    category: "mma"
+  },
+  {
+    id: 2,
+    title: "MMA ONLY",
+    description: "Access to all MMA classes including boxing, kickboxing, and grappling techniques.",
+    image: "https://images.pexels.com/photos/4761797/pexels-photo-4761797.jpeg?auto=compress&fit=crop&w=800&q=80",
+    link: "/programs",
+    category: "mma"
+  },
+  {
+    id: 3,
+    title: "GROUP FITNESS",
+    description: "High-energy group fitness sessions for improved strength and endurance.",
+    image: "https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&fit=crop&w=800&q=80",
+    link: "/programs",
+    category: "fitness"
+  },
+  {
+    id: 4,
+    title: "KARATE",
+    description: "Traditional Karate training with belt progression and certification system.",
+    image: "https://images.pexels.com/photos/7045573/pexels-photo-7045573.jpeg?auto=compress&fit=crop&w=800&q=80",
+    link: "/programs",
+    category: "karate"
+  },
+  {
+    id: 5,
+    title: "GYM ONLY",
+    description: "Unlimited access to our modern gym with top-tier equipment.",
+    image: "https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&fit=crop&w=800&q=80",
+    link: "/programs",
+    category: "fitness"
+  }
+];
+
 const FloatingButtons = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showWhatsAppWidget, setShowWhatsAppWidget] = useState(false);
@@ -24,11 +77,21 @@ const FloatingButtons = () => {
   const [height, setHeight] = useState('');
   const [bmiResult, setBmiResult] = useState<number | null>(null);
   const { activeWidget, setActiveWidget } = useContext(WidgetContext);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   // Hide initial tooltip after 5 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
+      if (isMounted.current) {
       setShowInitialTooltip(false);
+      }
     }, 5000);
     return () => clearTimeout(timer);
   }, []);
@@ -36,12 +99,9 @@ const FloatingButtons = () => {
   // Listen for active widget changes from context menu
   useEffect(() => {
     if (activeWidget) {
-      // Expand the floating button menu
+      if (isMounted.current) {
       setIsExpanded(true);
-      
-      // Hide the initial tooltip if it's showing
       setShowInitialTooltip(false);
-      
       // Open the appropriate widget
       switch (activeWidget) {
         case 'whatsapp':
@@ -60,9 +120,8 @@ const FloatingButtons = () => {
           setShowBMICalculator(true);
           break;
       }
-      
-      // Reset the active widget in context to avoid reopening on component remounts
-      setActiveWidget(null);
+        setActiveWidget(null); // This is fine as it's part of context, not local state
+      }
     }
   }, [activeWidget, setActiveWidget]);
 
@@ -410,40 +469,43 @@ const ProgramDetailsModal = ({
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const isMobile = useRef(window.innerWidth < 768);
+  const isMobile = useRef(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+  const gsapTimelineRef = useRef<gsap.core.Timeline | null>(null);
+  const originalBodyOverflowRef = useRef<string>('');
+  const didHideScrollRef = useRef<boolean>(false);
   
-  // Generate details for each program based on MembershipPage.tsx data
   const getProgramDetails = useCallback(() => {
-    const details = {
-      schedule: program.title === "MMA + GYM" ? "24/7 gym access (3 days per week), 3 mixed martial arts classes per week" :
-                program.title === "MMA ONLY" ? "3 mixed martial arts classes per week" :
-                program.title === "GROUP FITNESS" ? "2 days cardio, 4 days strength training" :
-                program.title === "KARATE" ? "2 classes per week" : "24/7 access",
-      trainer: program.title === "MMA + GYM" ? "Yaseen & Team" :
-               program.title === "MMA ONLY" ? "Yaseen" :
-               program.title === "GROUP FITNESS" ? "Fitness Coach" :
-               program.title === "KARATE" ? "Master Yaseen" : "Self-guided with assistance",
-      features: program.title === "MMA + GYM" ? [
+    const pTitle = program?.title || '';
+    return {
+      schedule: pTitle === "MMA + GYM" ? "24/7 gym access (3 days per week), 3 mixed martial arts classes per week" :
+                pTitle === "MMA ONLY" ? "3 mixed martial arts classes per week" :
+                pTitle === "GROUP FITNESS" ? "2 days cardio, 4 days strength training" :
+                pTitle === "KARATE" ? "2 classes per week" : "24/7 access",
+      trainer: pTitle === "MMA + GYM" ? "Yaseen & Team" :
+               pTitle === "MMA ONLY" ? "Yaseen" :
+               pTitle === "GROUP FITNESS" ? "Fitness Coach" :
+               pTitle === "KARATE" ? "Master Yaseen" : "Self-guided with assistance",
+      features: pTitle === "MMA + GYM" ? [
                   "Access to gym, 3 days per week", 
                   "3 mixed martial arts classes per week", 
                   "Strength and conditioning, HIIT and cardio sessions",
                   "Basic fitness assessment",
                   "All MMA disciplines included"
                 ] :
-                program.title === "MMA ONLY" ? [
+                pTitle === "MMA ONLY" ? [
                   "3 mixed martial arts classes per week",
                   "Boxing, Kickboxing, Muay Thai", 
                   "Wrestling, Judo, BJJ", 
                   "Strength and conditioning, HIIT and cardio sessions",
                   "Technical sessions" 
                 ] :
-                program.title === "GROUP FITNESS" ? [
+                pTitle === "GROUP FITNESS" ? [
                   "Group cardio sessions with coach", 
                   "2 days cardio and HIIT",
                   "4 days strength training", 
                   "Basic fitness assessment" 
                 ] :
-                program.title === "KARATE" ? [
+                pTitle === "KARATE" ? [
                   "2 classes per week",
                   "Belt progression and certification system", 
                   "Kata and kumite practice", 
@@ -456,236 +518,479 @@ const ProgramDetailsModal = ({
                   "Free weights and machines"
                 ]
     };
-    return details;
-  }, [program.title]);
+  }, [program?.title]);
   
   const details = getProgramDetails();
   
-  // Animation for modal open/close - optimized for performance
   useEffect(() => {
     if (!modalRef.current || !contentRef.current) return;
     
-    // Skip GSAP for mobile to improve performance
-    if (isMobile.current) {
-      if (isOpen) {
-        // Simple CSS-based animation for mobile
-        modalRef.current.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-        modalRef.current.style.backdropFilter = 'blur(8px)';
-        
-        contentRef.current.style.opacity = '1';
-        contentRef.current.style.transform = 'translateY(0) scale(1)';
-        
-        // Lock body scroll
-        document.body.style.overflow = 'hidden';
-      } else {
-        // Animate out
-        modalRef.current.style.backgroundColor = 'rgba(0, 0, 0, 0)';
-        modalRef.current.style.backdropFilter = 'blur(0px)';
-        
-        contentRef.current.style.opacity = '0';
-        contentRef.current.style.transform = 'translateY(20px) scale(0.95)';
-        
-        // Restore body scroll
-        document.body.style.overflow = '';
-      }
-    } else {
-      // Use GSAP for desktop where performance is better
+    const modalElement = modalRef.current;
+    const contentElement = contentRef.current;
+
+    if (gsapTimelineRef.current) {
+      gsapTimelineRef.current.kill();
+      gsapTimelineRef.current = null;
+    }
+
     if (isOpen) {
-      // Animate backdrop
-      gsap.to(modalRef.current, {
+      if (!didHideScrollRef.current) {
+        originalBodyOverflowRef.current = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        didHideScrollRef.current = true;
+      }
+
+      gsap.set(modalElement, { display: 'flex', opacity: 1 });
+      gsap.set(contentElement, { opacity: 0, y: 30, scale: 0.95 });
+
+      gsapTimelineRef.current = gsap.timeline();
+
+      if (isMobile.current) {
+        gsapTimelineRef.current
+          .to(modalElement, { backgroundColor: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(8px)', duration: 0.3 })
+          .to(contentElement, { opacity: 1, y: 0, scale: 1, duration: 0.3 }, "-=0.2");
+    } else {
+        gsapTimelineRef.current
+          .to(modalElement, {
         backgroundColor: 'rgba(0, 0, 0, 0.7)',
         backdropFilter: 'blur(8px)',
         duration: 0.4,
         ease: 'power2.out'
-      });
-      
-      // Animate content
-      gsap.fromTo(contentRef.current,
-        {
-          opacity: 0,
-          y: 30,
-          scale: 0.95
-        },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.5,
-          ease: 'back.out(1.7)'
-        }
+          })
+          .to(contentElement, 
+            { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'back.out(1.7)' }, 
+            "-=0.2"
       );
-      
-      // Lock body scroll
-      document.body.style.overflow = 'hidden';
+      }
     } else {
-      // Animate out
-      gsap.to(modalRef.current, {
-        backgroundColor: 'rgba(0, 0, 0, 0)',
-        backdropFilter: 'blur(0px)',
-        duration: 0.3,
-        ease: 'power2.in'
-      });
-      
-      gsap.to(contentRef.current, {
+      if (modalElement.style.display === 'flex') {
+        gsapTimelineRef.current = gsap.timeline({
+          onComplete: () => {
+            if (didHideScrollRef.current) {
+              document.body.style.overflow = originalBodyOverflowRef.current;
+              didHideScrollRef.current = false;
+            }
+            gsap.set(modalElement, { display: 'none', opacity: 0 });
+          }
+        });
+
+        gsapTimelineRef.current
+          .to(contentElement, {
+            opacity: 0, y: 20, scale: 0.95, duration: 0.3, ease: 'power2.in'
+          })
+          .to(modalElement, {
+            backgroundColor: 'rgba(0, 0, 0, 0)',
+            backdropFilter: 'blur(0px)',
         opacity: 0,
-        y: 20,
-        scale: 0.95,
-        duration: 0.3,
-        ease: 'power2.in'
-      });
-      
-      // Restore body scroll
-      document.body.style.overflow = '';
+            duration: 0.3, ease: 'power2.in'
+          }, "-=0.1");
+      } else {
+        if (didHideScrollRef.current) {
+             document.body.style.overflow = originalBodyOverflowRef.current;
+             didHideScrollRef.current = false;
+        }
+        gsap.set(modalElement, { display: 'none', opacity: 0 });
       }
     }
     
-    // Cleanup
     return () => {
-      document.body.style.overflow = '';
+      if (gsapTimelineRef.current) {
+        gsapTimelineRef.current.kill();
+        gsapTimelineRef.current = null;
+      }
+      if (didHideScrollRef.current) {
+        document.body.style.overflow = originalBodyOverflowRef.current;
+        didHideScrollRef.current = false;
+      }
     };
-  }, [isOpen]);
+  }, [isOpen, getProgramDetails]);
   
-  // Close on escape key
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && isOpen) {
         onClose();
       }
     };
-    
-    if (isOpen) {
       window.addEventListener('keydown', handleEsc);
-    }
-    
     return () => {
       window.removeEventListener('keydown', handleEsc);
     };
   }, [isOpen, onClose]);
   
-  // Simple close handler
-  const closeModal = () => {
-    onClose();
-  };
-  
-  if (!isOpen) return null;
+  // Conditional rendering: Don't render if not open and not currently animating out.
+  if (!isOpen && modalRef.current && modalRef.current.style.display === 'none' && 
+      (!gsapTimelineRef.current || !gsapTimelineRef.current.isActive())) {
+    return null;
+  }
   
   return (
     <div 
       ref={modalRef}
-      className="fixed inset-0 z-50 flex items-start justify-center"
+      className="fixed inset-0 z-50 items-start justify-center"
       style={{
-        backgroundColor: 'rgba(0, 0, 0, 0)',
-        backdropFilter: 'blur(0px)',
-        paddingTop: 'calc(64px + 6vh)', // Increased from 2vh to 6vh to move modal down
+        display: 'none', // Start hidden; GSAP controls display:flex
+        opacity: 0,      // Start transparent; GSAP controls opacity
+        backgroundColor: 'rgba(0, 0, 0, 0)', // Initial
+        backdropFilter: 'blur(0px)',      // Initial
+        paddingTop: 'calc(64px + 12vh)', // Pushed down more
         paddingBottom: '2vh',
         paddingLeft: '16px',
         paddingRight: '16px'
       }}
     >
-      {/* Backdrop for catching outside clicks */}
-      <div 
-        className="absolute inset-0 z-0" 
-        onClick={closeModal}
-      ></div>
-      
+      <div className="absolute inset-0 z-0" onClick={onClose}></div>
       <div 
         ref={contentRef}
-        className="relative w-full max-w-sm bg-dark-800/90 backdrop-blur-lg border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl z-10"
+        className="relative w-full max-w-sm bg-gradient-to-b from-dark-800/95 to-dark-900/95 backdrop-blur-lg border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl z-10"
         style={{ 
           opacity: 0,
-          transition: isMobile.current ? 'opacity 0.3s ease, transform 0.3s ease' : 'none',
-          maxWidth: isMobile.current ? '90%' : '500px', // Narrower overall
-          marginTop: '0px', // Remove top margin to center in viewport
+          transform: 'translateY(30px) scale(0.95)', // Initial state for GSAP entrance
+          maxWidth: isMobile.current ? '90%' : '500px',
+          marginTop: '0px',
         }}
       >
-        {/* Close button - absolute position */}
+        {/* Enhanced close button */}
         <button 
-          type="button"
-          onClick={closeModal}
-          className="absolute top-2 right-2 z-20 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-dark-800/90 hover:bg-dark-700 text-white border border-white/20 shadow-lg transition-all duration-300"
-          aria-label="Close modal"
+          type="button" 
+          onClick={onClose} 
+          className="absolute top-3 right-3 p-1.5 rounded-full bg-black/30 hover:bg-black/50 border border-white/10 hover:border-white/20 transition-all z-20 group"
         >
-          <X size={12} className="text-amber-400 sm:hidden" />
-          <X size={16} className="text-amber-400 hidden sm:block" />
+          <X size={14} className="text-white/70 group-hover:text-white transition-colors" />
         </button>
         
-        {/* Hero section - smaller on mobile */}
-        <div className="relative h-24 sm:h-36 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-t from-dark-800 to-transparent z-10"></div>
-          <img 
-            src={program.image} 
-            alt={program.title} 
-            className="w-full h-full object-cover"
-            loading="eager"
-            width="500"
-            height="200"
-            decoding="async"
-            fetchPriority="high"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = "https://images.pexels.com/photos/4761352/pexels-photo-4761352.jpeg?auto=compress&cs=tinysrgb&w=800";
-            }}
-          />
-          <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-4 z-10">
-            <div className="inline-block mb-0.5 sm:mb-1 py-0.5 px-1.5 sm:px-2 rounded-full bg-amber-400/20 border border-amber-400/30">
-              <p className="text-amber-400 font-medium text-[7px] sm:text-[10px]">{program.category.toUpperCase()}</p>
-            </div>
-            <h2 className="text-sm sm:text-xl font-bold text-white">{program.title}</h2>
-          </div>
+        {/* Image with overlay gradient */}
+        <div className="relative">
+          {program?.image && (
+            <>
+              <img 
+                src={program.image} 
+                alt={program.title || 'Program'} 
+                className="w-full h-48 object-cover" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-dark-900/80 via-transparent to-dark-900/30"></div>
+            </>
+          )}
         </div>
         
-        {/* Content - more compact on mobile */}
-        <div className="p-2 sm:p-4">
-          {/* Description - shorter and more compact */}
-          <div id="program-description" className="mb-1.5 sm:mb-3">
-            <p className="text-gray-300 text-[10px] sm:text-xs leading-tight">{program.description}</p>
+        {/* Enhanced content section - reduced padding */}
+        <div className="p-4 pb-3">
+          <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500 mb-3">
+            {program?.title || 'Program Details'}
+          </h3>
+          
+          <div className="space-y-2">
+            <div className="flex items-start gap-2">
+              <div className="w-5 h-5 rounded-full bg-amber-400/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <Timer size={12} className="text-amber-400" />
+              </div>
+              <div>
+                <p className="text-xs font-medium text-amber-400/80 mb-0.5">Schedule</p>
+                <p className="text-sm text-gray-300">{details.schedule}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-2">
+              <div className="w-5 h-5 rounded-full bg-amber-400/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-amber-400/80 mb-0.5">Trainer</p>
+                <p className="text-sm text-gray-300">{details.trainer}</p>
+              </div>
+            </div>
           </div>
           
-          {/* Features - simplified */}
-          <div className="mb-2 sm:mb-3 bg-dark-700/30 rounded-lg p-1.5 sm:p-2.5">
-            <ul className="grid grid-cols-1 sm:grid-cols-1 gap-y-0.5 sm:gap-y-1">
-              {details.features.map((feature, index) => (
-                <li key={index} className="flex items-start gap-1 sm:gap-1.5 text-gray-300 text-[9px] sm:text-xs">
-                  <ChevronRight className="w-2 h-2 sm:w-3 sm:h-3 text-amber-400 mt-0.5 flex-shrink-0" />
-                  <span>{feature}</span>
+          <div className="mt-3 pt-2 border-t border-white/5">
+            <p className="text-xs font-medium text-amber-400/80 mb-2">Features</p>
+            <ul className="space-y-1">
+              {details.features?.map((feature: string, idx: number) => (
+                <li key={idx} className="flex items-start gap-2">
+                  <div className="w-3 h-3 rounded-full bg-amber-400/10 flex items-center justify-center flex-shrink-0 mt-1">
+                    <div className="w-1 h-1 rounded-full bg-amber-400"></div>
+                  </div>
+                  <p className="text-sm text-gray-300 flex-1">{feature}</p>
                 </li>
               ))}
             </ul>
           </div>
           
-          {/* Schedule and Trainer in a row */}
-          <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mb-2 sm:mb-3">
-            <div className="bg-dark-700/30 rounded-lg p-1.5 sm:p-2.5">
-              <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
-                <Calendar className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-400" />
-                <h4 className="font-medium text-[9px] sm:text-xs text-white">Schedule</h4>
-                </div>
-              <p className="text-gray-300 text-[8px] sm:text-[10px] leading-tight pl-3.5 sm:pl-4">{details.schedule}</p>
+          {/* Bottom padding */}
+          <div className="h-1"></div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// AboutDetailsModal component
+const AboutDetailsModal = ({
+  isOpen,
+  onClose
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const glareRef = useRef<HTMLDivElement>(null);
+  const isMobile = useRef(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+  const gsapTimelineRef = useRef<gsap.core.Timeline | null>(null);
+  const originalBodyOverflowRef = useRef<string>('');
+  const didHideScrollRef = useRef<boolean>(false);
+  
+  // Enhanced mouse effects for desktop
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (isMobile.current || !glareRef.current || !contentRef.current) return;
+    
+    const rect = contentRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const xPercent = x / rect.width * 100;
+    const yPercent = y / rect.height * 100;
+    
+    // Enhanced glare effect
+    glareRef.current.style.background = `
+      radial-gradient(circle at ${xPercent}% ${yPercent}%, 
+        rgba(255,255,255,0.15) 0%, 
+        rgba(255,255,255,0.1) 25%, 
+        rgba(255,255,255,0) 50%)
+    `;
+    
+    if (contentRef.current) {
+      // Enhanced 3D rotation with subtle scaling
+      gsap.to(contentRef.current, {
+        rotateX: (yPercent - 50) / 20,
+        rotateY: (xPercent - 50) / 20,
+        scale: 1.02,
+        duration: 0.5,
+        ease: "power2.out"
+      });
+    }
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    if (!isMobile.current && contentRef.current) {
+      gsap.to(contentRef.current, {
+        rotateX: 0,
+        rotateY: 0,
+        scale: 1,
+        duration: 0.6,
+        ease: "elastic.out(1, 0.8)"
+      });
+    }
+  }, []);
+  
+  useEffect(() => {
+    if (!modalRef.current || !contentRef.current) return;
+
+    const modalElement = modalRef.current;
+    const contentElement = contentRef.current;
+
+    if (gsapTimelineRef.current) {
+      gsapTimelineRef.current.kill();
+      gsapTimelineRef.current = null;
+    }
+
+    if (isOpen) {
+      if (!didHideScrollRef.current) { // Only capture if we haven't hidden scroll yet
+        originalBodyOverflowRef.current = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        didHideScrollRef.current = true;
+      }
+
+      gsap.set(modalElement, { display: 'flex', opacity: 1 });
+      gsap.set(contentElement, { opacity: 0, y: 20, scale: 0.95, rotateX: 5 });
+
+      gsapTimelineRef.current = gsap.timeline({ defaults: { ease: "power3.out" } });
+      gsapTimelineRef.current
+        .to(modalElement, {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backdropFilter: 'blur(12px)',
+        duration: 0.5
+      })
+        .to(contentElement, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        rotateX: 0,
+        duration: 0.6,
+        ease: "back.out(1.7)"
+      }, "-=0.3");
+
+    } else {
+      if (modalElement.style.display === 'flex') {
+        gsapTimelineRef.current = gsap.timeline({
+          defaults: { ease: "power3.in" },
+          onComplete: () => {
+            if (didHideScrollRef.current) {
+              document.body.style.overflow = originalBodyOverflowRef.current;
+              didHideScrollRef.current = false;
+            }
+            gsap.set(modalElement, { display: 'none', opacity: 0 });
+          }
+        });
+
+        gsapTimelineRef.current
+          .to(contentElement, {
+        opacity: 0,
+            y: -20, // Changed to -20 to match visual expectation of animating "out and up"
+        scale: 0.95,
+            rotateX: -5, // Changed to -5
+        duration: 0.4
+      })
+          .to(modalElement, {
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        backdropFilter: 'blur(0px)',
+            opacity: 0,
+        duration: 0.3
+      }, "-=0.2");
+      } else {
+        if (didHideScrollRef.current) {
+          document.body.style.overflow = originalBodyOverflowRef.current;
+          didHideScrollRef.current = false;
+        }
+        gsap.set(modalElement, { display: 'none', opacity: 0 });
+      }
+    }
+
+    return () => {
+      if (gsapTimelineRef.current) {
+        gsapTimelineRef.current.kill();
+        gsapTimelineRef.current = null;
+      }
+      if (didHideScrollRef.current) {
+        document.body.style.overflow = originalBodyOverflowRef.current;
+        didHideScrollRef.current = false;
+      }
+    };
+  }, [isOpen]);
+
+  // Conditional rendering to allow animations to finish
+  if (!isOpen && modalRef.current && modalRef.current.style.display === 'none' && 
+      (!gsapTimelineRef.current || !gsapTimelineRef.current.isActive()) ) {
+    return null;
+  }
+
+  return (
+    <div 
+      ref={modalRef}
+      className="fixed inset-0 z-50 flex items-start justify-center"
+      style={{
+        display: 'none', 
+        opacity: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        backdropFilter: 'blur(0px)',
+        paddingTop: 'calc(64px + 6vh)', 
+        paddingBottom: '2vh',
+        paddingLeft: '16px',
+        paddingRight: '16px'
+      }}
+    >
+      <div 
+        className="absolute inset-0 z-0" 
+        onClick={onClose}
+      ></div>
+      
+      <div ref={glareRef} className="absolute inset-0 pointer-events-none"></div>
+      
+      <div 
+        ref={contentRef}
+        className="relative w-full bg-dark-800/30 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden shadow-2xl z-10"
+        style={{ 
+          opacity: 0,
+          transform: 'perspective(1000px)',
+          maxWidth: '360px', 
+          maxHeight: '80vh', 
+          margin: '0 auto',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)'
+        }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        <button 
+          type="button"
+          onClick={onClose}
+          className="absolute top-2 right-2 z-20 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-dark-800/50 backdrop-blur-md hover:bg-dark-700/50 text-white border border-white/20 shadow-lg transition-all duration-300 group"
+          aria-label="Close modal"
+        >
+          <X size={14} className="text-amber-400 group-hover:scale-110 transition-transform" />
+        </button>
+        
+        <div className="relative h-24 overflow-hidden"> 
+          <div className="absolute inset-0 bg-gradient-to-t from-dark-800/90 via-dark-800/50 to-transparent z-10"></div>
+          <img 
+            src="https://i.postimg.cc/P50QC6rf/IMG-9847.jpg" 
+            alt="YKFA Training" 
+            className="w-full h-full object-cover scale-110 hover:scale-105 transition-transform duration-[2s]"
+            loading="eager"
+          />
+          
+          {!isMobile.current && (
+            <div className="absolute inset-0 opacity-30 hidden sm:block mix-blend-soft-light">
+              <div className="absolute top-0 left-1/4 w-[100px] h-[200px] bg-blue-500/30 blur-[30px] transform -rotate-45 animate-pulse"></div>
+              <div className="absolute top-0 right-1/4 w-[100px] h-[200px] bg-amber-500/30 blur-[30px] transform rotate-45 animate-pulse delay-1000"></div>
+            </div>
+          )}
+          
+          <div className="absolute bottom-0 left-0 right-0 p-2.5 z-20"> 
+            <h2 className="text-base font-bold text-white leading-tight"> 
+              <span className="relative z-10">About <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-300">YKFA</span></span>
+              <div className="absolute -bottom-1 left-0 h-0.5 w-8 bg-gradient-to-r from-amber-400 to-amber-500 rounded-full"></div>
+            </h2>
+          </div>
+        </div>
+        
+        <div className="p-2.5 max-h-[calc(80vh-96px)] overflow-y-auto scrollbar-hide bg-dark-800/20 backdrop-blur-sm"> 
+          <div className="space-y-2.5"> 
+            <div className="bg-white/5 backdrop-blur-sm rounded-lg p-2.5 border border-white/10 shadow-inner"> 
+              <h3 className="text-xs font-semibold text-amber-400 mb-1">Our Mission</h3>
+              <p className="text-gray-300 text-xs leading-relaxed">
+                At YKFA, we empower individuals through martial arts and fitness training, developing physical strength, mental discipline, and self-confidence.
+              </p>
             </div>
             
-            <div className="bg-dark-700/30 rounded-lg p-1.5 sm:p-2.5">
-              <div className="flex items-center gap-1 sm:gap-1.5 mb-0.5 sm:mb-1">
-                <Users className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-400" />
-                <h4 className="font-medium text-[9px] sm:text-xs text-white">Trainer</h4>
-                </div>
-              <p className="text-gray-300 text-[8px] sm:text-[10px] leading-tight pl-3.5 sm:pl-4">{details.trainer}</p>
+            <div className="bg-white/5 backdrop-blur-sm rounded-lg p-2.5 border border-white/10 shadow-inner">
+              <h3 className="text-xs font-semibold text-amber-400 mb-1">About Master Yaseen</h3>
+              <p className="text-gray-300 text-xs leading-relaxed">
+                Master Yaseen brings over 20 years of martial arts experience, dedicated to mastering and teaching various disciplines with emphasis on technical precision and character development.
+              </p>
+            </div>
+            
+            <div className="bg-white/5 backdrop-blur-sm rounded-lg p-2.5 border border-white/10 shadow-inner">
+              <h3 className="text-xs font-semibold text-amber-400 mb-1">Training Programs</h3>
+              <ul className="space-y-1">
+                <li className="flex items-start gap-1">
+                  <ChevronRight className="w-3 h-3 text-amber-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-gray-300 text-xs leading-relaxed">MMA training including Boxing, Kickboxing, and Grappling</p>
+                </li>
+                <li className="flex items-start gap-1">
+                  <ChevronRight className="w-3 h-3 text-amber-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-gray-300 text-xs leading-relaxed">Traditional Karate with belt progression system</p>
+                </li>
+                <li className="flex items-start gap-1">
+                  <ChevronRight className="w-3 h-3 text-amber-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-gray-300 text-xs leading-relaxed">Group fitness classes and personal training</p>
+                </li>
+              </ul>
             </div>
           </div>
           
-          {/* CTA buttons */}
-          <div className="flex gap-1.5 sm:gap-2">
-            <a 
-              href={`/contact?program=membership&type=${program.title.toLowerCase().replace(' ', '_')}`}
-              className="flex-1 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-medium py-1.5 sm:py-2 px-2 sm:px-4 rounded-lg text-center transition-all text-[10px] sm:text-xs"
-            >
-              Join Now
-            </a>
-            
+          <div className="mt-3 pt-2.5 border-t border-white/10 flex flex-wrap gap-2 justify-center"> 
             <Link
-              to="/membership"
-              className="flex items-center justify-center gap-1 bg-white/10 hover:bg-white/15 text-white border border-white/20 font-medium py-1.5 sm:py-2 px-2 sm:px-4 rounded-lg text-center transition-all text-[10px] sm:text-xs"
+              to="/about-us"
+              className="px-2.5 py-1 rounded-md bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-medium text-xs transition-all duration-300 transform hover:scale-105 shadow-lg shadow-amber-500/20"
             >
-              <span>View Pricing</span>
-              <ArrowRight className="w-2.5 h-2.5" />
+              Know More
+            </Link>
+            <Link
+              to="/contact"
+              className="px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-white font-medium text-xs border border-white/10 hover:border-white/20 transition-all duration-300 transform hover:scale-105 shadow-lg backdrop-blur-sm"
+            >
+              Contact Us
             </Link>
           </div>
         </div>
@@ -712,21 +1017,29 @@ const ProgramCard = ({
   program: any;
   onDetailsClick: (program: any) => void;
 }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const descRef = useRef<HTMLParagraphElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   // Check if device is mobile
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(window.innerWidth <= 768);
     };
     
     checkMobile();
-    window.addEventListener('resize', checkMobile, { passive: true });
+    window.addEventListener('resize', checkMobile);
     
     return () => {
       window.removeEventListener('resize', checkMobile);
@@ -735,37 +1048,40 @@ const ProgramCard = ({
 
   // Use IntersectionObserver for smooth blur reveal
   useEffect(() => {
-    const observer = new IntersectionObserver(
+    let observer: IntersectionObserver;
+    const currentCardRef = cardRef.current;
+
+    if (currentCardRef) {
+      observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !isVisible) {
-          // Set the card visible first
+            if (isMounted.current) {
           setIsVisible(true);
+            }
           
-          // Then sequence the visibility of children with delays
           const card = cardRef.current;
           if (card) {
-            // Add transition delay to the card container based on position
             card.style.transitionDelay = `${index * 120}ms`;
           }
-          
-          // Add visible class to image with delay
           if (imageRef.current) {
             setTimeout(() => {
-              imageRef.current?.classList.add('visible');
+                if (isMounted.current && imageRef.current) {
+                  imageRef.current.classList.add('visible');
+                }
             }, index * 120 + 250);
           }
-          
-          // Add visible class to title with delay
           if (titleRef.current) {
             setTimeout(() => {
-              titleRef.current?.classList.add('visible');
+                if (isMounted.current && titleRef.current) {
+                  titleRef.current.classList.add('visible');
+                }
             }, index * 120 + 400);
           }
-          
-          // Add visible class to description with delay
           if (descRef.current) {
             setTimeout(() => {
-              descRef.current?.classList.add('visible');
+                if (isMounted.current && descRef.current) {
+                  descRef.current.classList.add('visible');
+                }
             }, index * 120 + 500);
           }
           
@@ -773,17 +1089,20 @@ const ProgramCard = ({
         }
       },
       {
-        threshold: 0.12, // Slightly reduce threshold for earlier triggering
-        rootMargin: '0px 0px -40px 0px' // Adjust margin to trigger a bit sooner
+          threshold: 0.12, 
+          rootMargin: '0px 0px -40px 0px'
       }
     );
-
-    if (cardRef.current) {
-      observer.observe(cardRef.current);
+      observer.observe(currentCardRef);
     }
 
     return () => {
+      if (observer && currentCardRef) {
+        observer.unobserve(currentCardRef);
+      }
+      if (observer) {
       observer.disconnect();
+      }
     };
   }, [isVisible, index]);
 
@@ -858,21 +1177,33 @@ const HomePage = () => {
   const programsSectionRef = useRef<HTMLElement>(null);
   const aboutImageRef = useRef<HTMLDivElement>(null);
   const [aboutImageIndex, setAboutImageIndex] = useState(0);
-  // Remove scroll lock related states
   const isMobileDevice = useRef(false);
   const autoImageChangeInterval = useRef<NodeJS.Timeout | null>(null);
   const imageTransitionInProgress = useRef(false);
+  const [imageTransitioning, setImageTransitioning] = useState(false);
+  const [transitionDirection, setTransitionDirection] = useState<'next' | 'prev' | null>(null);
+  // Create a ref to store all timeouts for proper cleanup
+  const imageTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
   
   // Force faster loading for loader
   const [forceComplete, setForceComplete] = useState(false);
+  const isMounted = useRef(true); // Mounted ref for HomePage
+
+  // Centralized isMounted effect for HomePage
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
   
   // Reduce loading time to 1 second
   useEffect(() => {
-    // Force complete after 1000ms (1 second)
     const timer = setTimeout(() => {
+      if (isMounted.current) {
       setForceComplete(true);
+      }
     }, 1000);
-    
     return () => clearTimeout(timer);
   }, []);
   
@@ -925,7 +1256,7 @@ const HomePage = () => {
         };
       } else {
         // For other programs, find in the programs array
-        matchingProgram = programs.find(p => p.title === programTitle);
+        matchingProgram = PROGRAMS_DATA.find(p => p.title === programTitle);
       }
       
       console.log("Found matching program:", matchingProgram);
@@ -962,7 +1293,7 @@ const HomePage = () => {
         };
       } else {
         // For other programs, find in the programs array
-        matchingProgram = programs.find(p => p.title === programName);
+        matchingProgram = PROGRAMS_DATA.find(p => p.title === programName);
       }
       
       if (matchingProgram) {
@@ -997,175 +1328,242 @@ const HomePage = () => {
     };
   }, []);
 
-  // Manual image change function
-  const changeImage = (direction: 'next' | 'prev') => {
+  // Manual image change function - with JS enhancement
+  const changeImage = useCallback((direction: 'next' | 'prev') => {
     if (imageTransitionInProgress.current) return;
     
-    // Clear the auto-change interval and restart it
+    // Interval is now managed by useEffect, so we only clear it here if it exists
     if (autoImageChangeInterval.current) {
       clearInterval(autoImageChangeInterval.current);
+      autoImageChangeInterval.current = null;
     }
+    
+    // Clear any existing timeouts
+    imageTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+    imageTimeoutsRef.current = [];
     
     imageTransitionInProgress.current = true;
+    if (isMounted.current) {
+    setImageTransitioning(true);
+    setTransitionDirection(direction);
+    }
     
-    // Apply individual animations instead of moving all images at once
-    if (aboutImageRef.current) {
-      // Add a subtle container animation with better physics-based easing
-      gsap.to(aboutImageRef.current, {
-        scale: 0.99,
-        duration: 0.4,
-        ease: "power2.out",
-        onComplete: () => {
-          gsap.to(aboutImageRef.current, {
-            scale: 1,
-            duration: 0.5,
-            ease: "elastic.out(1, 0.75)",
-            delay: 0.1
-          });
-        }
-      });
+    const container = aboutImageRef.current;
+    if (container) {
+      container.classList.add('transitioning');
+      container.classList.add(`transitioning-${direction}`);
       
-      // Get all image elements
-      const currentImageDiv = aboutImageRef.current.querySelector('.image-stack > div:nth-child(3)');
-      const prevImageDiv = aboutImageRef.current.querySelector('.image-stack > div:nth-child(1)');
-      const nextImageDiv = aboutImageRef.current.querySelector('.image-stack > div:nth-child(2)');
+      const targetImageIndex = direction === 'next' 
+        ? (aboutImageIndex + 1) % ABOUT_IMAGES_DATA.length
+        : (aboutImageIndex - 1 + ABOUT_IMAGES_DATA.length) % ABOUT_IMAGES_DATA.length;
       
-      // Animate side images with subtle movement based on direction
-      if (prevImageDiv && nextImageDiv) {
-        // Move side images in the opposite direction for a parallax effect
-        gsap.to(prevImageDiv, {
-          x: direction === 'next' ? '-12%' : '-2%',
-          scale: 0.95,
-          opacity: 0.6,
-          duration: 0.5,
-          ease: "power2.inOut"
-        });
-        
-        gsap.to(nextImageDiv, {
-          x: direction === 'next' ? '2%' : '12%',
-          scale: 0.95,
-          opacity: 0.6,
-          duration: 0.5,
-          ease: "power2.inOut"
-        });
-      }
+      const preloadImg = new Image();
+      preloadImg.src = ABOUT_IMAGES_DATA[targetImageIndex];
       
-      // Animate current image with smoother GSAP animation instead of CSS classes
-      if (currentImageDiv) {
-        // Exit animation
-        gsap.to(currentImageDiv, {
-          y: direction === 'next' ? -20 : 20,
-          rotationZ: direction === 'next' ? -2 : 2,
-          scale: 0.95,
-          opacity: 0,
-          filter: "blur(3px)",
-          duration: 0.6,
-          ease: "power3.inOut",
-          onComplete: () => {
-            // Update the image index
+      const continueTransition = () => {
+        const timeout1 = setTimeout(() => {
+          if (isMounted.current) {
             if (direction === 'next') {
-              setAboutImageIndex(prevIndex => (prevIndex + 1) % aboutImages.length);
+              setAboutImageIndex(prevIndex => (prevIndex + 1) % ABOUT_IMAGES_DATA.length);
             } else {
-              setAboutImageIndex(prevIndex => (prevIndex - 1 + aboutImages.length) % aboutImages.length);
+              setAboutImageIndex(prevIndex => (prevIndex - 1 + ABOUT_IMAGES_DATA.length) % ABOUT_IMAGES_DATA.length);
+            }
             }
             
-            // Small delay before entrance animation
-            setTimeout(() => {
-              if (currentImageDiv && aboutImageRef.current) {
-                // Reset position before animation
-                gsap.set(currentImageDiv, {
-                  y: direction === 'next' ? 20 : -20,
-                  rotationZ: direction === 'next' ? 2 : -2,
-                  scale: 0.95,
-                  opacity: 0,
-                  filter: "blur(3px)"
-                });
-                
-                // Entrance animation
-                gsap.to(currentImageDiv, {
-                  y: 0,
-                  rotationZ: 0,
-                  scale: 1,
-                  opacity: 1,
-                  filter: "blur(0px)",
-                  duration: 0.7,
-                  ease: "back.out(1.7)",
-                  onComplete: () => {
-                    // Animation complete, reset side images
-                    if (prevImageDiv && nextImageDiv) {
-                      gsap.to([prevImageDiv, nextImageDiv], {
-                        x: 0,
-                        scale: 0.97,
-                        opacity: 0.7,
-                        duration: 0.5,
-                        ease: "power2.out"
-                      });
+          const timeout2 = setTimeout(() => {
+            if (container) {
+              container.classList.remove('transitioning');
+              container.classList.remove(`transitioning-${direction}`);
                     }
-                    
-                    // Reset flags
                     imageTransitionInProgress.current = false;
-                    
-                    // Restart auto-change interval
-                    autoImageChangeInterval.current = setInterval(() => {
-                      if (!imageTransitionInProgress.current) {
-                        changeImage('next');
-                      }
-                    }, 5000);
-                  }
-                });
-              }
-            }, 50);
-          }
-        });
+            if (isMounted.current) {
+            setImageTransitioning(false);
+            setTransitionDirection(null);
+            }
+          }, 800);
+          
+          imageTimeoutsRef.current.push(timeout2);
+        }, 400);
+        
+        imageTimeoutsRef.current.push(timeout1);
+      };
+      
+      if (preloadImg.complete) {
+        continueTransition();
+      } else {
+        preloadImg.onload = continueTransition;
+        const fallbackTimeout = setTimeout(continueTransition, 300);
+        imageTimeoutsRef.current.push(fallbackTimeout);
       }
     }
-  };
-
-  // Auto image change with GSAP animation
+  }, [aboutImageIndex]); // Removed ABOUT_IMAGES_DATA as it's a constant
+  
+  // Clean up all timeouts when component unmounts
   useEffect(() => {
-    // Set up automatic image rotation every 5 seconds
-    autoImageChangeInterval.current = setInterval(() => {
-      if (!imageTransitionInProgress.current) {
-        changeImage('next');
-      }
-    }, 5000);
-    
     return () => {
-      if (autoImageChangeInterval.current) {
-        clearInterval(autoImageChangeInterval.current);
-      }
+      imageTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+      imageTimeoutsRef.current = [];
     };
   }, []);
 
-  // About section images array
-  const aboutImages = [
-    "https://i.postimg.cc/Cxr6mHh9/IMG-9857.jpg", // First image
-    "https://i.postimg.cc/JnVx2p9Y/IMG-9840.jpg", // Second image
-    "https://i.postimg.cc/P50QC6rf/IMG-9847.jpg", // Third image
-    "https://i.postimg.cc/dtx8fWCR/IMG-9853.jpg", // Fourth image
-    "https://i.postimg.cc/GpkGHd5z/IMG-9860.jpg", // Fifth image
-    "https://i.postimg.cc/5ytC7vNk/Screenshot-2025-05-07-010532.png" // Sixth image
-  ];
+  // useEffect to manage the auto image change interval
+  useEffect(() => {
+    // Start the interval only if component is mounted
+    if (!autoImageChangeInterval.current && !imageTransitionInProgress.current && isMounted.current) {
+      autoImageChangeInterval.current = setInterval(() => {
+        // Only proceed if component is still mounted
+        if (!imageTransitionInProgress.current && isMounted.current) {
+          changeImage('next');
+        }
+      }, 5000);
+    }
 
-  // Preload images for smoother transitions
+    // Cleanup: clear interval on unmount or when dependencies change
+    return () => {
+      if (autoImageChangeInterval.current) {
+        clearInterval(autoImageChangeInterval.current);
+        autoImageChangeInterval.current = null;
+      }
+    };
+  }, [changeImage, isMounted]); // Add isMounted to dependency array
+  
+  // JavaScript animation enhancements for the image slider (useEffect remains largely the same, focuses on DOM manipulation)
+  useEffect(() => {
+    if (!aboutImageRef.current) return;
+    
+    const container = aboutImageRef.current;
+    const currentImage = container.querySelector<HTMLElement>('.current-image');
+    const prevImage = container.querySelector<HTMLElement>('.prev-image');
+    const nextImage = container.querySelector<HTMLElement>('.next-image');
+    
+    if (!currentImage || !prevImage || !nextImage) return;
+
+    if (imageTransitioning && transitionDirection) {
+      // JS animations intentionally bypassed to defer to CSS transitions
+    } else if (!imageTransitioning) {
+      // Transition is over, reset inline styles to allow CSS to take over for the resting state.
+      if (currentImage instanceof HTMLElement) {
+        currentImage.style.opacity = '';
+        currentImage.style.transform = '';
+        currentImage.style.filter = '';
+        currentImage.style.transition = ''; // Also clear transition
+      }
+      if (nextImage instanceof HTMLElement) {
+        nextImage.style.opacity = '';
+        nextImage.style.transform = '';
+        nextImage.style.boxShadow = '';
+        nextImage.style.transition = '';
+      }
+      if (prevImage instanceof HTMLElement) {
+        prevImage.style.opacity = '';
+        prevImage.style.transform = '';
+        prevImage.style.boxShadow = '';
+        prevImage.style.transition = '';
+      }
+    }
+    
+    // Cleanup function for animation: if the component unmounts or dependencies change
+    // while an animation is "in flight" (though less critical with this new reset logic).
+    return () => {
+      // If timeouts were stored, they could be cleared here.
+      // For now, the main reset is handled by the else if block.
+    };
+  }, [imageTransitioning, transitionDirection]);
+  
+  // Add subtle parallax effect on mouse movement
+  useEffect(() => {
+    if (!aboutImageRef.current) return;
+    
+    const container = aboutImageRef.current;
+    const currentImage = container.querySelector('.current-image');
+    
+    const handleMouseMove = (e: MouseEvent) => {
+      if (imageTransitionInProgress.current || !currentImage || !(currentImage instanceof HTMLElement)) return;
+      
+      // Calculate mouse position relative to container center
+      const rect = container.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const moveX = (e.clientX - centerX) / 30; // Reduce movement amount for subtlety
+      const moveY = (e.clientY - centerY) / 30;
+      
+      // Apply subtle transform to create parallax effect
+      requestAnimationFrame(() => {
+        currentImage.style.transition = 'transform 0.5s ease-out';
+        currentImage.style.transform = `translateX(${moveX}px) translateY(${moveY}px) scale(1.01)`;
+      });
+    };
+    
+    const handleMouseLeave = () => {
+      if (!currentImage || !(currentImage instanceof HTMLElement)) return;
+      
+      requestAnimationFrame(() => {
+        currentImage.style.transition = 'transform 0.5s ease-out';
+        currentImage.style.transform = 'translateX(0) translateY(0) scale(1)';
+      });
+    };
+    
+    // Only add mouse effects on non-mobile
+    if (!isMobileDevice.current) {
+      container.addEventListener('mousemove', handleMouseMove);
+      container.addEventListener('mouseleave', handleMouseLeave);
+    }
+    
+    return () => {
+      if (!isMobileDevice.current) {
+        container.removeEventListener('mousemove', handleMouseMove);
+        container.removeEventListener('mouseleave', handleMouseLeave);
+      }
+    };
+  }, [aboutImageIndex]); // Re-attach when the image changes
+
+  // About section images array (define outside if static, or useMemo if derived)
+  // For now, assuming it's fine here as it's used by changeImage which is memoized.
+  /* const aboutImages = ABOUT_IMAGES_DATA; */ // Now using ABOUT_IMAGES_DATA directly
+
+  // Preload images for smoother transitions (useEffect for imageCache and preloadAllImages)
   useEffect(() => {
     const imageCache = new Map();
-    
-    aboutImages.forEach(src => {
-      if (!imageCache.has(src)) {
+    const preloadAllImages = async () => {
+      const loadPromises = ABOUT_IMAGES_DATA.map((src) => { // Use ABOUT_IMAGES_DATA
+        return new Promise<void>((resolve) => {
+          if (imageCache.has(src)) {
+            resolve();
+            return;
+          }
+          
         const img = new Image();
         img.src = src;
-        img.onload = () => {
+          
+          // Handle both load event and decode method
+          const completeLoad = () => {
           imageCache.set(src, true);
+            resolve();
         };
-        // Force decode the image if the browser supports it
+          
+          if (img.complete) {
+            completeLoad();
+          } else {
+            img.onload = completeLoad;
+            // Fallback in case image loading takes too long
+            setTimeout(resolve, 1000);
+          }
+          
+          // Force decode the image if browser supports it
         if ('decode' in img) {
           img.decode().catch(() => {
-            // Silently catch any decode errors
+              // Silently catch decode errors
           });
         }
-      }
+        });
     });
+      
+      // Wait for all images to preload
+      await Promise.all(loadPromises);
+    };
+    
+    // Start preloading
+    preloadAllImages();
     
     return () => {
       // Clear cache references when component unmounts
@@ -1176,15 +1574,12 @@ const HomePage = () => {
   // Regular scroll handler for testimonials
   useEffect(() => {
     const handleScroll = () => {
-      // Testimonial section tooltip logic
       if (testimonialSectionRef.current && !hasSwipedCards) {
         const rect = testimonialSectionRef.current.getBoundingClientRect();
         const isVisible = rect.top < window.innerHeight && rect.bottom >= 0;
         
-        if (isVisible) {
-          setShowTestimonialTooltip(true);
-        } else {
-          setShowTestimonialTooltip(false);
+        if (isMounted.current) { // Guard setShowTestimonialTooltip
+          setShowTestimonialTooltip(isVisible); // Simplified
         }
       }
     };
@@ -1197,52 +1592,14 @@ const HomePage = () => {
   }, [hasSwipedCards]);
 
   const handleCardSwipe = () => {
+    if (isMounted.current) { // Guard setHasSwipedCards and setShowTestimonialTooltip
     setHasSwipedCards(true);
     setShowTestimonialTooltip(false);
+    }
   };
 
-  const programs = [
-    {
-      id: 1,
-      title: "MMA + GYM",
-      description: "Complete package with access to all MMA classes and gym facilities.",
-      image: "https://images.pexels.com/photos/4761798/pexels-photo-4761798.jpeg?auto=compress&fit=crop&w=800&q=80",
-      link: "/programs",
-      category: "mma"
-    },
-    {
-      id: 2,
-      title: "MMA ONLY",
-      description: "Access to all MMA classes including boxing, kickboxing, and grappling techniques.",
-      image: "https://images.pexels.com/photos/4761797/pexels-photo-4761797.jpeg?auto=compress&fit=crop&w=800&q=80",
-      link: "/programs",
-      category: "mma"
-    },
-    {
-      id: 3,
-      title: "GROUP FITNESS",
-      description: "High-energy group fitness sessions for improved strength and endurance.",
-      image: "https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&fit=crop&w=800&q=80",
-      link: "/programs",
-      category: "fitness"
-    },
-    {
-      id: 4,
-      title: "KARATE",
-      description: "Traditional Karate training with belt progression and certification system.",
-      image: "https://images.pexels.com/photos/7045573/pexels-photo-7045573.jpeg?auto=compress&fit=crop&w=800&q=80",
-      link: "/programs",
-      category: "karate"
-    },
-    {
-      id: 5,
-      title: "GYM ONLY",
-      description: "Unlimited access to our modern gym with top-tier equipment.",
-      image: "https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&fit=crop&w=800&q=80",
-      link: "/programs",
-      category: "fitness"
-    }
-  ];
+  // programs array (define outside if static)
+  /* const programs = PROGRAMS_DATA; */ // Now using PROGRAMS_DATA directly
 
   // Add state for about modal
   const [showAboutModal, setShowAboutModal] = useState(false);
@@ -1279,7 +1636,7 @@ const HomePage = () => {
               <div className="absolute -top-6 -left-6 w-64 h-64 rounded-full bg-amber-400/20 blur-3xl hidden md:block"></div>
               <div 
                 ref={aboutImageRef}
-                className="relative z-10 rounded-xl overflow-visible"
+                className={`relative z-10 rounded-xl overflow-visible image-slider ${imageTransitioning ? 'transitioning' : ''}`}
                 style={{ 
                   height: '380px',
                   perspective: '1000px',
@@ -1301,15 +1658,13 @@ const HomePage = () => {
                   }}
                 >
                   {/* Previous image (left side, minimal peek) */}
-                  <div className="absolute top-0 bottom-0 left-[-5%] w-[12%] z-0 transform scale-[0.97] opacity-70 rounded-xl overflow-hidden shadow-lg">
+                  <div className="prev-image absolute top-0 bottom-0 left-[-5%] w-[12%] z-0 transform scale-[0.97] opacity-70 rounded-xl overflow-hidden shadow-lg transition-all duration-700">
                     <img 
-                      src={aboutImages[(aboutImageIndex - 1 + aboutImages.length) % aboutImages.length]} 
+                      src={ABOUT_IMAGES_DATA[(aboutImageIndex - 1 + ABOUT_IMAGES_DATA.length) % ABOUT_IMAGES_DATA.length]} 
                       alt="Previous" 
                       className="w-full h-full object-cover"
                       style={{ 
                         objectPosition: 'right center',
-                        transform: 'translateZ(0)',
-                        willChange: 'transform',
                       }}
                       loading="eager"
                       decoding="async"
@@ -1318,15 +1673,13 @@ const HomePage = () => {
                   </div>
                   
                   {/* Next image (right side, minimal peek) */}
-                  <div className="absolute top-0 bottom-0 right-[-5%] w-[12%] z-0 transform scale-[0.97] opacity-70 rounded-xl overflow-hidden shadow-lg">
+                  <div className="next-image absolute top-0 bottom-0 right-[-5%] w-[12%] z-0 transform scale-[0.97] opacity-70 rounded-xl overflow-hidden shadow-lg transition-all duration-700">
                     <img 
-                      src={aboutImages[(aboutImageIndex + 1) % aboutImages.length]} 
+                      src={ABOUT_IMAGES_DATA[(aboutImageIndex + 1) % ABOUT_IMAGES_DATA.length]} 
                       alt="Next" 
                       className="w-full h-full object-cover"
                       style={{ 
                         objectPosition: 'left center',
-                        transform: 'translateZ(0)',
-                        willChange: 'transform',
                       }}
                       loading="eager"
                       decoding="async"
@@ -1335,20 +1688,17 @@ const HomePage = () => {
                   </div>
                   
                   {/* Current image (center, fully visible) */}
-                  <div className="absolute inset-0 z-10 rounded-xl overflow-hidden transform transition-all duration-500 ease-out shadow-xl">
+                  <div className="current-image absolute inset-0 z-10 rounded-xl overflow-hidden transform transition-all duration-700 ease-out shadow-xl">
                     <img 
-                      src={aboutImages[aboutImageIndex]} 
+                      src={ABOUT_IMAGES_DATA[aboutImageIndex]} 
                       alt="YKFA Training" 
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-opacity duration-300"
                       loading="eager"
-                      fetchPriority="high"
                       decoding="async"
                       style={{
-                        transform: 'translateZ(0)',
-                        willChange: 'transform',
+                        opacity: imageTransitioning ? 0.8 : 1,
                       }}
                       onLoad={(e) => {
-                        // Make sure the image is fully loaded before showing it
                         e.currentTarget.style.opacity = '1';
                       }}
                     />
@@ -1356,9 +1706,9 @@ const HomePage = () => {
                   </div>
                 </div>
                 
-                {/* Progress indicator dots - enhanced style */}
+                {/* Progress indicator dots */}
                 <div className="absolute -bottom-6 left-0 right-0 flex justify-center gap-1.5 z-20">
-                  {aboutImages.map((_, index) => (
+                  {ABOUT_IMAGES_DATA.map((_, index) => (
                     <button 
                       key={index} 
                       onClick={() => {
@@ -1376,20 +1726,22 @@ const HomePage = () => {
                   ))}
                 </div>
                 
-                {/* Navigation Buttons - redesigned with better hover effects */}
+                {/* Navigation Buttons */}
                 <button 
-                  onClick={() => changeImage('prev')}
-                  className="image-nav-button absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-amber-500/80 text-white w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300"
+                  onClick={() => !imageTransitionInProgress.current && changeImage('prev')}
+                  className={`image-nav-button absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-amber-500/80 text-white w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${imageTransitioning ? 'pointer-events-none opacity-50' : 'opacity-70'}`}
                   aria-label="Previous image"
+                  disabled={imageTransitioning}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M15 18l-6-6 6-6" />
                   </svg>
                 </button>
                 <button 
-                  onClick={() => changeImage('next')}
-                  className="image-nav-button absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-amber-500/80 text-white w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300"
+                  onClick={() => !imageTransitionInProgress.current && changeImage('next')}
+                  className={`image-nav-button absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-amber-500/80 text-white w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${imageTransitioning ? 'pointer-events-none opacity-50' : 'opacity-70'}`}
                   aria-label="Next image"
+                  disabled={imageTransitioning}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 18l6-6-6-6" />
@@ -1412,7 +1764,7 @@ const HomePage = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {programs.map((program, index) => (
+            {PROGRAMS_DATA.map((program, index) => (
               <ProgramCard 
                 key={program.id}
                 title={program.title}
@@ -1514,67 +1866,147 @@ const HomePage = () => {
         onClose={() => setShowAboutModal(false)}
       />
 
-      {/* Add custom styles for image stack transitions */}
+      {/* Modified CSS styles for image slider transitions */}
       <style dangerouslySetInnerHTML={{
         __html: `
+        /* Core image slider styles */
+        .image-slider {
+          position: relative;
+          transition: transform 0.5s ease-out; /* Increased duration */
+        }
+        
+        .image-slider.transitioning {
+          transform: scale(0.99);
+        }
+        
         .image-stack {
           transform-style: preserve-3d;
-          transition: transform 0.5s ease-out;
           position: relative;
           overflow: visible !important;
         }
         
         .image-stack > div {
           backface-visibility: hidden;
-          transition: all 0.75s cubic-bezier(0.33, 1, 0.68, 1);
+          transition: all 0.8s ease-out; /* Increased duration for smoother effect */
           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
           overflow: hidden;
+          opacity: 1; /* Ensure initial opacity */
         }
         
-        /* Ensure proper visibility during transitions */
-        .image-stack > div:nth-child(3) {
-          opacity: 1 !important;
+        /* Current image animations */
+        .current-image {
+          transform: translateY(0) rotateZ(0) scale(1);
+          opacity: 1;
+          filter: blur(0);
           z-index: 10;
-          transform-origin: center center;
-          will-change: transform, opacity, filter;
+          transition: all 0.8s ease-out; /* Increased duration */
         }
         
-        /* Enhance image loading appearance to prevent black bars */
+        .transitioning-next .current-image {
+          transform: translateY(-10px) translateX(10px) rotateZ(1deg) scale(0.97);
+          opacity: 0;
+          filter: blur(3px);
+          z-index: 1; /* Move to back */
+          transition-delay: 0.05s; /* Small delay for smoother sequence */
+        }
+        
+        .transitioning-prev .current-image {
+          transform: translateY(-10px) translateX(-10px) rotateZ(-1deg) scale(0.97);
+          opacity: 0;
+          filter: blur(3px);
+          z-index: 1; /* Move to back */
+          transition-delay: 0.05s; /* Small delay for smoother sequence */
+        }
+        
+        /* Previous image animations */
+        .prev-image {
+          transform: translateX(0) scale(0.97);
+          opacity: 0.7;
+          z-index: 5;
+          transition: all 0.8s ease-out; /* Increased duration */
+        }
+        
+        .transitioning-next .prev-image {
+          transform: translateX(-8%) scale(0.95);
+          opacity: 0.5;
+          z-index: 3;
+          transition-delay: 0.1s; /* Staggered delay for sequence */
+        }
+        
+        .transitioning-prev .prev-image {
+          transform: translateX(-2%) translateY(-5px) scale(1) rotateZ(0);
+          opacity: 1;
+          z-index: 10; /* Move to front */
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+          transition-delay: 0.15s; /* Staggered delay for sequence */
+        }
+        
+        /* Next image animations */
+        .next-image {
+          transform: translateX(0) scale(0.97);
+          opacity: 0.7;
+          z-index: 5;
+          transition: all 0.8s ease-out; /* Increased duration */
+        }
+        
+        .transitioning-next .next-image {
+          transform: translateX(2%) translateY(-5px) scale(1) rotateZ(0);
+          opacity: 1;
+          z-index: 10; /* Move to front */
+          box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+          transition-delay: 0.15s; /* Staggered delay for sequence */
+        }
+        
+        .transitioning-prev .next-image {
+          transform: translateX(8%) scale(0.95);
+          opacity: 0.5;
+          z-index: 3;
+          transition-delay: 0.1s; /* Staggered delay for sequence */
+        }
+        
+        /* Back card animations */
+        .image-slider:before,
+        .image-slider:after {
+          content: '';
+          position: absolute;
+          top: 35px;
+          bottom: 35px;
+          width: 8%;
+          background: rgba(0,0,0,0.2);
+          border-radius: 8px;
+          z-index: 0;
+          transition: all 0.8s ease-out; /* Increased duration */
+          opacity: 0;
+          transform: translateY(10px) scale(0.9);
+        }
+        
+        .image-slider:before {
+          left: -4%;
+        }
+        
+        .image-slider:after {
+          right: -4%;
+        }
+        
+        .transitioning .image-slider:before,
+        .transitioning .image-slider:after {
+          opacity: 0.4;
+          transform: translateY(3px) scale(0.95);
+        }
+        
+        /* Image styles */
         .image-stack img {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          will-change: transform, opacity;
           transform: translateZ(0);
-          backface-visibility: hidden;
-          /* Force hardware acceleration to prevent black bar flashes */
-          -webkit-transform: translateZ(0);
-          -moz-transform: translateZ(0);
-          -ms-transform: translateZ(0);
-          -o-transform: translateZ(0);
+          will-change: transform; /* Performance hint */
         }
         
-        /* Enhanced hover effects for navigation buttons */
-        .image-nav-button {
-          transition: all 0.3s ease;
-          opacity: 0.7;
-          z-index: 40;
-        }
-        
-        .image-nav-button:hover {
-          transform: translateY(-50%) scale(1.15) !important;
-          opacity: 1;
-          box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
-        }
-        
-        .image-nav-button:active {
-          transform: translateY(-50%) scale(0.95) !important;
-          transition: all 0.1s ease;
-        }
-        
-        /* Progress indicator dots animation */
+        /* Progress indicator dots */
         .progress-dot {
-          transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+          transition: all 0.4s ease-in-out;
+          height: 1.5px;
         }
         
         .progress-dot.active {
@@ -1582,259 +2014,35 @@ const HomePage = () => {
           width: 1rem;
         }
         
+        .progress-dot:not(.active) {
+          background-color: rgba(255, 255, 255, 0.3);
+          width: 1.5px;
+        }
+        
         .progress-dot:not(.active):hover {
-          background-color: rgba(255, 255, 255, 0.5);
-          transform: scaleX(1.2);
+          background-color: rgba(255, 255, 255, 0.7);
+          transform: scaleX(1.3);
+        }
+        
+        /* Navigation buttons */
+        .image-nav-button {
+          transition: all 0.3s ease;
+          z-index: 40;
+          opacity: 0.7;
+        }
+        
+        .image-nav-button:hover:not(:disabled) {
+          transform: translateY(-50%) scale(1.15) !important;
+          opacity: 1 !important;
+          box-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+        }
+        
+        .image-nav-button:active:not(:disabled) {
+          transform: translateY(-50%) scale(0.95) !important;
+          transition: all 0.1s ease;
         }
       `}} />
     </>
-  );
-};
-
-// AboutDetailsModal component
-const AboutDetailsModal = ({
-  isOpen,
-  onClose
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-}) => {
-  const modalRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const glareRef = useRef<HTMLDivElement>(null);
-  const isMobile = useRef(window.innerWidth < 768);
-
-  // Add animation effect when modal opens/closes
-  useEffect(() => {
-    if (!modalRef.current || !contentRef.current) return;
-
-    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-
-    if (isOpen) {
-      // Reset initial state
-      gsap.set(modalRef.current, {
-        backgroundColor: 'rgba(0, 0, 0, 0)',
-        backdropFilter: 'blur(0px)'
-      });
-      gsap.set(contentRef.current, {
-        opacity: 0,
-        y: 20,
-        scale: 0.95,
-        rotateX: 5
-      });
-
-      // Animate in
-      tl.to(modalRef.current, {
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        backdropFilter: 'blur(12px)',
-        duration: 0.5
-      })
-      .to(contentRef.current, {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        rotateX: 0,
-        duration: 0.6,
-        ease: "back.out(1.7)"
-      }, "-=0.3");
-
-      // Lock body scroll
-      document.body.style.overflow = 'hidden';
-    } else {
-      // Animate out
-      tl.to(contentRef.current, {
-        opacity: 0,
-        y: -20,
-        scale: 0.95,
-        rotateX: -5,
-        duration: 0.4
-      })
-      .to(modalRef.current, {
-        backgroundColor: 'rgba(0, 0, 0, 0)',
-        backdropFilter: 'blur(0px)',
-        duration: 0.3
-      }, "-=0.2");
-
-      // Restore body scroll
-      document.body.style.overflow = '';
-    }
-
-    return () => {
-      tl.kill();
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
-
-  // Enhanced mouse effects for desktop
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (isMobile.current || !glareRef.current || !contentRef.current) return;
-    
-    const rect = contentRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    const xPercent = x / rect.width * 100;
-    const yPercent = y / rect.height * 100;
-    
-    // Enhanced glare effect
-    glareRef.current.style.background = `
-      radial-gradient(circle at ${xPercent}% ${yPercent}%, 
-        rgba(255,255,255,0.15) 0%, 
-        rgba(255,255,255,0.1) 25%, 
-        rgba(255,255,255,0) 50%)
-    `;
-    
-    if (contentRef.current) {
-      // Enhanced 3D rotation with subtle scaling
-      gsap.to(contentRef.current, {
-        rotateX: (yPercent - 50) / 20,
-        rotateY: (xPercent - 50) / 20,
-        scale: 1.02,
-        duration: 0.5,
-        ease: "power2.out"
-      });
-    }
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    if (!isMobile.current && contentRef.current) {
-      gsap.to(contentRef.current, {
-        rotateX: 0,
-        rotateY: 0,
-        scale: 1,
-        duration: 0.6,
-        ease: "elastic.out(1, 0.8)"
-      });
-    }
-  }, []);
-
-  if (!isOpen) return null;
-
-  return (
-    <div 
-      ref={modalRef}
-      className="fixed inset-0 z-50 flex items-start justify-center"
-      style={{
-        backgroundColor: 'rgba(0, 0, 0, 0)',
-        backdropFilter: 'blur(0px)',
-        paddingTop: 'calc(64px + 6vh)', // Increased from 2vh to 6vh to move modal down
-        paddingBottom: '2vh',
-        paddingLeft: '16px',
-        paddingRight: '16px'
-      }}
-    >
-      {/* Backdrop for catching outside clicks */}
-      <div 
-        className="absolute inset-0 z-0" 
-        onClick={onClose}
-      ></div>
-      
-      {/* Glare effect container */}
-      <div ref={glareRef} className="absolute inset-0 pointer-events-none"></div>
-      
-      <div 
-        ref={contentRef}
-        className="relative w-full bg-dark-800/30 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden shadow-2xl z-10"
-        style={{ 
-          opacity: 0,
-          transform: 'perspective(1000px)',
-          maxWidth: '360px', // Reduced max width
-          maxHeight: '80vh', // Reduced max height
-          margin: '0 auto',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)'
-        }}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-      >
-        {/* Close button - absolute position */}
-        <button 
-          type="button"
-          onClick={onClose}
-          className="absolute top-2 right-2 z-20 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-dark-800/50 backdrop-blur-md hover:bg-dark-700/50 text-white border border-white/20 shadow-lg transition-all duration-300 group"
-          aria-label="Close modal"
-        >
-          <X size={14} className="text-amber-400 group-hover:scale-110 transition-transform" />
-        </button>
-        
-        {/* Hero section - smaller on mobile */}
-        <div className="relative h-24 overflow-hidden"> {/* Further reduced height */}
-          <div className="absolute inset-0 bg-gradient-to-t from-dark-800/90 via-dark-800/50 to-transparent z-10"></div>
-          <img 
-            src="https://i.postimg.cc/P50QC6rf/IMG-9847.jpg" 
-            alt="YKFA Training" 
-            className="w-full h-full object-cover scale-110 hover:scale-105 transition-transform duration-[2s]"
-            loading="eager"
-          />
-          
-          {/* Light beams - desktop only */}
-          {!isMobile.current && (
-            <div className="absolute inset-0 opacity-30 hidden sm:block mix-blend-soft-light">
-              <div className="absolute top-0 left-1/4 w-[100px] h-[200px] bg-blue-500/30 blur-[30px] transform -rotate-45 animate-pulse"></div>
-              <div className="absolute top-0 right-1/4 w-[100px] h-[200px] bg-amber-500/30 blur-[30px] transform rotate-45 animate-pulse delay-1000"></div>
-            </div>
-          )}
-          
-          <div className="absolute bottom-0 left-0 right-0 p-2.5 z-20"> {/* Reduced padding */}
-            <h2 className="text-base font-bold text-white leading-tight"> {/* Reduced text size */}
-              <span className="relative z-10">About <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-300">YKFA</span></span>
-              <div className="absolute -bottom-1 left-0 h-0.5 w-8 bg-gradient-to-r from-amber-400 to-amber-500 rounded-full"></div>
-            </h2>
-          </div>
-        </div>
-        
-        {/* Content */}
-        <div className="p-2.5 max-h-[calc(80vh-96px)] overflow-y-auto scrollbar-hide bg-dark-800/20 backdrop-blur-sm"> {/* Reduced padding */}
-          <div className="space-y-2.5"> {/* Reduced spacing */}
-            <div className="bg-white/5 backdrop-blur-sm rounded-lg p-2.5 border border-white/10 shadow-inner"> {/* Reduced padding */}
-              <h3 className="text-xs font-semibold text-amber-400 mb-1">Our Mission</h3>
-              <p className="text-gray-300 text-xs leading-relaxed">
-                At YKFA, we empower individuals through martial arts and fitness training, developing physical strength, mental discipline, and self-confidence.
-              </p>
-            </div>
-            
-            <div className="bg-white/5 backdrop-blur-sm rounded-lg p-2.5 border border-white/10 shadow-inner">
-              <h3 className="text-xs font-semibold text-amber-400 mb-1">About Master Yaseen</h3>
-              <p className="text-gray-300 text-xs leading-relaxed">
-                Master Yaseen brings over 20 years of martial arts experience, dedicated to mastering and teaching various disciplines with emphasis on technical precision and character development.
-              </p>
-            </div>
-            
-            <div className="bg-white/5 backdrop-blur-sm rounded-lg p-2.5 border border-white/10 shadow-inner">
-              <h3 className="text-xs font-semibold text-amber-400 mb-1">Training Programs</h3>
-              <ul className="space-y-1">
-                <li className="flex items-start gap-1">
-                  <ChevronRight className="w-3 h-3 text-amber-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-gray-300 text-xs leading-relaxed">MMA training including Boxing, Kickboxing, and Grappling</p>
-                </li>
-                <li className="flex items-start gap-1">
-                  <ChevronRight className="w-3 h-3 text-amber-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-gray-300 text-xs leading-relaxed">Traditional Karate with belt progression system</p>
-                </li>
-                <li className="flex items-start gap-1">
-                  <ChevronRight className="w-3 h-3 text-amber-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-gray-300 text-xs leading-relaxed">Group fitness classes and personal training</p>
-                </li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="mt-3 pt-2.5 border-t border-white/10 flex flex-wrap gap-2 justify-center"> {/* Reduced spacing */}
-            <Link
-              to="/about-us"
-              className="px-2.5 py-1 rounded-md bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-medium text-xs transition-all duration-300 transform hover:scale-105 shadow-lg shadow-amber-500/20"
-            >
-              Know More
-            </Link>
-            <Link
-              to="/contact"
-              className="px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-white font-medium text-xs border border-white/10 hover:border-white/20 transition-all duration-300 transform hover:scale-105 shadow-lg backdrop-blur-sm"
-            >
-              Contact Us
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 };
 

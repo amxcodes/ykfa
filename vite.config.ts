@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
         name: "Yaseen's YKFA Timer",
@@ -34,10 +34,30 @@ export default defineConfig({
             purpose: 'any maskable'
           }
         ]
-      }
+      },
+      workbox: {
+        disableGeneratePrompt: true,
+      },
+      devOptions: {
+        enabled: false,
+        type: 'module',
+        navigateFallback: 'index.html',
+      },
     })
   ],
   optimizeDeps: {
     exclude: ['lucide-react'],
+  },
+  build: {
+    reportCompressedSize: false,
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['framer-motion', 'gsap'],
+        },
+      },
+    },
   },
 });

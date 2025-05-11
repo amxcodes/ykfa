@@ -53,6 +53,7 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Quick prompts for users to select
   const quickPrompts: QuickPrompt[] = [
@@ -346,18 +347,40 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     }
 
     return () => {
+      // Clean up event listeners and timeouts
       if (window.visualViewport) {
         window.visualViewport.removeEventListener('resize', handleResize);
         window.visualViewport.removeEventListener('scroll', handleResize);
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      // Clean up any remaining timeouts when component unmounts
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
     };
   }, []);
 
   const handleClose = () => {
     setIsClosing(true);
-    setTimeout(() => {
+    
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    
+    timeoutRef.current = setTimeout(() => {
       onClose();
       setIsClosing(false);
+      timeoutRef.current = null;
     }, 300);
   };
 
@@ -467,8 +490,13 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     // Set typing indicator
     setIsTyping(true);
 
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
     // Get bot response after a delay to simulate typing
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       const response = getBotResponse(userMessage.text);
       
       const botMessage: Message = {
@@ -481,6 +509,7 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
       
       setMessages(prev => [...prev, botMessage]);
       setIsTyping(false);
+      timeoutRef.current = null;
     }, Math.min(1000, userMessage.text.length * 50)); // Typing delay based on response length
   };
 
@@ -502,8 +531,13 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     // Set typing indicator
     setIsTyping(true);
 
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
     // Get bot response after a delay to simulate typing
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       const response = getBotResponse(prompt.value);
       
       const botMessage: Message = {
@@ -516,6 +550,7 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
       
       setMessages(prev => [...prev, botMessage]);
       setIsTyping(false);
+      timeoutRef.current = null;
     }, 800);
   };
 
@@ -532,10 +567,16 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
       
       setMessages(prev => [...prev, botMessage]);
       
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      
       // Navigate after a brief delay
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         navigate(action.path!);
         onClose(); // Close chatbot after navigation
+        timeoutRef.current = null;
       }, 1000);
     }
   };

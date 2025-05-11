@@ -14,20 +14,41 @@ const Hero = ({ loadingComplete = false }: HeroProps) => {
 
   const statsRef = useRef(null);
   const hasAnimated = useRef(false);
-
-  // Start animations earlier if loading is marked complete
+  
+  // Force animation to start regardless of loading state
+  useEffect(() => {
+    console.log('Hero mounted, will start animations');
+    
+    // Start animation after a short delay to ensure component is fully mounted
+    const initialDelay = setTimeout(() => {
+      console.log('Starting animations now');
+      hasAnimated.current = true;
+      animateNumbers();
+    }, 1000); // Delay animation start by 1 second
+    
+    return () => clearTimeout(initialDelay);
+  }, []);
+  
+  // Backup animation trigger when loading completes
   useEffect(() => {
     if (loadingComplete && !hasAnimated.current) {
+      console.log('Loader complete, starting animations');
       hasAnimated.current = true;
       animateNumbers();
     }
   }, [loadingComplete]);
 
+  // Fallback animation trigger using IntersectionObserver
+  // Only used if the loader-based trigger doesn't work
   useEffect(() => {
+    // Only set up the observer if animations haven't started yet
+    if (hasAnimated.current) return;
+    
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
         if (entry.isIntersecting && !hasAnimated.current) {
+          console.log('Stats section visible, starting animations');
           hasAnimated.current = true;
           animateNumbers();
         }
@@ -46,7 +67,30 @@ const Hero = ({ loadingComplete = false }: HeroProps) => {
     };
   }, []);
 
+  // Ref to store the animation timer
+  const timerRef = useRef<number | null>(null);
+  
+  // Clean up the timer when component unmounts
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== null) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
+
   const animateNumbers = () => {
+    console.log('Starting number animation'); // Debug log
+    
+    // Reset numbers first to ensure animation is visible
+    setAnimatedNumbers({
+      trainers: 0,
+      programs: 0,
+      members: 0,
+      years: 0
+    });
+    
     const duration = 2000; // 2 seconds
     const steps = 60;
     const interval = duration / steps;
@@ -59,8 +103,15 @@ const Hero = ({ loadingComplete = false }: HeroProps) => {
     };
 
     let currentStep = 0;
+    
+    // Clear any existing timer before starting a new one
+    if (timerRef.current !== null) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
 
-    const timer = setInterval(() => {
+    // Start the animation immediately
+    timerRef.current = window.setInterval(() => {
       currentStep++;
       
       const progress = currentStep / steps;
@@ -74,7 +125,10 @@ const Hero = ({ loadingComplete = false }: HeroProps) => {
       });
 
       if (currentStep === steps) {
-        clearInterval(timer);
+        if (timerRef.current !== null) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
       }
     }, interval);
   };

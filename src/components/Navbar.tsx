@@ -4,6 +4,7 @@ import { Menu, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import MobileMenu from './MobileMenu';
 import AppStoreWidget from './AppStoreWidget';
+import NavbarCursorControl from './NavbarCursorControl';
 
 // Google Play Store SVG icon component
 const PlayStoreIcon = () => (
@@ -135,7 +136,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
             <nav className="hidden lg:flex items-center">
               <div className="flex items-center space-x-1">
                 <NavLink to="/" className={({ isActive }) => 
-                  `px-4 py-2 rounded-xl transition-all duration-300 ${
+                  `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${
                     isActive 
                       ? 'text-amber-400 bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
                       : 'text-white hover:text-amber-400 hover:bg-white/5 border border-transparent'
@@ -145,7 +146,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 </NavLink>
                 
                 <NavLink to="/programs" className={({ isActive }) => 
-                  `px-4 py-2 rounded-xl transition-all duration-300 ${
+                  `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${
                     isActive 
                       ? 'text-amber-400 bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
                       : 'text-white hover:text-amber-400 hover:bg-white/5 border border-transparent'
@@ -155,7 +156,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 </NavLink>
                 
                 <NavLink to="/schedule" className={({ isActive }) => 
-                  `px-4 py-2 rounded-xl transition-all duration-300 ${
+                  `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${
                     isActive 
                       ? 'text-amber-400 bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
                       : 'text-white hover:text-amber-400 hover:bg-white/5 border border-transparent'
@@ -165,7 +166,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 </NavLink>
                 
                 <NavLink to="/store" className={({ isActive }) => 
-                  `px-4 py-2 rounded-xl transition-all duration-300 ${
+                  `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${
                     isActive 
                       ? 'text-amber-400 bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
                       : 'text-white hover:text-amber-400 hover:bg-white/5 border border-transparent'
@@ -174,7 +175,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                   Store
                 </NavLink>
                 <NavLink to="/membership" className={({ isActive }) => 
-                  `px-4 py-2 rounded-xl transition-all duration-300 ${
+                  `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${
                     isActive 
                       ? 'text-amber-400 bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
                       : 'text-white hover:text-amber-400 hover:bg-white/5 border border-transparent'
@@ -184,7 +185,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 </NavLink>
 
                 <NavLink to="/blog" className={({ isActive }) => 
-                  `px-4 py-2 rounded-xl transition-all duration-300 ${
+                  `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${
                     isActive 
                       ? 'text-amber-400 bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
                       : 'text-white hover:text-amber-400 hover:bg-white/5 border border-transparent'
@@ -194,7 +195,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 </NavLink>
 
                 <NavLink to="/contact" className={({ isActive }) => 
-                  `px-4 py-2 rounded-xl transition-all duration-300 ${
+                  `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${
                     isActive 
                       ? 'text-amber-400 bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
                       : 'text-white hover:text-amber-400 hover:bg-white/5 border border-transparent'
@@ -212,14 +213,17 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                   href="https://play.google.com/store/apps/details?id=com.ydl.yaseensykfawarriors&pcampaignid=web_share" 
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-gradient-to-br from-amber-400 to-amber-500 text-black px-6 py-2 rounded-xl hover:shadow-[0_0_15px_rgba(255,191,36,0.3)] transition-all flex items-center gap-2 border border-amber-300/30"
+                  className="bg-gradient-to-br from-amber-400 to-amber-500 text-black px-4 py-1.5 rounded-lg text-sm hover:shadow-[0_0_15px_rgba(255,191,36,0.3)] transition-all flex items-center gap-2 border border-amber-300/30"
                   onClick={handleAppWidgetToggle}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                 >
                   <PlayStoreIcon />
-                  <span className="font-medium">Download App</span>
+                  <span className="font-medium">Get App</span>
                 </motion.a>
+                
+                {/* Cursor Control Toggle */}
+                <NavbarCursorControl className="ml-3" />
               </div>
             </nav>
 

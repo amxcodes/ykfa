@@ -40,14 +40,19 @@ interface TimerContextProps {
   backgroundGradient: string;
   isMusicMuted: boolean;
   toggleMusicMute: () => void;
+  refs: {
+    timerDisplay: React.RefObject<HTMLDivElement>;
+    timerBackground: React.RefObject<HTMLDivElement>;
+    phaseLabel: React.RefObject<HTMLDivElement>;
+  };
 }
 
 const defaultSettings: TimerSettings = {
-  warmupDuration: 120,
+  warmupDuration: 0,
   rounds: 7,
-  roundDuration: 180,
-  breakDuration: 45,
-  cooldownDuration: 120,
+  roundDuration: 0,
+  breakDuration: 0,
+  cooldownDuration: 0,
   autoStart: true,
   transitionDelay: 0,
   soundVolume: 0.5,
@@ -103,6 +108,19 @@ const PHASE_COLORS = {
   }
 };
 
+// Add a selector utility function to avoid GSAP target errors
+const safeAnimate = (selector: string, animation: gsap.TweenVars, timeline?: gsap.core.Timeline, position?: string) => {
+  // Check if the element exists before animating
+  const elements = document.querySelectorAll(selector);
+  if (elements.length === 0) return;
+  
+  if (timeline) {
+    timeline.to(selector, animation, position);
+  } else {
+    gsap.to(selector, animation);
+  }
+};
+
 export function TimerProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<TimerSettings>(defaultSettings);
   const [currentPhase, setCurrentPhase] = useState<TimerPhase>('warmup');
@@ -140,6 +158,18 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   // Ambient sound for continuous play
   const ambientSoundRef = useRef<HTMLAudioElement | null>(null);
   
+  // Create refs for elements we want to animate
+  const timerDisplayRef = useRef<HTMLDivElement>(null);
+  const timerBackgroundRef = useRef<HTMLDivElement>(null);
+  const phaseLabelRef = useRef<HTMLDivElement>(null);
+  
+  // Expose refs via context
+  const refs = {
+    timerDisplay: timerDisplayRef,
+    timerBackground: timerBackgroundRef,
+    phaseLabel: phaseLabelRef
+  };
+
   // Initialize audio elements
   useEffect(() => {
     startSoundRef.current = new Audio(SOUND_URLS.start);
@@ -206,17 +236,37 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     }
   }, [settings.soundVolume, isMusicMuted]);
   
-  // Sound player functions
+  // Sound player functions with better error handling
   const playSound = useCallback((soundRef: React.RefObject<HTMLAudioElement>) => {
     if (soundRef.current) {
-      // Reset the sound to the beginning
-      soundRef.current.pause();
-      soundRef.current.currentTime = 0;
-      
-      // Play the sound
-      soundRef.current.play().catch(error => {
-        console.log('Error playing sound:', error);
-      });
+      // Check if the sound file is actually loaded and has a source before trying to play
+      if (soundRef.current.readyState >= 2) {
+        // Reset the sound to the beginning
+        soundRef.current.pause();
+        soundRef.current.currentTime = 0;
+        
+        // Play the sound with proper error handling
+        soundRef.current.play().catch(error => {
+          // Just log the error without flooding the console
+          if (error.name !== 'NotSupportedError' && error.name !== 'AbortError') {
+            console.log('Error playing sound:', error);
+          }
+        });
+      } else {
+        // Add an event listener to play when loaded
+        const canPlayHandler = () => {
+          soundRef.current?.play().catch(error => {
+            // Just log the error without flooding the console
+            if (error.name !== 'NotSupportedError' && error.name !== 'AbortError') {
+              console.log('Error playing sound:', error);
+            }
+          });
+          soundRef.current?.removeEventListener('canplaythrough', canPlayHandler);
+        };
+        
+        soundRef.current.addEventListener('canplaythrough', canPlayHandler);
+        soundRef.current.load(); // Force reload
+      }
     }
   }, []);
   
@@ -261,11 +311,19 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   const getNextPhaseInfo = useCallback(() => {
     switch (currentPhase) {
       case 'warmup':
+        // Skip warmup if duration is 0
+        if (settings.warmupDuration === 0) {
+          return { phase: 'round' as TimerPhase, round: 1 };
+        }
         return { phase: 'round' as TimerPhase, round: 1 };
       case 'round':
         if (currentRound < settings.rounds) {
           return { phase: 'break' as TimerPhase, round: currentRound };
         } else {
+          // Skip cooldown if duration is 0
+          if (settings.cooldownDuration === 0) {
+            return { phase: 'complete' as TimerPhase, round: currentRound };
+          }
           return { phase: 'cooldown' as TimerPhase, round: currentRound };
         }
       case 'break':
@@ -273,9 +331,13 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       case 'cooldown':
         return { phase: 'complete' as TimerPhase, round: currentRound };
       default:
+        // Skip warmup if duration is 0
+        if (settings.warmupDuration === 0) {
+          return { phase: 'round' as TimerPhase, round: 1 };
+        }
         return { phase: 'warmup' as TimerPhase, round: 1 };
     }
-  }, [currentPhase, currentRound, settings.rounds]);
+  }, [currentPhase, currentRound, settings.rounds, settings.warmupDuration, settings.cooldownDuration]);
 
   // Update background gradient when phase changes
   useEffect(() => {
@@ -299,55 +361,51 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     }
     
     // Add animation for background gradient
-    gsap.to('body', {
-      background: PHASE_COLORS[currentPhase].gradient,
-      duration: 1.2,
-      ease: 'power2.inOut'
-    });
+    document.body.style.background = PHASE_COLORS[currentPhase].gradient;
     
-    timeline.to('.timer-display', {
+    safeAnimate('.timer-display', {
       scale: 1.05,
       duration: 0.3,
       ease: 'power2.out',
       opacity: 0.9,
-    });
+    }, timeline);
     
-    timeline.to('.timer-background', {
+    safeAnimate('.timer-background', {
       backgroundColor: `rgba(${currentPhase === 'round' ? '237, 137, 54' : 
-                             currentPhase === 'break' ? '72, 187, 120' : 
-                             currentPhase === 'cooldown' ? '102, 126, 234' : 
-                             currentPhase === 'complete' ? '159, 122, 234' : '66, 153, 225'}, 0.15)`,
+                           currentPhase === 'break' ? '72, 187, 120' : 
+                           currentPhase === 'cooldown' ? '102, 126, 234' : 
+                           currentPhase === 'complete' ? '159, 122, 234' : '66, 153, 225'}, 0.15)`,
       duration: 0.2,
       ease: 'power1.inOut',
-    }, '<');
+    }, timeline, '<');
     
-    timeline.to('.phase-label', {
+    safeAnimate('.phase-label', {
       y: -10,
       opacity: 0,
       duration: 0.25,
       ease: 'power2.in',
-    }, '<');
+    }, timeline, '<');
     
-    timeline.to('.timer-display', {
+    safeAnimate('.timer-display', {
       scale: 1,
       opacity: 1,
       duration: 0.3,
       ease: 'power2.in',
-    });
+    }, timeline);
     
-    timeline.to('.timer-background', {
+    safeAnimate('.timer-background', {
       backgroundColor: 'rgba(0, 0, 0, 0)',
       duration: 0.3,
       ease: 'power1.inOut',
-    }, '<');
+    }, timeline, '<');
     
-    timeline.to('.phase-label', {
+    safeAnimate('.phase-label', {
       y: 0,
       opacity: 1,
       duration: 0.25,
       ease: 'power2.out',
       delay: 0.1,
-    });
+    }, timeline);
     
     return timeline;
   }, [currentPhase]);
@@ -360,12 +418,13 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     
     if (nextPhase === 'complete') {
       const completionTimeline = gsap.timeline();
-      completionTimeline.to('.timer-display', {
+      
+      safeAnimate('.timer-display', {
         scale: 1.1,
         duration: 0.5,
         ease: 'elastic.out(1, 0.3)',
         opacity: 1,
-      });
+      }, completionTimeline);
       
       if (navigator.vibrate) {
         navigator.vibrate([100, 100, 100, 100, 200]);
@@ -585,12 +644,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       clearTimeout(transitionTimeout.current);
     }
     
-    gsap.to('.timer-display', {
+    safeAnimate('.timer-display', {
       opacity: 0.5,
       scale: 0.95,
       duration: 0.3,
       onComplete: () => {
-        gsap.to('.timer-display', {
+        safeAnimate('.timer-display', {
           opacity: 1,
           scale: 1,
           duration: 0.3
@@ -613,15 +672,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     if (timerMode === 'setup') {
       setTimerMode('running');
       
-      gsap.fromTo('.timer-display', 
-        { scale: 0.95, opacity: 0.8 },
-        { 
-          scale: 1, 
-          opacity: 1, 
-          duration: 0.4, 
-          ease: 'back.out(1.2)'
-        }
-      );
+      safeAnimate('.timer-display', { 
+        scale: 1, 
+        opacity: 1, 
+        duration: 0.4, 
+        ease: 'back.out(1.2)'
+      });
       
       // Play warmup announcement when starting the timer from setup
       if (currentPhase === 'warmup') {
@@ -674,7 +730,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         ambientSoundRef.current.pause();
       }
       
-      gsap.to('.timer-display', {
+      safeAnimate('.timer-display', {
         scale: 0.98,
         opacity: 0.9,
         duration: 0.2,
@@ -702,7 +758,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         });
       }
       
-      gsap.to('.timer-display', {
+      safeAnimate('.timer-display', {
         scale: 1,
         opacity: 1,
         duration: 0.3,
@@ -776,17 +832,14 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       restart(newTimestamp, wasRunning);
     }
     
-    gsap.fromTo('.settings-item',
-      { scale: 1 },
-      { 
-        scale: 1.02, 
-        duration: 0.2, 
-        yoyo: true, 
-        repeat: 1,
-        stagger: 0.05,
-        ease: 'power1.inOut' 
-      }
-    );
+    safeAnimate('.settings-item', { 
+      scale: 1.02, 
+      duration: 0.2, 
+      yoyo: true, 
+      repeat: 1,
+      stagger: 0.05,
+      ease: 'power1.inOut' 
+    });
   }, [currentPhase, calculateProgress, getExpiryTimestamp, isPaused, pause, restart]);
 
   const exitFullscreen = useCallback(() => {
@@ -795,7 +848,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       setIsPaused(true);
     }
     
-    gsap.to('.timer-display', {
+    safeAnimate('.timer-display', {
       scale: 0.9,
       opacity: 0,
       duration: 0.3,
@@ -855,6 +908,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     backgroundGradient,
     isMusicMuted,
     toggleMusicMute,
+    refs
   };
 
   // Wrap the timer provider with a div that has the background gradient
@@ -872,6 +926,20 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       }}>
       </div>
       {children}
+      
+      {/* Audio elements */}
+      <audio ref={startSoundRef} src="/sounds/start.mp3" preload="auto"></audio>
+      <audio ref={stopSoundRef} src="/sounds/stop.mp3" preload="auto"></audio>
+      <audio ref={roundChangeSoundRef} src="/sounds/round-change.mp3" preload="auto"></audio>
+      <audio ref={completeSoundRef} src="/sounds/complete.mp3" preload="auto"></audio>
+      <audio ref={countdownSoundRef} src="/sounds/countdown.mp3" preload="auto"></audio>
+      <audio ref={ambientSoundRef} src="/sounds/ambient.mp3" loop preload="auto"></audio>
+      <audio ref={roundOneSoundRef} src="/sounds/announcer/round-one.mp3" preload="auto"></audio>
+      <audio ref={nextRoundSoundRef} src="/sounds/announcer/next-round.mp3" preload="auto"></audio>
+      <audio ref={lastRoundSoundRef} src="/sounds/announcer/last-round.mp3" preload="auto"></audio>
+      <audio ref={finalRoundSoundRef} src="/sounds/announcer/final-round.mp3" preload="auto"></audio>
+      <audio ref={warmupSoundRef} src="/sounds/announcer/warmup.mp3" preload="auto"></audio>
+      <audio ref={cooldownSoundRef} src="/sounds/announcer/cooldown.mp3" preload="auto"></audio>
     </TimerContext.Provider>
   );
 }

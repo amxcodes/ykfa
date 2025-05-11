@@ -2,10 +2,30 @@ import { ChevronRight, User, Award, AlignJustify, BookOpen, Heart, Clock, Mail, 
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
+// Moved tabs data outside the component for stability
+const TABS_DATA = [
+  { id: 'mission', label: 'Our Mission', icon: <Heart className="w-4 h-4" /> },
+  { id: 'about', label: 'About Master Yaseen', icon: <User className="w-4 h-4" /> },
+  { id: 'history', label: 'Our History', icon: <Clock className="w-4 h-4" /> },
+  { id: 'philosophy', label: 'Training Philosophy', icon: <BookOpen className="w-4 h-4" /> },
+  { id: 'achievements', label: 'Achievements', icon: <Award className="w-4 h-4" /> }
+];
+
+// Moved gallery images outside the component for stability
+const GALLERY_IMAGES_DATA = [
+  "https://i.postimg.cc/Cxr6mHh9/IMG-9857.jpg",
+  "https://i.postimg.cc/JnVx2p9Y/IMG-9840.jpg",
+  "https://i.postimg.cc/P50QC6rf/IMG-9847.jpg",
+  "https://i.postimg.cc/dtx8fWCR/IMG-9853.jpg",
+  "https://i.postimg.cc/GpkGHd5z/IMG-9860.jpg",
+  "https://i.postimg.cc/5ytC7vNk/Screenshot-2025-05-07-010532.png"
+];
+
 const AboutUsPage = () => {
   const [activeTab, setActiveTab] = useState('mission');
   const [isVisible, setIsVisible] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
+  const timeoutsRef = useRef<number[]>([]);
   
   // Set up intersection observer for animations
   useEffect(() => {
@@ -15,11 +35,18 @@ const AboutUsPage = () => {
           if (entry.isIntersecting) {
             setIsVisible(true);
             
+            // Clear any existing timeouts
+            timeoutsRef.current.forEach(timeoutId => clearTimeout(timeoutId));
+            timeoutsRef.current = [];
+            
             // Add animation classes to all elements with "animate-me" class
             document.querySelectorAll('.animate-me').forEach((el, index) => {
-              setTimeout(() => {
-                el.classList.add('animate-visible');
+              const timeoutId = window.setTimeout(() => {
+                if (el instanceof HTMLElement) {
+                  el.classList.add('animate-visible');
+                }
               }, 150 * index); // Staggered delay
+              timeoutsRef.current.push(timeoutId);
             });
             
             observer.disconnect(); // Stop observing once visible
@@ -33,44 +60,46 @@ const AboutUsPage = () => {
       observer.observe(pageRef.current);
     }
     
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      // Clear any existing timeouts when component unmounts
+      timeoutsRef.current.forEach(timeoutId => clearTimeout(timeoutId));
+      timeoutsRef.current = [];
+    };
   }, []);
 
   // Add effect to handle tab changes
   useEffect(() => {
     // Reset animation classes when tab changes
     document.querySelectorAll('.animate-me').forEach(el => {
-      el.classList.remove('animate-visible');
+      if (el instanceof HTMLElement) {
+        el.classList.remove('animate-visible');
+      }
     });
     
+    // Clear any existing timeouts
+    timeoutsRef.current.forEach(timeoutId => clearTimeout(timeoutId));
+    timeoutsRef.current = [];
+    
     // Re-add animation classes with a small delay
-    setTimeout(() => {
+    const outerTimeoutId = window.setTimeout(() => {
       document.querySelectorAll('.animate-me').forEach((el, index) => {
-        setTimeout(() => {
-          el.classList.add('animate-visible');
+        const innerTimeoutId = window.setTimeout(() => {
+          if (el instanceof HTMLElement) {
+            el.classList.add('animate-visible');
+          }
         }, 150 * index);
+        timeoutsRef.current.push(innerTimeoutId);
       });
     }, 50);
+    timeoutsRef.current.push(outerTimeoutId);
+    
+    return () => {
+      // Clean up timeouts when effect re-runs
+      timeoutsRef.current.forEach(timeoutId => clearTimeout(timeoutId));
+      timeoutsRef.current = [];
+    };
   }, [activeTab]);
-
-  // Tabs data
-  const tabs = [
-    { id: 'mission', label: 'Our Mission', icon: <Heart className="w-4 h-4" /> },
-    { id: 'about', label: 'About Master Yaseen', icon: <User className="w-4 h-4" /> },
-    { id: 'history', label: 'Our History', icon: <Clock className="w-4 h-4" /> },
-    { id: 'philosophy', label: 'Training Philosophy', icon: <BookOpen className="w-4 h-4" /> },
-    { id: 'achievements', label: 'Achievements', icon: <Award className="w-4 h-4" /> }
-  ];
-
-  // Gallery images
-  const galleryImages = [
-    "https://i.postimg.cc/Cxr6mHh9/IMG-9857.jpg",
-    "https://i.postimg.cc/JnVx2p9Y/IMG-9840.jpg",
-    "https://i.postimg.cc/P50QC6rf/IMG-9847.jpg",
-    "https://i.postimg.cc/dtx8fWCR/IMG-9853.jpg",
-    "https://i.postimg.cc/GpkGHd5z/IMG-9860.jpg",
-    "https://i.postimg.cc/5ytC7vNk/Screenshot-2025-05-07-010532.png"
-  ];
 
   return (
     <div ref={pageRef} className="min-h-screen bg-dark-900">
@@ -117,7 +146,7 @@ const AboutUsPage = () => {
               <div className="backdrop-blur-lg bg-white/5 rounded-2xl border border-white/10 p-4 sticky top-24 shadow-xl animate-me opacity-0 -translate-x-8" style={{ transition: 'all 0.8s ease-out' }}>
                 <h3 className="text-lg font-semibold mb-4 text-white">Explore YKFA</h3>
                 <nav className="space-y-2">
-                  {tabs.map((tab) => (
+                  {TABS_DATA.map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
@@ -152,7 +181,7 @@ const AboutUsPage = () => {
             <div className="lg:hidden mb-6">
               <div className="backdrop-blur-lg bg-white/5 rounded-2xl border border-white/10 p-3 shadow-xl animate-me opacity-0 -translate-y-8" style={{ transition: 'all 0.8s ease-out' }}>
                 <div className="flex overflow-x-auto pb-2 gap-2 hide-scrollbar">
-                  {tabs.map((tab) => (
+                  {TABS_DATA.map((tab) => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
@@ -453,8 +482,8 @@ const AboutUsPage = () => {
                     
                     <div className="mt-8">
                       <h3 className="text-xl font-medium text-white mb-4">Our Gallery</h3>
-                      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-3">
-                        {galleryImages.map((image, index) => (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                        {GALLERY_IMAGES_DATA.map((image, index) => (
                           <div key={index} className="rounded-lg overflow-hidden border border-white/10 aspect-square">
                             <img 
                               src={image} 
