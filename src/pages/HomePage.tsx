@@ -2,7 +2,6 @@ import { ArrowRight, Timer, MessageCircle, Bot, Calculator, X, ChevronRight } fr
 import { Link } from 'react-router-dom';
 import Hero from '../components/Hero';
 import { useState, useEffect, useRef, useContext, useCallback } from 'react';
-// Add an icon for the floating button (you can use any icon you prefer)
 // Import the ShuffleCards component
 import { ShuffleCards } from '../components/ui/shuffle-cards';
 import ChatbotInterface from '../components/ChatbotInterface';
@@ -527,6 +526,9 @@ const ProgramDetailsModal = ({
     
     const modalElement = modalRef.current;
     const contentElement = contentRef.current;
+    
+    // Track if component is still mounted
+    let isMounted = true;
 
     // Clean up previous timeline to prevent memory leaks
     try {
@@ -547,38 +549,42 @@ const ProgramDetailsModal = ({
         didHideScrollRef.current = true;
       }
 
-      // Set initial states without creating new GSAP instances
+      // Set initial states directly without GSAP to reduce overhead
       modalElement.style.display = 'flex';
       modalElement.style.opacity = '1';
-      contentElement.style.opacity = '0';
-      contentElement.style.transform = 'translateY(30px) scale(0.95)';
       
-      // Create a single timeline for better memory management
+      // Use a more efficient approach with fewer GSAP instances
+      // Create a single timeline for all animations
       gsapTimelineRef.current = gsap.timeline({
         paused: true,
         onComplete: () => {
-          // Clear references when animation completes
-          if (!isOpen) {
-            gsapTimelineRef.current = null;
+          // Only update if component is still mounted
+          if (!isMounted) return;
+          
+          // Clear the timeline reference to free memory
+          try {
+            if (gsapTimelineRef.current) {
+              // Kill the timeline to release resources
+              gsapTimelineRef.current.kill();
+              gsapTimelineRef.current = null;
+            }
+          } catch (error) {
+            console.error('Error cleaning up GSAP timeline:', error);
           }
         }
       });
 
-      // Use simpler animations with fewer properties
+      // Optimize animation by using fewer properties and shorter durations
       gsapTimelineRef.current
-        .to(modalElement, { 
-          backgroundColor: 'rgba(0, 0, 0, 0.7)', 
-          backdropFilter: 'blur(8px)', 
-          duration: 0.3,
-          overwrite: 'auto' // Prevents conflicting animations
-        })
-        .to(contentElement, { 
-          opacity: 1, 
-          y: 0, 
-          scale: 1, 
-          duration: 0.3,
-          overwrite: 'auto'
-        }, "-=0.2");
+        .fromTo(modalElement, 
+          { backgroundColor: 'rgba(0, 0, 0, 0)' }, 
+          { backgroundColor: 'rgba(0, 0, 0, 0.8)', duration: 0.25, ease: 'power1.out' }
+        )
+        .fromTo(contentElement, 
+          { opacity: 0, y: 20 }, // Remove scale to reduce GPU usage
+          { opacity: 1, y: 0, duration: 0.3, ease: 'power1.out' },
+          "-=0.15" // Reduce overlap time
+        );
         
       // Start the paused timeline
       gsapTimelineRef.current.play();

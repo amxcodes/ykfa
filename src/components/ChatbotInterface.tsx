@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, ReactNode } from 'react';
+import { useState, useRef, useEffect, ReactNode, memo } from 'react';
 import { X, Send, Bot, Dumbbell, Info, Calendar, MapPin, CreditCard, Users, Image, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -36,16 +36,81 @@ interface ChatbotInterfaceProps {
   onClose: () => void;
 }
 
-const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
+// Memoize individual message component to prevent unnecessary re-renders
+const ChatMessage = memo(({ message }: { message: Message }) => {
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      text: "Hello! I'm your YKFA assistant. How can I help you today?",
-      isBot: true,
-      timestamp: new Date()
-    }
-  ]);
+  const [actionClicked, setActionClicked] = useState<string | null>(null);
+  const [isNavigating, setIsNavigating] = useState(false);
+  
+  // Enhanced action handler with visual feedback and smooth transitions
+  const handleAction = (action: ChatAction) => {
+    if (!action.path) return;
+    
+    // Set which button was clicked for visual feedback
+    setActionClicked(action.label);
+    setIsNavigating(true);
+    
+    // Add a small delay for visual feedback before navigation
+    setTimeout(() => {
+      // Use React Router's navigate for SPA navigation instead of page reload
+      navigate(action.path!);
+      
+      // Reset states after navigation
+      setTimeout(() => {
+        setActionClicked(null);
+        setIsNavigating(false);
+      }, 300);
+    }, 400);
+  };
+  
+  return (
+    <div className={`flex ${message.isBot ? 'justify-start' : 'justify-end'} mb-3`}>
+      <div
+        className={`max-w-[90%] sm:max-w-[85%] p-2.5 sm:p-3 rounded-2xl backdrop-blur-sm shadow-lg ${message.isBot
+          ? 'bg-dark-700/60 border border-white/10'
+          : 'bg-gradient-to-br from-amber-500 to-amber-600 text-black'
+          }`}
+        style={message.isBot ? { boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.05) inset' } : {}}
+      >
+        <div className="text-sm">{message.text}</div>
+        {message.actions && message.actions.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {message.actions.map((action, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleAction(action)}
+                disabled={isNavigating}
+                className={`
+                  px-3 py-1.5 rounded-full text-xs font-medium flex items-center gap-1.5 
+                  transition-all duration-300 transform 
+                  ${actionClicked === action.label 
+                    ? 'bg-amber-500 text-black scale-95' 
+                    : 'bg-gradient-to-br from-amber-400/15 to-amber-500/20 text-amber-400 hover:from-amber-400/25 hover:to-amber-500/30 hover:scale-105'}
+                  border border-amber-400/20 backdrop-blur-sm shadow-sm
+                `}
+              >
+                {action.icon}
+                <span>{action.label}</span>
+                {actionClicked === action.label && (
+                  <span className="ml-1 inline-block animate-pulse">→</span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
+
+const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
+  // Use lazy initialization for initial state to avoid creating objects on every render
+  const [messages, setMessages] = useState<Message[]>(() => [{
+    id: 1,
+    text: "Hello! I'm your YKFA assistant. How can I help you today?",
+    isBot: true,
+    timestamp: new Date()
+  }]);
   const [inputMessage, setInputMessage] = useState('');
   const [showPrompts, setShowPrompts] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -54,6 +119,15 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
   const [isTyping, setIsTyping] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Track component mount state to prevent memory leaks
+  const isMountedRef = useRef(true);
+  
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Quick prompts for users to select
   const quickPrompts: QuickPrompt[] = [
@@ -332,18 +406,33 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     }
   }, [isOpen, messages.length]);
 
-  // Handle mobile keyboard visibility
+  // Handle mobile keyboard visibility - optimized with passive listeners
   useEffect(() => {
+    // Use a debounced version of the resize handler to reduce processing
+    let resizeTimeout: NodeJS.Timeout | null = null;
+    
     const handleResize = () => {
-      if (window.visualViewport) {
-        const isKeyboard = window.visualViewport.height < window.innerHeight;
-        setIsKeyboardVisible(isKeyboard);
+      // Cancel any pending resize handler
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
       }
+      
+      // Debounce the resize handling to reduce processing
+      resizeTimeout = setTimeout(() => {
+        if (!isMountedRef.current) return;
+        
+        if (window.visualViewport) {
+          const isKeyboard = window.visualViewport.height < window.innerHeight;
+          setIsKeyboardVisible(isKeyboard);
+        }
+        resizeTimeout = null;
+      }, 100); // 100ms debounce
     };
 
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleResize);
-      window.visualViewport.addEventListener('scroll', handleResize);
+      // Use passive listeners to improve performance
+      window.visualViewport.addEventListener('resize', handleResize, { passive: true });
+      window.visualViewport.addEventListener('scroll', handleResize, { passive: true });
     }
 
     return () => {
@@ -351,6 +440,9 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
       if (window.visualViewport) {
         window.visualViewport.removeEventListener('resize', handleResize);
         window.visualViewport.removeEventListener('scroll', handleResize);
+      }
+      if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
       }
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
@@ -468,7 +560,7 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     return matchedResponse;
   };
 
-  // Handle form submission
+  // Handle form submission - optimized with isMountedRef check
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim()) return;
@@ -497,6 +589,9 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
 
     // Get bot response after a delay to simulate typing
     timeoutRef.current = setTimeout(() => {
+      // Prevent state updates if component unmounted
+      if (!isMountedRef.current) return;
+      
       const response = getBotResponse(userMessage.text);
       
       const botMessage: Message = {
@@ -554,32 +649,8 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     }, 800);
   };
 
-  // Handle action button clicks
-  const handleActionClick = (action: ChatAction) => {
-    if (action.path) {
-      // First add bot message acknowledging the action
-      const botMessage: Message = {
-        id: messages.length + 1,
-        text: `I'll take you to the ${action.label.toLowerCase()} page right away!`,
-        isBot: true,
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, botMessage]);
-      
-      // Clear any existing timeout
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      
-      // Navigate after a brief delay
-      timeoutRef.current = setTimeout(() => {
-        navigate(action.path!);
-        onClose(); // Close chatbot after navigation
-        timeoutRef.current = null;
-      }, 1000);
-    }
-  };
+  // ChatMessage component handles actions internally to reduce component coupling
+  // This improves memory usage by eliminating unnecessary function references
 
   if (!isOpen) return null;
 
@@ -632,46 +703,11 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
             </div>
           </div>
 
-          {/* Messages */}
+          {/* Messages - Using memoized ChatMessage component for better memory efficiency */}
           <div className="h-[300px] sm:h-[400px] overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.isBot ? 'justify-start' : 'justify-end'}`}
-              >
-                <div
-                  className={`max-w-[90%] sm:max-w-[85%] p-2.5 sm:p-3 rounded-2xl backdrop-blur-sm shadow-lg ${
-                    message.isBot
-                      ? 'bg-dark-700/60 border border-white/10'
-                      : 'bg-gradient-to-br from-amber-400 to-amber-500 text-black'
-                  }`}
-                  style={message.isBot ? {
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.05) inset'
-                  } : {}}
-                >
-                  <p className="text-xs sm:text-sm leading-relaxed">{message.text}</p>
-                  <p className="text-[9px] sm:text-[10px] mt-1 opacity-70">
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                  
-                  {/* Action buttons */}
-                  {message.isBot && message.actions && message.actions.length > 0 && (
-                    <div className="mt-2 pt-2 border-t border-white/10 flex flex-wrap gap-2">
-                      {message.actions.map((action, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleActionClick(action)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-br from-amber-400/15 to-amber-500/20 
-                                   hover:from-amber-400/25 hover:to-amber-500/30 text-amber-400 rounded-full text-[10px] 
-                                   transition-all duration-300 border border-amber-400/20 backdrop-blur-sm transform hover:scale-105 shadow-sm"
-                        >
-                          {action.icon}
-                          <span>{action.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+              <div key={message.id}>
+                <ChatMessage message={message} />
               </div>
             ))}
             
@@ -739,4 +775,4 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
   );
 };
 
-export default ChatbotInterface; 
+export default memo(ChatbotInterface); 

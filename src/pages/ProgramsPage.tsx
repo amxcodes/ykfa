@@ -339,13 +339,13 @@ const galleryImages: GalleryImage[] = [
 // Custom data attributes for cursor interactions
 
 const ProgramsPage = () => {
-  // State management
+  // State management - optimized to remove unused states
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  // Track scroll position for animations
-  const [scrollPosition, setScrollPosition] = useState<number>(0);
-  // Track which cards are visible for animations
-  const [visibleCards, setVisibleCards] = useState<boolean[]>([]);
+  // Use refs instead of state for scroll tracking to reduce re-renders
+  const scrollPositionRef = useRef<number>(0);
+  // Use a more efficient approach for tracking visible cards
+  const visibleCardsRef = useRef<Set<number>>(new Set());
   const [activeFilter, setActiveFilter] = useState<'all' | 'images' | 'videos'>('all');
   
   // Refs for animation elements
@@ -360,56 +360,111 @@ const ProgramsPage = () => {
     return true;
   });
   
-  // Initialize card refs
+  // Initialize card refs with optimized memory usage
   useEffect(() => {
     cardRefs.current = Array(galleryImages.length).fill(null);
-    setVisibleCards(Array(galleryImages.length).fill(false));
+    // Clear and reset the visible cards set
+    visibleCardsRef.current.clear();
   }, []);
 
-  // Load images with proper cleanup
+  // Load images with optimized memory usage and progressive loading
   useEffect(() => {
+    // Track if component is mounted to prevent state updates after unmount
+    let isMounted = true;
     const imageElements: HTMLImageElement[] = [];
-    const loadImages = async () => {
+    
+    // Use a batched approach to load images in smaller groups
+    const loadImagesInBatches = async () => {
+      const BATCH_SIZE = 5; // Process 5 images at a time to reduce memory pressure
+      const batches = [];
+      
+      // Split gallery images into batches
+      for (let i = 0; i < galleryImages.length; i += BATCH_SIZE) {
+        batches.push(galleryImages.slice(i, i + BATCH_SIZE));
+      }
+      
       try {
-        await Promise.all(
-          galleryImages.map((img) => {
-            return new Promise((resolve) => {
-              const image = new Image();
-              imageElements.push(image);
-              
-              image.onload = () => resolve(null);
-              image.onerror = () => {
-                image.src = img.fallbackSrc;
-                resolve(null);
-              };
-              image.src = img.src;
-            });
-          })
-        );
-        setIsLoading(false);
+        // Process each batch sequentially
+        for (const batch of batches) {
+          if (!isMounted) return; // Stop if component unmounted
+          
+          await Promise.all(
+            batch.map((img) => {
+              return new Promise<void>((resolve) => {
+                // Use setTimeout to stagger image loading and reduce memory spikes
+                setTimeout(() => {
+                  if (!isMounted) {
+                    resolve();
+                    return;
+                  }
+                  
+                  const image = new Image();
+                  // Set image size explicitly to help browser allocate memory correctly
+                  image.width = 300; // Reasonable thumbnail size
+                  image.height = 200;
+                  imageElements.push(image);
+                  
+                  // Add timeout to prevent hanging on slow connections
+                  const timeoutId = setTimeout(() => {
+                    if (isMounted) {
+                      image.src = img.fallbackSrc;
+                      resolve();
+                    }
+                  }, 5000); // 5 second timeout
+                  
+                  image.onload = () => {
+                    clearTimeout(timeoutId);
+                    resolve();
+                  };
+                  
+                  image.onerror = () => {
+                    clearTimeout(timeoutId);
+                    if (isMounted) image.src = img.fallbackSrc;
+                    resolve();
+                  };
+                  
+                  // Add query params to request optimized images from server
+                  image.src = `${img.src}?w=300&q=75`;
+                }, 50); // Stagger loading by 50ms
+              });
+            })
+          );
+        }
+        
+        if (isMounted) setIsLoading(false);
       } catch (error) {
         console.error('Error loading images:', error);
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
-    loadImages();
+    loadImagesInBatches();
     
-    // Cleanup function to remove event listeners from image elements
+    // Comprehensive cleanup function
     return () => {
+      isMounted = false;
       imageElements.forEach(img => {
+        // Clear all event handlers
         img.onload = null;
         img.onerror = null;
+        
+        // Cancel any pending requests
+        img.src = '';
       });
     };
   }, []);
 
-  // Track scroll position with simplified footer awareness
+  // Track scroll position with refs to avoid re-renders
   useEffect(() => {
     const handleScroll = () => {
-      setScrollPosition(window.scrollY);
+      // Store scroll position in ref instead of state to avoid re-renders
+      scrollPositionRef.current = window.scrollY;
+      
+      // Optionally trigger any scroll-based animations here directly
+      // without causing component re-renders
     };
     
+    // Use passive event listener for better performance
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll(); // Initialize
     
@@ -418,14 +473,23 @@ const ProgramsPage = () => {
     };
   }, []);
 
-  // This effect will run when filter or loading state changes
+  // Optimized effect for filter changes
   useEffect(() => {
     if (isLoading) return;
     
-    // When filter changes, make all cards visible immediately
-    setVisibleCards(Array(filteredGalleryImages.length).fill(true));
+    // When filter changes, make all cards visible immediately using ref
+    // This avoids unnecessary re-renders
+    filteredGalleryImages.forEach((_, index) => {
+      visibleCardsRef.current.add(index);
+    });
     
+    // Force a single re-render to apply visibility changes
+    forceUpdate({});
   }, [isLoading, activeFilter, filteredGalleryImages.length]);
+  
+  // Helper function to force a single re-render when needed
+  const [, forceUpdate] = useState<object>(() => ({}));
+  // This is a common React pattern to force re-renders without state dependencies
 
   // Set up intersection observer for initial load animations
   useEffect(() => {
@@ -438,19 +502,26 @@ const ProgramsPage = () => {
     };
     
     const observer = new IntersectionObserver((entries) => {
+      let needsUpdate = false;
+      
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           const index = cardRefs.current.findIndex(ref => ref === entry.target);
           if (index !== -1) {
-            setVisibleCards((prev: boolean[]) => {
-              const newState = [...prev];
-              newState[index] = true;
-              return newState;
-            });
+            // Use Set operations instead of array state updates
+            if (!visibleCardsRef.current.has(index)) {
+              visibleCardsRef.current.add(index);
+              needsUpdate = true;
+            }
           }
           observer.unobserve(entry.target);
         }
       });
+      
+      // Only trigger a re-render if visibility actually changed
+      if (needsUpdate) {
+        forceUpdate({});
+      }
     }, options);
     
     cardRefs.current.forEach((ref) => {

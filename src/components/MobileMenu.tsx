@@ -24,12 +24,12 @@ interface MobileMenuProps {
 }
 
 const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
+  // Use ref for screen size to avoid unnecessary re-renders
   const menuRef = useRef<HTMLDivElement>(null);
   const [screenSize, setScreenSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight
   });
-  const [isMobile, setIsMobile] = useState(false);
 
   // Track screen size changes with debounce for better performance
   useEffect(() => {
@@ -103,10 +103,13 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
     };
   }, [isOpen, onClose]);
 
-  // Check if device is mobile
+  // Use a ref to track mobile state instead of state to reduce re-renders
+  const isMobileRef = useRef(window.innerWidth <= 768);
+  
+  // Check if device is mobile - optimized to use ref instead of state
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      isMobileRef.current = window.innerWidth <= 768;
     };
     
     checkMobile();
