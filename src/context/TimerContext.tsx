@@ -358,24 +358,75 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     }
   }, [currentPhase, settings]);
 
+  // Get the next phase info, with logic to skip phases with 0 duration
   const getNextPhaseInfo = useCallback(() => {
+    // Helper function to check if a phase should be skipped
+    const shouldSkipPhase = (phase: TimerPhase): boolean => {
+      switch (phase) {
+        case 'warmup': return settings.warmupDuration === 0;
+        case 'round': return settings.roundDuration === 0;
+        case 'break': return settings.breakDuration === 0;
+        case 'cooldown': return settings.cooldownDuration === 0;
+        default: return false;
+      }
+    };
+    
+    // Get the immediate next phase without skipping
+    let nextPhase: TimerPhase;
+    let nextRound = currentRound;
+    
     switch (currentPhase) {
       case 'warmup':
-        return { phase: 'round' as TimerPhase, round: 1 };
+        nextPhase = 'round';
+        nextRound = 1;
+        break;
       case 'round':
         if (currentRound < settings.rounds) {
-          return { phase: 'break' as TimerPhase, round: currentRound };
+          nextPhase = 'break';
         } else {
-          return { phase: 'cooldown' as TimerPhase, round: currentRound };
+          nextPhase = 'cooldown';
         }
+        break;
       case 'break':
-        return { phase: 'round' as TimerPhase, round: currentRound + 1 };
+        nextPhase = 'round';
+        nextRound = currentRound + 1;
+        break;
       case 'cooldown':
-        return { phase: 'complete' as TimerPhase, round: currentRound };
+        nextPhase = 'complete';
+        break;
       default:
-        return { phase: 'warmup' as TimerPhase, round: 1 };
+        nextPhase = 'warmup';
+        nextRound = 1;
+        break;
     }
-  }, [currentPhase, currentRound, settings.rounds]);
+    
+    // Skip phases with 0 duration (except 'complete' which can't be skipped)
+    while (shouldSkipPhase(nextPhase) && nextPhase !== 'complete') {
+      // Get the next phase after the one we're skipping
+      switch (nextPhase) {
+        case 'warmup':
+          nextPhase = 'round';
+          nextRound = 1;
+          break;
+        case 'round':
+          if (nextRound < settings.rounds) {
+            nextPhase = 'break';
+          } else {
+            nextPhase = 'cooldown';
+          }
+          break;
+        case 'break':
+          nextPhase = 'round';
+          nextRound = nextRound + 1;
+          break;
+        case 'cooldown':
+          nextPhase = 'complete';
+          break;
+      }
+    }
+    
+    return { phase: nextPhase as TimerPhase, round: nextRound };
+  }, [currentPhase, currentRound, settings.warmupDuration, settings.roundDuration, settings.breakDuration, settings.cooldownDuration, settings.rounds]);
 
   // Update background gradient when phase changes
   useEffect(() => {
@@ -569,26 +620,30 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         nextPhase === 'cooldown' ? settings.cooldownDuration :
         nextPhase === 'warmup' ? settings.warmupDuration : 0;
       
-      // If the duration is 0, automatically transition to the next phase
+      // Our improved getNextPhaseInfo already handles skipping 0 duration phases
+      // So we just need to check if the current phase has 0 duration
       if (nextPhaseDuration === 0) {
         // Reset transition state
         setTransitionActive(false);
         isInPhaseTransition.current = false;
         
-        // Get the next phase info
-        const nextPhaseInfo = getNextPhaseInfo();
+        // Log that we're skipping this phase
+        console.log(`Skipping phase ${nextPhase} with 0 duration`);
         
-        // Immediately trigger transition to the following phase
-        setTimeout(() => {
-          // Set the current phase and round to the next phase and round
-          setCurrentPhase(nextPhaseInfo.phase);
-          setCurrentRound(nextPhaseInfo.round);
-          
-          // Then trigger the next phase transition
-          if (nextPhaseInfo.phase !== 'complete') {
+        // Immediately move to the next phase without any delay
+        // This is more memory efficient than using setTimeout
+        setCurrentPhase(nextPhase);
+        setCurrentRound(nextRound);
+        
+        // Trigger the next phase transition immediately if it's not the complete phase
+        // Using type guard to satisfy TypeScript
+        if (nextPhase === 'warmup' || nextPhase === 'round' || 
+            nextPhase === 'break' || nextPhase === 'cooldown') {
+          // Use requestAnimationFrame instead of setTimeout for better performance
+          requestAnimationFrame(() => {
             handlePhaseComplete();
-          }
-        }, 100);
+          });
+        }
       } else {
         // Normal behavior for non-zero durations
         restart(getExpiryTimestamp(nextPhaseDuration), settings.autoStart);
