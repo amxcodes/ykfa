@@ -63,7 +63,7 @@ const TimerControlsStyles = () => (
 );
 
 const TimerControls = ({ className = '' }: TimerControlsProps) => {
-  const { isRunning, toggleTimer, resetTimer, transitionActive, isMusicMuted, toggleMusicMute } = useTimerContext();
+  const { isRunning, toggleTimer, resetTimer, transitionActive, isWorkoutSoundMuted, toggleWorkoutSoundMute } = useTimerContext();
   const [windowHeight, setWindowHeight] = useState(0);
   const [windowWidth, setWindowWidth] = useState(0);
   
@@ -98,10 +98,10 @@ const TimerControls = ({ className = '' }: TimerControlsProps) => {
       ? 'bg-dark-800/40 backdrop-blur-md border border-gray-700/50 opacity-70 cursor-not-allowed' 
       : 'bg-dark-800/40 backdrop-blur-md border border-white/10 hover:border-white/30 hover:bg-dark-700/40';
       
-  const muteButtonClass = 
+  const workoutSoundButtonClass = 
     transitionActive 
       ? 'bg-dark-800/40 backdrop-blur-md border border-gray-700/50 opacity-70 cursor-not-allowed' 
-      : isMusicMuted
+      : isWorkoutSoundMuted
         ? 'active-mute-btn'
         : 'bg-dark-800/40 backdrop-blur-md border border-white/10 hover:border-white/30 hover:bg-dark-700/40';
   
@@ -116,23 +116,23 @@ const TimerControls = ({ className = '' }: TimerControlsProps) => {
       {/* Include global styles */}
       <TimerControlsStyles />
       
-      <div className={`flex justify-center items-center gap-4 py-3 ${className}`}>
-        {/* Music mute button */}
+      <div className={`flex justify-center items-center gap-6 py-4 ${className}`}>
+        {/* Workout sound mute button */}
         <motion.button
           whileHover={!transitionActive ? { scale: 1.05 } : {}}
           whileTap={!transitionActive ? { scale: 0.95 } : {}}
-          onClick={!transitionActive ? toggleMusicMute : undefined}
-          className={`${muteButtonClass} ${smallButtonSize} rounded-full flex items-center justify-center shadow-md transition-all relative overflow-hidden group`}
+          onClick={!transitionActive ? toggleWorkoutSoundMute : undefined}
+          className={`${workoutSoundButtonClass} ${smallButtonSize} rounded-full flex items-center justify-center shadow-md transition-all relative overflow-hidden group`}
           disabled={transitionActive}
-          aria-label={isMusicMuted ? "Unmute music" : "Mute music"}
-          title={isMusicMuted ? "Unmute music" : "Mute music"}
+          aria-label={isWorkoutSoundMuted ? "Unmute workout sounds" : "Mute workout sounds"}
+          title={isWorkoutSoundMuted ? "Unmute workout sounds" : "Mute workout sounds"}
         >
           {/* Subtle hover effect */}
           <div className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-gradient-to-r from-transparent via-white to-transparent -translate-x-full group-hover:translate-x-full transition-all duration-1000 ease-in-out"></div>
           
           <div className="relative z-10">
-            {isMusicMuted ? (
-              <VolumeX className={`${smallIconSize} text-indigo-400`} />
+            {isWorkoutSoundMuted ? (
+              <VolumeX className={`${smallIconSize} text-amber-400`} />
             ) : (
               <Volume2 className={`${smallIconSize} text-white`} />
             )}

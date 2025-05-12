@@ -37,9 +37,7 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
     seconds,
     isRunning,
     calculateProgress,
-    transitionActive,
-    isPaused,
-    refs
+    transitionActive
   } = useTimerContext();
 
   const [windowHeight, setWindowHeight] = useState(0);
@@ -47,30 +45,10 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
   const [factIndex, setFactIndex] = useState(0);
   const [shouldResetRing, setShouldResetRing] = useState(false);
   const [prevPhase, setPrevPhase] = useState(currentPhase);
-  const [pausedProgress, setPausedProgress] = useState<number | null>(null);
   
   const timerRef = useRef<HTMLDivElement>(null);
   const timeDisplayRef = useRef<HTMLDivElement>(null);
-  const circlePrimaryRef = useRef<SVGCircleElement>(null);
-  const phaseLabelRef = useRef<HTMLDivElement>(null);
-  const prevTimeRef = useRef<string>(`${minutes}:${seconds}`);
-  const lastProgressRef = useRef(calculateProgress());
-  
-  // Share references safely
-  useEffect(() => {
-    // Store references to DOM elements for context to use
-    if (timerRef.current && refs.timerDisplay && !refs.timerDisplay.current) {
-      // Only set if context ref is null to avoid overwriting
-      const contextRef = refs.timerDisplay as React.MutableRefObject<HTMLDivElement | null>;
-      contextRef.current = timerRef.current;
-    }
-    
-    if (phaseLabelRef.current && refs.phaseLabel && !refs.phaseLabel.current) {
-      // Only set if context ref is null to avoid overwriting
-      const contextRef = refs.phaseLabel as React.MutableRefObject<HTMLDivElement | null>;
-      contextRef.current = phaseLabelRef.current;
-    }
-  }, [refs]);
+  const prevTimeRef = useRef(`${minutes}:${seconds}`);
   
   // Change facts every minute instead of every 10 seconds
   useEffect(() => {
@@ -102,49 +80,11 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
     }
   }, [shouldResetRing]);
   
-  // Update progress reference whenever it changes
-  useEffect(() => {
-    lastProgressRef.current = calculateProgress();
-  }, [calculateProgress, minutes, seconds]);
-  
-  // Store progress when the timer is paused
-  useEffect(() => {
-    if (isPaused) {
-      // Store the current progress value when paused
-      setPausedProgress(calculateProgress());
-    } else {
-      // Only clear the paused progress value when explicitly resumed
-      setPausedProgress(null);
-    }
-  }, [isPaused, calculateProgress]);
-  
-  // Calculate the actual time values to display
-  const displayMinutes = minutes.toString().padStart(2, '0');
-  const displaySeconds = seconds.toString().padStart(2, '0');
-  const displayProgress = Math.round(isPaused && pausedProgress !== null ? pausedProgress : calculateProgress());
-
-  // Get current fact
-  const currentFact = fitnessFacts[factIndex];
-
-  // Skip phases with 0 duration
-  const shouldSkipPhase = (phase: string) => {
-    switch (phase) {
-      case 'warmup':
-        return settings.warmupDuration === 0;
-      case 'cooldown':
-        return settings.cooldownDuration === 0;
-      default:
-        return false;
-    }
-  };
-
   // Get next phase for display in transition
   const getNextPhase = () => {
-    if (currentPhase === 'warmup' && !shouldSkipPhase('warmup')) return 'Round';
+    if (currentPhase === 'warmup') return 'Round';
     if (currentPhase === 'round' && currentRound < settings.rounds) return 'Break';
-    if (currentPhase === 'round' && currentRound >= settings.rounds) {
-      return shouldSkipPhase('cooldown') ? 'Complete' : 'Cooldown';
-    }
+    if (currentPhase === 'round' && currentRound >= settings.rounds) return 'Cooldown';
     if (currentPhase === 'break') return `Round ${currentRound + 1}`;
     if (currentPhase === 'cooldown') return 'Complete';
     return '';
@@ -165,11 +105,11 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
     };
   }, []);
 
-  // GSAP animations for phase transitions - use refs instead of querySelector
+  // GSAP animations for phase transitions
   useEffect(() => {
-    if (timerRef.current && circlePrimaryRef.current && transitionActive) {
+    if (timerRef.current && transitionActive) {
       gsap.fromTo(
-        circlePrimaryRef.current,
+        timerRef.current.querySelector('.timer-circle-primary'),
         { 
           strokeDashoffset: '0',
           stroke: getPhaseColors().gradientEnd
@@ -182,7 +122,7 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
         }
       );
       
-      // Pulse animation with direct ref instead of querySelector
+      // Pulse animation
       gsap.to(timerRef.current, {
         scale: 1.05,
         duration: 0.5,
@@ -212,8 +152,8 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
 
   // Add pulse animation when changing phases
   useEffect(() => {
-    if (phaseLabelRef.current) {
-      gsap.to(phaseLabelRef.current, {
+    if (timerRef.current) {
+      gsap.to(timerRef.current.querySelector('.phase-label'), {
         scale: 1.2,
         duration: 0.3,
         yoyo: true,
@@ -330,30 +270,38 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
   if (fullscreen) {
     if (isSmallScreen) {
       containerSize = "w-[85%] max-w-[300px] mt-8"; // Reduced top margin for mobile
-      timeSize = "text-4xl"; // Kept as is
-      progressSize = "text-2xl"; // Reduced from text-3xl
+      timeSize = "text-4xl";
+      progressSize = "text-5xl";
       labelSize = "text-sm";
       strokeWidth = 12;
     } else if (isMediumScreen) {
       containerSize = "w-[85%] max-w-[400px] mt-16";
-      timeSize = "text-5xl"; // Kept as is
-      progressSize = "text-3xl"; // Reduced from text-4xl
+      timeSize = "text-5xl";
+      progressSize = "text-6xl";
       labelSize = "text-base";
       strokeWidth = 16;
     } else {
       containerSize = "w-[85%] max-w-[500px] mt-24";
-      timeSize = "text-6xl"; // Kept as is
-      progressSize = "text-4xl"; // Reduced from text-5xl
+      timeSize = "text-6xl";
+      progressSize = "text-7xl";
       labelSize = "text-lg";
       strokeWidth = 20;
     }
   } else {
     containerSize = "w-full max-w-[350px] mt-8";
-    timeSize = "text-3xl"; // Kept as is
-    progressSize = "text-xl"; // Reduced from text-2xl
+    timeSize = "text-3xl";
+    progressSize = "text-4xl";
     labelSize = "text-sm";
     strokeWidth = 14;
   }
+
+  // Calculate the actual time values to display
+  const displayMinutes = minutes.toString().padStart(2, '0');
+  const displaySeconds = seconds.toString().padStart(2, '0');
+  const displayProgress = Math.round(progress);
+
+  // Get current fact
+  const currentFact = fitnessFacts[factIndex];
 
   return (
     <div className="flex flex-col items-center w-full">
@@ -414,8 +362,7 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
             
             {/* Progress Ring with Gradient Fill */}
             <motion.circle
-              key={`circle-${shouldResetRing ? 'reset' : 'normal'}-${currentPhase}-${currentRound}-${isPaused ? 'paused' : 'running'}`}
-              ref={circlePrimaryRef}
+              key={`circle-${shouldResetRing ? 'reset' : 'normal'}-${currentPhase}`}
               cx="50"
               cy="50"
               r="40"
@@ -426,17 +373,11 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
               strokeLinecap="round"
               filter="url(#subtleGlow)"
               strokeDasharray={`${2 * Math.PI * 40} ${2 * Math.PI * 40}`}
-              initial={shouldResetRing ? 
-                { strokeDashoffset: `${2 * Math.PI * 40}` } : 
-                isPaused && pausedProgress !== null ?
-                { strokeDashoffset: `${2 * Math.PI * 40 * (1 - pausedProgress / 100)}` } :
-                undefined
-              }
+              initial={{ strokeDashoffset: `${2 * Math.PI * 40}` }}
               animate={{
-                strokeDashoffset: `${2 * Math.PI * 40 * (1 - (isPaused && pausedProgress !== null ? pausedProgress : progress) / 100)}`,
+                strokeDashoffset: `${2 * Math.PI * 40 * (1 - progress / 100)}`,
                 transition: { 
-                  type: isPaused ? 'tween' : 'spring',
-                  duration: 0, // Use immediate transition for paused state
+                  type: 'spring', 
                   damping: 15,
                   stiffness: 30
                 }
@@ -447,21 +388,18 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
           {/* Center Content */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="flex flex-col items-center justify-center bg-black rounded-full w-[65%] h-[65%]">
-              {/* Progress percentage - less margin below */}
-              <div ref={timeDisplayRef} className={`${progressSize} font-medium text-white opacity-70 mb-0.5`}>
-                {displayProgress}<span className="text-xs md:text-sm align-top">%</span>
+              {/* Progress percentage */}
+              <div ref={timeDisplayRef} className={`${progressSize} font-bold text-white`}>
+                {displayProgress}<span className="text-lg md:text-xl align-top">%</span>
               </div>
               
-              {/* Time value - pushed up with negative margin */}
-              <div className={`${timeSize} font-bold text-white -mt-1`}>
+              {/* Time value */}
+              <div className={`${timeSize} font-medium text-white opacity-90 mt-0`}>
                 {displayMinutes}:{displaySeconds}
               </div>
               
-              {/* Current phase label - added a bit more margin above */}
-              <div 
-                ref={phaseLabelRef}
-                className={`${labelSize} font-medium text-white opacity-70 mt-2 phase-label`}
-              >
+              {/* Current phase label */}
+              <div className={`${labelSize} font-medium text-white opacity-70 mt-1 phase-label`}>
                 {currentPhase === 'round'
                   ? `Round ${currentRound}/${totalRounds}`
                   : currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)}
@@ -471,18 +409,18 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
         </div>
       </div>
       
-      {/* Glassmorphism Fitness Fact Box - Adjusted for mobile position */}
+      {/* Glassmorphism Fitness Fact Box - Positioned with space for controls */}
       {fullscreen && (
-        <AnimatePresence mode="sync">
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div 
             key={factIndex}
-            className="mt-8 sm:mt-6 md:mt-4 mb-16 px-4 py-3 rounded-xl w-[90%] max-w-md mx-auto 
+            className="mt-8 sm:mt-6 md:mt-4 mb-24 sm:mb-20 px-4 py-3 rounded-xl w-[90%] max-w-md mx-auto 
               backdrop-blur-xl bg-black/30 border border-white/10 shadow-none
               relative overflow-hidden"
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, x: -100 }}
-            transition={{ duration: 0.5 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3 }}
           >
             {/* Subtle gradient line at top */}
             <div 

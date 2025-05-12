@@ -133,6 +133,9 @@ const Footer = () => {
   const location = useLocation();
   const [showDevModal, setShowDevModal] = useState(false);
   
+  // Check if we're on the timer page
+  const isTimerPage = location.pathname === '/timer';
+  
   // Function to handle program link clicks
   const handleProgramClick = (programName: string) => {
     // Store the program in localStorage to retrieve in HomePage
@@ -154,7 +157,7 @@ const Footer = () => {
   };
   
   return (
-    <footer className="relative bg-black/40 backdrop-blur-xl border-t border-white/10">
+    <footer className={`relative ${isTimerPage ? 'bg-black border-t border-white/10' : 'bg-black/80 backdrop-blur-xl border-t border-white/10'} z-50`}>
       {/* Decorative gradient elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-80 h-80 bg-amber-400/10 rounded-full blur-3xl"></div>
