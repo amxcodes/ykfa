@@ -427,10 +427,10 @@ const FloatingButtons = () => {
               setShowBMICalculator(false);
             }
           }}
-          className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-md border border-white/20 shadow-lg hover:from-purple-500/30 hover:to-pink-500/30 transition-all group relative overflow-hidden"
+          className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-gradient-to-br from-amber-500/20 to-amber-600/20 backdrop-blur-md border border-amber-400/30 shadow-lg hover:from-amber-500/40 hover:to-amber-600/40 transition-all group relative overflow-hidden"
           style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 group-hover:scale-150 transition-transform duration-700 ease-out" />
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-amber-600/10 group-hover:scale-150 transition-transform duration-700 ease-out" />
           <div className="relative w-5 h-5 sm:w-6 sm:h-6">
             <div className={`absolute inset-0 transition-all duration-500 ${isExpanded ? 'rotate-180 scale-110' : 'rotate-0'}`}>
               <svg

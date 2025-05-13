@@ -87,8 +87,33 @@ const SchedulePage = () => {
 
   return (
     <div className="relative min-h-screen w-full bg-black/90 pt-28 pb-16 px-4 sm:px-6">
-      {/* Decorative elements */}
+      {/* Subtle background pattern */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Grid pattern overlay */}
+        <div 
+          className="absolute inset-0 opacity-10" 
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px)
+            `,
+            backgroundSize: '40px 40px',
+            maskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%)',
+          }}
+        ></div>
+        
+        {/* Diagonal lines pattern */}
+        <div 
+          className="absolute inset-0 opacity-5" 
+          style={{
+            backgroundImage: `
+              repeating-linear-gradient(45deg, rgba(251, 191, 36, 0.1) 0px, rgba(251, 191, 36, 0.1) 1px, transparent 1px, transparent 20px),
+              repeating-linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0px, rgba(251, 191, 36, 0.1) 1px, transparent 1px, transparent 20px)
+            `,
+          }}
+        ></div>
+        
+        {/* Decorative elements */}
         <div className="absolute top-24 -right-24 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl"></div>
         <div className="absolute top-1/3 -left-24 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-12 right-1/4 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl"></div>

@@ -292,15 +292,15 @@ const BlogPage = () => {
       {/* Article Modal - Redesigned with better readability */}
       {selectedArticle && (
         <div 
-          className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center"
+          className="fixed inset-0 z-50 overflow-y-auto flex items-end sm:items-center justify-center pt-32 sm:pt-16"
           onClick={closeArticle}
         >
           <div className="fixed inset-0 bg-black/80 backdrop-blur-md"></div>
           <div 
-            className="relative w-full max-w-2xl mx-4 transform transition-all duration-300 ease-out motion-safe:animate-modal-appear"
+            className="relative w-full max-w-lg mx-4 transform transition-all duration-300 ease-out motion-safe:animate-modal-appear mb-0 sm:mb-16"
             onClick={e => e.stopPropagation()}
           >
-            <div className="relative bg-gradient-to-br from-amber-950/20 to-black/70 backdrop-blur-xl rounded-2xl w-full max-h-[80vh] overflow-y-auto border border-amber-500/20 shadow-2xl">
+            <div className="relative bg-gradient-to-br from-amber-950/20 to-black/70 backdrop-blur-xl rounded-2xl w-full max-h-[70vh] overflow-y-auto border border-amber-500/20 shadow-2xl">
               <button 
                 onClick={closeArticle}
                 className="absolute top-4 right-4 text-gray-400 hover:text-white bg-black/40 backdrop-blur-sm rounded-full p-2 hover:bg-black/60 transition-colors border border-amber-500/20 z-10 shadow-lg"
@@ -312,7 +312,7 @@ const BlogPage = () => {
                 </svg>
               </button>
               
-              <div className="relative h-56 md:h-72 overflow-hidden">
+              <div className="relative h-32 md:h-48 overflow-hidden">
                 <img 
                   src={selectedArticle.image}
                   alt={selectedArticle.title}
@@ -320,17 +320,17 @@ const BlogPage = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
 
-                <div className="absolute bottom-0 left-0 right-0 p-6">
+                <div className="absolute bottom-0 left-0 right-0 p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-xs font-medium text-amber-400 py-1 px-3 rounded-full bg-amber-400/10 border border-amber-400/20 backdrop-blur-sm">{selectedArticle.category}</span>
                     <span className="text-amber-500/50">•</span>
                     <span className="text-xs text-gray-300">{selectedArticle.date}</span>
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-white">{selectedArticle.title}</h2>
+                  <h2 className="text-lg md:text-xl font-bold text-white">{selectedArticle.title}</h2>
                 </div>
               </div>
               
-              <div className="p-6 md:p-8">
+              <div className="p-4 md:p-6">
                 <div className="flex items-center gap-3 mb-6 border-b border-amber-500/10 pb-4">
                   <img 
                     src={selectedArticle.authorImage} 
@@ -343,7 +343,7 @@ const BlogPage = () => {
                   </div>
             </div>
 
-                <div className="prose prose-invert max-w-none">
+                <div className="prose prose-invert prose-sm max-w-none">
                   {selectedArticle.content.split('\n\n').map((paragraph, index) => (
                     <p key={index} className="mb-4 text-gray-300 leading-relaxed">{paragraph}</p>
                   ))}
