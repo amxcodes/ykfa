@@ -35,7 +35,7 @@ const PROGRAMS_DATA = [
   {
     id: 2,
     title: "MMA ONLY",
-    description: "Access to all MMA classes including boxing, kickboxing, and grappling techniques.",
+    description: "Access to all MMA classes including boxing, kickboxing etc",
     image: "https://images.pexels.com/photos/4401810/pexels-photo-4401810.jpeg?auto=compress&cs=tinysrgb&w=800&q=80",
     link: "/programs",
     category: "mma"
@@ -1195,17 +1195,24 @@ const ProgramCard = ({
         maxWidth: compact ? '100%' : undefined
       }}
     >
-      <div className={`card relative overflow-hidden backdrop-blur-sm border border-transparent
+      <div className={`card relative overflow-hidden backdrop-blur-md bg-white/5 border border-white/10
         ${compact ? 'p-2' : 'p-2 md:p-4'}
-        group-hover:border-amber-500/20
+        group-hover:border-amber-500/30 group-hover:bg-white/10 shadow-lg
+        transition-all duration-500 ease-out
       `}>
+        {/* Glass effect with light reflection */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 opacity-30 rounded-xl -z-10"></div>
+        
         {/* Enhanced gradient border effect on hover with smoother transitions */}
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-400/30 via-amber-500/30 to-dark-600/50 opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-2xl -z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-400/30 via-amber-500/30 to-dark-600/50 opacity-0 group-hover:opacity-100 transition-all duration-700 rounded-xl -z-5"></div>
         
         {/* Subtle glow effect on hover with longer duration */}
-        <div className="absolute -inset-1 bg-amber-500/5 opacity-0 group-hover:opacity-100 blur-xl transition-all duration-1200 rounded-3xl -z-20"></div>
+        <div className="absolute -inset-1 bg-amber-500/10 opacity-0 group-hover:opacity-100 blur-xl transition-all duration-1000 rounded-3xl -z-20"></div>
         
-        <div className={`overflow-hidden rounded-xl mb-2 relative ${compact ? 'h-52 sm:h-48 md:h-36' : 'h-64 md:h-64'}`}> 
+        {/* Top reflection highlight */}
+        <div className="absolute top-0 left-5 right-5 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-50"></div>
+        
+        <div className={`overflow-hidden rounded-xl mb-3 relative ${compact ? 'h-52 sm:h-48 md:h-36' : 'h-64 md:h-64'} group-hover:shadow-[0_0_15px_rgba(251,191,36,0.15)] transition-all duration-500`}> 
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10 transition-opacity duration-500 group-hover:opacity-70"></div>
           <img 
             ref={imageRef}
@@ -1217,7 +1224,7 @@ const ProgramCard = ({
           <div className="absolute bottom-0 left-0 right-0 p-2 z-20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">
             <button 
               onClick={() => onDetailsClick(program)}
-              className="inline-flex items-center text-black bg-gradient-to-r from-amber-400/90 to-amber-500/90 hover:from-amber-400 hover:to-amber-500 px-2 py-1 rounded-lg transition-all text-xs shadow hover:shadow-amber-400/30"
+              className="inline-flex items-center text-black bg-gradient-to-r from-amber-400/90 to-amber-500/90 hover:from-amber-400 hover:to-amber-500 px-2 py-1 rounded-lg transition-all text-xs shadow-md hover:shadow-amber-400/50 backdrop-blur-sm"
               aria-label={`Learn more about ${title}`}
             >
               Learn more <ArrowRight className="ml-1 w-3 h-3" />
@@ -1408,7 +1415,7 @@ const HomePage = () => {
     };
   }, []);
 
-  // Manual image change function - with JS enhancement
+  // Optimized image change function with memory usage improvements
   const changeImage = useCallback((direction: 'next' | 'prev') => {
     if (imageTransitionInProgress.current) return;
     
@@ -1424,12 +1431,20 @@ const HomePage = () => {
     
     imageTransitionInProgress.current = true;
     if (isMounted.current) {
-    setImageTransitioning(true);
-    setTransitionDirection(direction);
+      setImageTransitioning(true);
+      setTransitionDirection(direction);
     }
     
     const container = aboutImageRef.current;
     if (container) {
+      // Add will-change to optimize browser rendering
+      const images = container.querySelectorAll('.image-stack img');
+      images.forEach(img => {
+        if (img instanceof HTMLElement) {
+          img.style.willChange = 'transform, opacity';
+        }
+      });
+      
       container.classList.add('transitioning');
       container.classList.add(`transitioning-${direction}`);
       
@@ -1437,43 +1452,82 @@ const HomePage = () => {
         ? (aboutImageIndex + 1) % ABOUT_IMAGES_DATA.length
         : (aboutImageIndex - 1 + ABOUT_IMAGES_DATA.length) % ABOUT_IMAGES_DATA.length;
       
-      const preloadImg = new Image();
-      preloadImg.src = ABOUT_IMAGES_DATA[targetImageIndex];
-      
+      // Use a more memory-efficient approach to preload images
       const continueTransition = () => {
-        const timeout1 = setTimeout(() => {
+        // Use requestAnimationFrame for better performance
+        requestAnimationFrame(() => {
           if (isMounted.current) {
             if (direction === 'next') {
               setAboutImageIndex(prevIndex => (prevIndex + 1) % ABOUT_IMAGES_DATA.length);
             } else {
               setAboutImageIndex(prevIndex => (prevIndex - 1 + ABOUT_IMAGES_DATA.length) % ABOUT_IMAGES_DATA.length);
             }
-            }
-            
+          }
+          
           const timeout2 = setTimeout(() => {
             if (container) {
               container.classList.remove('transitioning');
               container.classList.remove(`transitioning-${direction}`);
-                    }
-                    imageTransitionInProgress.current = false;
+              
+              // Reset will-change to free up resources
+              images.forEach(img => {
+                if (img instanceof HTMLElement) {
+                  img.style.willChange = 'auto';
+                }
+              });
+            }
+            
+            imageTransitionInProgress.current = false;
             if (isMounted.current) {
-            setImageTransitioning(false);
-            setTransitionDirection(null);
+              setImageTransitioning(false);
+              setTransitionDirection(null);
             }
           }, 800);
           
           imageTimeoutsRef.current.push(timeout2);
-        }, 400);
-        
-        imageTimeoutsRef.current.push(timeout1);
+        });
       };
       
-      if (preloadImg.complete) {
+      // Check if the target image is already loaded in the DOM
+      const existingImages = Array.from(document.images);
+      const isPreloaded = existingImages.some(img => img.src === ABOUT_IMAGES_DATA[targetImageIndex]);
+      
+      if (isPreloaded) {
         continueTransition();
       } else {
-        preloadImg.onload = continueTransition;
-        const fallbackTimeout = setTimeout(continueTransition, 300);
-        imageTimeoutsRef.current.push(fallbackTimeout);
+        // Only create a new Image object if needed
+        const preloadImg = new Image();
+        preloadImg.src = ABOUT_IMAGES_DATA[targetImageIndex];
+        
+        if (preloadImg.complete) {
+          continueTransition();
+          // Clean up to avoid memory leaks
+          preloadImg.onload = null;
+          preloadImg.onerror = null;
+        } else {
+          preloadImg.onload = () => {
+            continueTransition();
+            // Clean up to avoid memory leaks
+            preloadImg.onload = null;
+            preloadImg.onerror = null;
+          };
+          preloadImg.onerror = () => {
+            // Continue anyway if image fails to load
+            continueTransition();
+            // Clean up to avoid memory leaks
+            preloadImg.onload = null;
+            preloadImg.onerror = null;
+          };
+          
+          // Fallback timeout with shorter duration
+          const fallbackTimeout = setTimeout(() => {
+            continueTransition();
+            // Clean up to avoid memory leaks
+            preloadImg.onload = null;
+            preloadImg.onerror = null;
+          }, 200);
+          imageTimeoutsRef.current.push(fallbackTimeout);
+        }
       }
     }
   }, [aboutImageIndex]); // Removed ABOUT_IMAGES_DATA as it's a constant
@@ -1486,28 +1540,60 @@ const HomePage = () => {
     };
   }, []);
 
-  // useEffect to manage the auto image change interval
+  // Optimized auto image change interval with IntersectionObserver for better performance
   useEffect(() => {
-    // Start the interval only if component is mounted
-    if (!autoImageChangeInterval.current && !imageTransitionInProgress.current && isMounted.current) {
-      autoImageChangeInterval.current = setInterval(() => {
-        // Only proceed if component is still mounted
-        if (!imageTransitionInProgress.current && isMounted.current) {
-          changeImage('next');
-        }
-      }, 5000);
+    let observer: IntersectionObserver | null = null;
+    
+    // Only start auto-rotation when the image slider is visible in viewport
+    if (aboutImageRef.current && 'IntersectionObserver' in window) {
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          // Start/stop interval based on visibility
+          if (entry.isIntersecting) {
+            // Start the interval only if component is mounted and visible
+            if (!autoImageChangeInterval.current && !imageTransitionInProgress.current && isMounted.current) {
+              autoImageChangeInterval.current = setInterval(() => {
+                // Only proceed if component is still mounted and not transitioning
+                if (!imageTransitionInProgress.current && isMounted.current) {
+                  changeImage('next');
+                }
+              }, 5000);
+            }
+          } else {
+            // Stop the interval when not visible to save resources
+            if (autoImageChangeInterval.current) {
+              clearInterval(autoImageChangeInterval.current);
+              autoImageChangeInterval.current = null;
+            }
+          }
+        });
+      }, { threshold: 0.2 }); // Start when 20% visible
+      
+      observer.observe(aboutImageRef.current);
+    } else {
+      // Fallback for browsers without IntersectionObserver
+      if (!autoImageChangeInterval.current && !imageTransitionInProgress.current && isMounted.current) {
+        autoImageChangeInterval.current = setInterval(() => {
+          if (!imageTransitionInProgress.current && isMounted.current) {
+            changeImage('next');
+          }
+        }, 5000);
+      }
     }
 
-    // Cleanup: clear interval on unmount or when dependencies change
+    // Cleanup: clear interval and disconnect observer on unmount
     return () => {
       if (autoImageChangeInterval.current) {
         clearInterval(autoImageChangeInterval.current);
         autoImageChangeInterval.current = null;
       }
+      if (observer) {
+        observer.disconnect();
+      }
     };
-  }, [changeImage, isMounted]); // Add isMounted to dependency array
+  }, [changeImage, isMounted]);
   
-  // JavaScript animation enhancements for the image slider (useEffect remains largely the same, focuses on DOM manipulation)
+  // Optimized animation enhancements with better memory management
   useEffect(() => {
     if (!aboutImageRef.current) return;
     
@@ -1518,87 +1604,195 @@ const HomePage = () => {
     
     if (!currentImage || !prevImage || !nextImage) return;
 
+    // Use requestAnimationFrame for smoother performance and better memory usage
+    let animationFrameId: number | null = null;
+    
     if (imageTransitioning && transitionDirection) {
-      // JS animations intentionally bypassed to defer to CSS transitions
+      // Only add will-change during transitions to optimize memory usage
+      animationFrameId = requestAnimationFrame(() => {
+        if (currentImage instanceof HTMLElement) {
+          currentImage.style.willChange = 'transform, opacity';
+        }
+        if (nextImage instanceof HTMLElement) {
+          nextImage.style.willChange = 'transform, opacity';
+        }
+        if (prevImage instanceof HTMLElement) {
+          prevImage.style.willChange = 'transform, opacity';
+        }
+      });
     } else if (!imageTransitioning) {
-      // Transition is over, reset inline styles to allow CSS to take over for the resting state.
-      if (currentImage instanceof HTMLElement) {
-        currentImage.style.opacity = '';
-        currentImage.style.transform = '';
-        currentImage.style.filter = '';
-        currentImage.style.transition = ''; // Also clear transition
-      }
-      if (nextImage instanceof HTMLElement) {
-        nextImage.style.opacity = '';
-        nextImage.style.transform = '';
-        nextImage.style.boxShadow = '';
-        nextImage.style.transition = '';
-      }
-      if (prevImage instanceof HTMLElement) {
-        prevImage.style.opacity = '';
-        prevImage.style.transform = '';
-        prevImage.style.boxShadow = '';
-        prevImage.style.transition = '';
-      }
+      // Transition is over, reset inline styles to allow CSS to take over for the resting state
+      animationFrameId = requestAnimationFrame(() => {
+        if (currentImage instanceof HTMLElement) {
+          currentImage.style.opacity = '';
+          currentImage.style.transform = '';
+          currentImage.style.filter = '';
+          currentImage.style.transition = '';
+          currentImage.style.willChange = 'auto'; // Reset will-change to free up resources
+        }
+        if (nextImage instanceof HTMLElement) {
+          nextImage.style.opacity = '';
+          nextImage.style.transform = '';
+          nextImage.style.boxShadow = '';
+          nextImage.style.transition = '';
+          nextImage.style.willChange = 'auto'; // Reset will-change to free up resources
+        }
+        if (prevImage instanceof HTMLElement) {
+          prevImage.style.opacity = '';
+          prevImage.style.transform = '';
+          prevImage.style.boxShadow = '';
+          prevImage.style.transition = '';
+          prevImage.style.willChange = 'auto'; // Reset will-change to free up resources
+        }
+      });
     }
     
-    // Cleanup function for animation: if the component unmounts or dependencies change
-    // while an animation is "in flight" (though less critical with this new reset logic).
+    // Cleanup function to cancel any pending animation frames
     return () => {
-      // If timeouts were stored, they could be cleared here.
-      // For now, the main reset is handled by the else if block.
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+      }
     };
   }, [imageTransitioning, transitionDirection]);
   
-  // Add subtle parallax effect on mouse movement
+  // Optimized parallax effect with throttling for better performance and memory usage
   useEffect(() => {
     if (!aboutImageRef.current) return;
     
     const container = aboutImageRef.current;
     const currentImage = container.querySelector('.current-image');
     
-    const handleMouseMove = (e: MouseEvent) => {
+    // Throttle function to limit the rate of function calls
+    const throttle = (func: Function, limit: number) => {
+      let inThrottle: boolean = false;
+      let lastFunc: ReturnType<typeof setTimeout> | null = null;
+      let lastRan: number = 0;
+      
+      return function(this: any, ...args: any[]) {
+        if (!inThrottle) {
+          func.apply(this, args);
+          lastRan = Date.now();
+          inThrottle = true;
+          
+          setTimeout(() => {
+            inThrottle = false;
+          }, limit);
+        } else {
+          if (lastFunc) clearTimeout(lastFunc);
+          
+          lastFunc = setTimeout(() => {
+            if ((Date.now() - lastRan) >= limit) {
+              func.apply(this, args);
+              lastRan = Date.now();
+            }
+          }, limit - (Date.now() - lastRan));
+        }
+      };
+    };
+    
+    // Throttled mouse move handler to reduce function calls
+    const handleMouseMove = throttle((e: MouseEvent) => {
       if (imageTransitionInProgress.current || !currentImage || !(currentImage instanceof HTMLElement)) return;
       
       // Calculate mouse position relative to container center
       const rect = container.getBoundingClientRect();
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
-      const moveX = (e.clientX - centerX) / 30; // Reduce movement amount for subtlety
-      const moveY = (e.clientY - centerY) / 30;
+      const moveX = (e.clientX - centerX) / 40; // Further reduce movement for better performance
+      const moveY = (e.clientY - centerY) / 40;
       
       // Apply subtle transform to create parallax effect
       requestAnimationFrame(() => {
-        currentImage.style.transition = 'transform 0.5s ease-out';
-        currentImage.style.transform = `translateX(${moveX}px) translateY(${moveY}px) scale(1.01)`;
+        // Only set will-change during the actual movement
+        currentImage.style.willChange = 'transform';
+        currentImage.style.transition = 'transform 0.6s ease-out';
+        currentImage.style.transform = `translateX(${moveX}px) translateY(${moveY}px) scale(1.005)`;
       });
-    };
+    }, 50); // Throttle to 50ms (20 updates per second)
     
     const handleMouseLeave = () => {
       if (!currentImage || !(currentImage instanceof HTMLElement)) return;
       
       requestAnimationFrame(() => {
-        currentImage.style.transition = 'transform 0.5s ease-out';
+        currentImage.style.transition = 'transform 0.4s ease-out';
         currentImage.style.transform = 'translateX(0) translateY(0) scale(1)';
+        
+        // Reset will-change after transition to free up resources
+        setTimeout(() => {
+          if (currentImage instanceof HTMLElement) {
+            currentImage.style.willChange = 'auto';
+          }
+        }, 400);
       });
     };
     
     // Only add mouse effects on non-mobile
     if (!isMobileDevice.current) {
-      container.addEventListener('mousemove', handleMouseMove);
+      container.addEventListener('mousemove', handleMouseMove as EventListener);
       container.addEventListener('mouseleave', handleMouseLeave);
     }
     
     return () => {
       if (!isMobileDevice.current) {
-        container.removeEventListener('mousemove', handleMouseMove);
+        container.removeEventListener('mousemove', handleMouseMove as EventListener);
         container.removeEventListener('mouseleave', handleMouseLeave);
       }
     };
   }, [aboutImageIndex]); // Re-attach when the image changes
 
-  // About section images array (define outside if static, or useMemo if derived)
-  // For now, assuming it's fine here as it's used by changeImage which is memoized.
+  // Implement lazy loading for images using IntersectionObserver
+  useEffect(() => {
+    // Preload only the current and adjacent images when in viewport
+    const preloadAdjacentImages = () => {
+      const currentIndex = aboutImageIndex;
+      const prevIndex = (currentIndex - 1 + ABOUT_IMAGES_DATA.length) % ABOUT_IMAGES_DATA.length;
+      const nextIndex = (currentIndex + 1) % ABOUT_IMAGES_DATA.length;
+      
+      // Only preload if not already in DOM
+      const preloadImage = (src: string) => {
+        const existingImages = Array.from(document.images);
+        const isPreloaded = existingImages.some(img => img.src === src);
+        
+        if (!isPreloaded) {
+          const img = new Image();
+          img.src = src;
+          // Clean up event listeners to prevent memory leaks
+          img.onload = null;
+          img.onerror = null;
+        }
+      };
+      
+      // Preload adjacent images with small delay to prioritize current image
+      preloadImage(ABOUT_IMAGES_DATA[currentIndex]);
+      
+      setTimeout(() => {
+        if (isMounted.current) {
+          preloadImage(ABOUT_IMAGES_DATA[prevIndex]);
+          preloadImage(ABOUT_IMAGES_DATA[nextIndex]);
+        }
+      }, 300);
+    };
+    
+    // Use IntersectionObserver to detect when slider is in viewport
+    if (aboutImageRef.current && 'IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            preloadAdjacentImages();
+          }
+        });
+      }, { threshold: 0.1 });
+      
+      observer.observe(aboutImageRef.current);
+      
+      return () => {
+        observer.disconnect();
+      };
+    } else {
+      // Fallback for browsers without IntersectionObserver
+      preloadAdjacentImages();
+    }
+  }, [aboutImageIndex]);
   /* const aboutImages = ABOUT_IMAGES_DATA; */ // Now using ABOUT_IMAGES_DATA directly
 
   // Preload images for smoother transitions (useEffect for imageCache and preloadAllImages)
@@ -1737,7 +1931,7 @@ const HomePage = () => {
                     right: 0
                   }}
                 >
-                  {/* Previous image (left side, minimal peek) */}
+                  {/* Previous image (left side, minimal peek) - optimized */}
                   <div className="prev-image absolute top-0 bottom-0 left-[-5%] w-[12%] z-0 transform scale-[0.97] opacity-70 rounded-xl overflow-hidden shadow-lg transition-all duration-700">
                     <img 
                       src={ABOUT_IMAGES_DATA[(aboutImageIndex - 1 + ABOUT_IMAGES_DATA.length) % ABOUT_IMAGES_DATA.length]} 
@@ -1745,14 +1939,16 @@ const HomePage = () => {
                       className="w-full h-full object-cover"
                       style={{ 
                         objectPosition: 'right center',
+                        transform: 'translateZ(0)', // Hardware acceleration hint
+                        imageRendering: 'auto' // Let browser optimize based on device
                       }}
-                      loading="eager"
+                      loading="lazy"
                       decoding="async"
                     />
                     <div className="absolute inset-0 bg-black/50"></div>
                   </div>
                   
-                  {/* Next image (right side, minimal peek) */}
+                  {/* Next image (right side, minimal peek) - optimized */}
                   <div className="next-image absolute top-0 bottom-0 right-[-5%] w-[12%] z-0 transform scale-[0.97] opacity-70 rounded-xl overflow-hidden shadow-lg transition-all duration-700">
                     <img 
                       src={ABOUT_IMAGES_DATA[(aboutImageIndex + 1) % ABOUT_IMAGES_DATA.length]} 
@@ -1760,14 +1956,16 @@ const HomePage = () => {
                       className="w-full h-full object-cover"
                       style={{ 
                         objectPosition: 'left center',
+                        transform: 'translateZ(0)', // Hardware acceleration hint
+                        imageRendering: 'auto' // Let browser optimize based on device
                       }}
-                      loading="eager"
+                      loading="lazy"
                       decoding="async"
                     />
                     <div className="absolute inset-0 bg-black/50"></div>
                   </div>
                   
-                  {/* Current image (center, fully visible) */}
+                  {/* Current image (center, fully visible) - optimized for memory usage */}
                   <div className="current-image absolute inset-0 z-10 rounded-xl overflow-hidden transform transition-all duration-700 ease-out shadow-xl">
                     <img 
                       src={ABOUT_IMAGES_DATA[aboutImageIndex]} 
@@ -1775,11 +1973,20 @@ const HomePage = () => {
                       className="w-full h-full object-cover transition-opacity duration-300"
                       loading="eager"
                       decoding="async"
+                      fetchPriority="high"
                       style={{
                         opacity: imageTransitioning ? 0.8 : 1,
+                        transform: 'translateZ(0)' // Hardware acceleration hint
                       }}
                       onLoad={(e) => {
-                        e.currentTarget.style.opacity = '1';
+                        if (e.currentTarget) {
+                          e.currentTarget.style.opacity = '1';
+                          // Clean up any references
+                          const img = e.currentTarget;
+                          requestAnimationFrame(() => {
+                            if (img) img.style.opacity = '1';
+                          });
+                        }
                       }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
@@ -1834,7 +2041,9 @@ const HomePage = () => {
       </section>
 
       {/* Programs Section */}
-      <section ref={programsSectionRef} className="section bg-dark-800">
+      <section ref={programsSectionRef} className="section relative overflow-hidden">
+        <div className="absolute inset-0 bg-black opacity-95"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.05),transparent_80%)]"></div>
         <div className="container">
           <div className="text-center max-w-2xl mx-auto mb-12 animate-fade-up">
             <h2 className="mb-4">Training Programs for <span className="text-transparent bg-clip-text bg-gold-gradient">All Levels</span></h2>
@@ -1865,8 +2074,8 @@ const HomePage = () => {
 
       {/* Testimonials Section */}
       <section ref={testimonialSectionRef} className="section py-12 sm:py-16 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-dark-800 to-amber-900/20 opacity-90"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.1),transparent_70%)]"></div>
+        <div className="absolute inset-0 bg-black opacity-95"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.05),transparent_80%)]"></div>
         <div className="container mx-auto px-4 sm:px-6 relative z-10">
           <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-12 animate-fade-up">
             <h2 className="mb-4">What Our <span className="text-transparent bg-clip-text bg-gold-gradient">Members</span> Say</h2>
