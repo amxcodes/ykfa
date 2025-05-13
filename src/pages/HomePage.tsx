@@ -781,6 +781,23 @@ const ProgramDetailsModal = ({
             </ul>
           </div>
           
+          {/* Membership Button */}
+          <div className="mt-4 px-4 pb-4">
+            <Link 
+              to="/membership" 
+              className="block w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium text-center rounded-lg transition-all shadow-lg hover:shadow-amber-500/20"
+              onClick={() => {
+                // Close the modal when navigating
+                onClose();
+              }}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <span>View Membership Options</span>
+                <ChevronRight size={16} />
+              </div>
+            </Link>
+          </div>
+          
           {/* Bottom padding */}
           <div className="h-1"></div>
         </div>

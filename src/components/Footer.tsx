@@ -157,11 +157,14 @@ const Footer = () => {
   };
   
   return (
-    <footer className={`relative ${isTimerPage ? 'bg-black border-t border-white/10' : 'bg-black/80 backdrop-blur-xl border-t border-white/10'} z-50`}>
-      {/* Decorative gradient elements */}
+    <footer className={`relative bg-black border-t border-white/10 z-50`}>
+      {/* Decorative gradient elements - reduced opacity for more dominant black */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-amber-400/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-amber-400/10 rounded-full blur-3xl"></div>
+        {/* Subtle yellow gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-amber-400/5 to-transparent"></div>
+        {/* Smaller, more subtle glow effects */}
+        <div className="absolute -top-40 -left-40 w-60 h-60 bg-amber-400/15 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -right-40 w-60 h-60 bg-amber-400/15 rounded-full blur-3xl"></div>
       </div>
 
       <div className="container mx-auto px-4 py-8 relative">

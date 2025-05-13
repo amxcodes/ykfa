@@ -4,11 +4,11 @@ import { Link } from 'react-router-dom';
 
 // Moved tabs data outside the component for stability
 const TABS_DATA = [
-  { id: 'mission', label: 'Our Mission', icon: <Heart className="w-4 h-4" /> },
   { id: 'about', label: 'About Master Yaseen', icon: <User className="w-4 h-4" /> },
+  { id: 'achievements', label: 'Achievements', icon: <Award className="w-4 h-4" /> },
+  { id: 'mission', label: 'Our Mission', icon: <Heart className="w-4 h-4" /> },
   { id: 'history', label: 'Our History', icon: <Clock className="w-4 h-4" /> },
-  { id: 'philosophy', label: 'Training Philosophy', icon: <BookOpen className="w-4 h-4" /> },
-  { id: 'achievements', label: 'Achievements', icon: <Award className="w-4 h-4" /> }
+  { id: 'philosophy', label: 'Training Philosophy', icon: <BookOpen className="w-4 h-4" /> }
 ];
 
 // Moved gallery images outside the component for stability
@@ -22,7 +22,7 @@ const GALLERY_IMAGES_DATA = [
 ];
 
 const AboutUsPage = () => {
-  const [activeTab, setActiveTab] = useState('mission');
+  const [activeTab, setActiveTab] = useState('about');
   const [isVisible, setIsVisible] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
   const timeoutsRef = useRef<number[]>([]);
@@ -204,55 +204,7 @@ const AboutUsPage = () => {
             
             {/* Main content area */}
             <div className="lg:col-span-3 space-y-8">
-              {/* Mission content */}
-              <div className={`animate-me opacity-0 translate-y-8 ${activeTab === 'mission' ? 'block' : 'hidden'}`} style={{ transition: 'all 0.8s ease-out' }}>
-                <div className="backdrop-blur-lg bg-white/5 rounded-2xl border border-white/10 p-4 md:p-6 shadow-xl">
-                  <h2 className="text-2xl font-bold mb-5 text-amber-400">Our Mission</h2>
-                  <div className="space-y-4 text-gray-300">
-                    <p className="text-sm md:text-base">
-                      At Yaseens Karate and Fitness Academy, our mission is to empower individuals through martial arts, fitness, and self-discipline. We aim to build not just stronger bodies, but stronger minds—equipping our students with confidence, resilience, and the skills to protect themselves.
-                    </p>
-                    <p className="text-sm md:text-base">
-                      Whether you're a beginner or an aspiring champion, we provide a safe, inclusive environment to grow and achieve excellence. Through our diverse training programs, we aim to make martial arts and fitness accessible to everyone, regardless of age or skill level.
-                    </p>
-                    <div className="p-4 md:p-5 bg-amber-400/10 rounded-xl border border-amber-400/20 mt-6">
-                      <h3 className="text-base lg:text-lg font-medium mb-2 text-white">Core Values</h3>
-                      <ul className="space-y-2">
-                        <li className="flex items-start gap-2">
-                          <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-amber-400 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <span className="font-medium text-white text-sm md:text-base">Respect</span>
-                            <p className="text-xs md:text-sm text-gray-400">For oneself, instructors, fellow students, and the art</p>
-                          </div>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-amber-400 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <span className="font-medium text-white text-sm md:text-base">Discipline</span>
-                            <p className="text-xs md:text-sm text-gray-400">Commitment to training and continuous improvement</p>
-                          </div>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-amber-400 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <span className="font-medium text-white text-sm md:text-base">Integrity</span>
-                            <p className="text-xs md:text-sm text-gray-400">Honesty and ethical behavior in all situations</p>
-                          </div>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-amber-400 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <span className="font-medium text-white text-sm md:text-base">Perseverance</span>
-                            <p className="text-xs md:text-sm text-gray-400">The strength to overcome challenges and never give up</p>
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* About Master Yaseen content */}
+              {/* About Master Yaseen content - First section */}
               <div className={`animate-me opacity-0 translate-y-8 ${activeTab === 'about' ? 'block' : 'hidden'}`} style={{ transition: 'all 0.8s ease-out' }}>
                 <div className="backdrop-blur-lg bg-white/5 rounded-2xl border border-white/10 p-4 md:p-6 shadow-xl">
                   <h2 className="text-2xl font-bold mb-5 text-amber-400">About Master Yaseen</h2>
@@ -314,6 +266,94 @@ const AboutUsPage = () => {
                           </ul>
                         </div>
                       </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Achievements content */}
+              <div className={`animate-me opacity-0 translate-y-8 ${activeTab === 'achievements' ? 'block' : 'hidden'}`} style={{ transition: 'all 0.8s ease-out' }}>
+                <div className="backdrop-blur-lg bg-white/5 rounded-2xl border border-white/10 p-4 md:p-6 shadow-xl">
+                  <h2 className="text-2xl font-bold mb-5 text-amber-400">Achievements</h2>
+                  
+                  <div className="space-y-6 text-gray-300">
+                    <p className="text-sm md:text-base">
+                      YKFA has established itself as a premier martial arts academy in Kerala. Under the guidance of Master Yaseen, our students have achieved excellence in various martial arts disciplines and competitions.
+                    </p>
+                    
+                    <div className="bg-amber-400/10 rounded-xl border border-amber-400/20 p-4 mt-4">
+                      <h3 className="text-lg font-medium text-white mb-3 flex items-center gap-2">
+                        <Award className="w-5 h-5 text-amber-400" />
+                        <span>Academy Recognition</span>
+                      </h3>
+                      <ul className="space-y-3">
+                        <li className="flex items-start gap-3">
+                          <div className="w-6 h-6 rounded-full bg-amber-400/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="text-amber-400 text-xs font-medium">KAI</span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-white">Karate Association of India</p>
+                            <p className="text-xs text-gray-400">Official recognition and affiliation</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-3">
+                          <div className="w-6 h-6 rounded-full bg-amber-400/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span className="text-amber-400 text-xs font-medium">MMA</span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-white">MMA India Federation</p>
+                            <p className="text-xs text-gray-400">Certified training center</p>
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Mission content */}
+              <div className={`animate-me opacity-0 translate-y-8 ${activeTab === 'mission' ? 'block' : 'hidden'}`} style={{ transition: 'all 0.8s ease-out' }}>
+                <div className="backdrop-blur-lg bg-white/5 rounded-2xl border border-white/10 p-4 md:p-6 shadow-xl">
+                  <h2 className="text-2xl font-bold mb-5 text-amber-400">Our Mission</h2>
+                  <div className="space-y-4 text-gray-300">
+                    <p className="text-sm md:text-base">
+                      At Yaseens Karate and Fitness Academy, our mission is to empower individuals through martial arts, fitness, and self-discipline. We aim to build not just stronger bodies, but stronger minds—equipping our students with confidence, resilience, and the skills to protect themselves.
+                    </p>
+                    <p className="text-sm md:text-base">
+                      Whether you're a beginner or an aspiring champion, we provide a safe, inclusive environment to grow and achieve excellence. Through our diverse training programs, we aim to make martial arts and fitness accessible to everyone, regardless of age or skill level.
+                    </p>
+                    <div className="p-4 md:p-5 bg-amber-400/10 rounded-xl border border-amber-400/20 mt-6">
+                      <h3 className="text-base lg:text-lg font-medium mb-2 text-white">Core Values</h3>
+                      <ul className="space-y-2">
+                        <li className="flex items-start gap-2">
+                          <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="font-medium text-white text-sm md:text-base">Respect</span>
+                            <p className="text-xs md:text-sm text-gray-400">For oneself, instructors, fellow students, and the art</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="font-medium text-white text-sm md:text-base">Discipline</span>
+                            <p className="text-xs md:text-sm text-gray-400">Commitment to training and continuous improvement</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="font-medium text-white text-sm md:text-base">Integrity</span>
+                            <p className="text-xs md:text-sm text-gray-400">Honesty and ethical behavior in all situations</p>
+                          </div>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-amber-400 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <span className="font-medium text-white text-sm md:text-base">Perseverance</span>
+                            <p className="text-xs md:text-sm text-gray-400">The strength to overcome challenges and never give up</p>
+                          </div>
+                        </li>
+                      </ul>
                     </div>
                   </div>
                 </div>
