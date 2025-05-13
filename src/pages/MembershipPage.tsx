@@ -83,7 +83,6 @@ const ModernPricingCard = ({
     <div 
       className={`rounded-xl overflow-hidden ${
         plan.recommended ? 'border-2 border-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.15)]' : 
-        isKarateDummy ? 'border border-amber-400/30 bg-gradient-to-b from-dark-900/80 to-dark-800/80' : 
         'border border-white/10'
       } h-full flex flex-col relative`}
     >
@@ -106,9 +105,9 @@ const ModernPricingCard = ({
       )}
       
       {isKarateDummy && (
-        <div className="bg-amber-400/20 text-amber-400 text-xs text-center py-1.5 font-medium relative z-10">
+        <div className="bg-amber-400 text-black text-xs text-center py-1.5 font-medium relative z-10">
           MONTHLY PLAN ONLY
-      </div>
+        </div>
       )}
       
       {/* Card Content */}
@@ -122,7 +121,7 @@ const ModernPricingCard = ({
                 // Offer price
                 <div className="flex flex-col transition-opacity duration-500 animate-fadeIn">
                   <div className="flex items-baseline">
-                    <span className={`text-2xl font-bold ${plan.recommended ? 'text-amber-400' : isKarateDummy ? 'text-gray-400' : 'text-white'}`}>
+                    <span className={`text-2xl font-bold ${plan.recommended ? 'text-amber-400' : 'text-white'}`}>
                       ₹{plan.price.toLocaleString()}
                     </span>
                     <span className="text-gray-400 text-xs ml-1">/{plan.period}</span>
@@ -146,7 +145,7 @@ const ModernPricingCard = ({
             </div>
           ) : (
             <div className="flex items-baseline mt-1">
-              <span className={`text-2xl font-bold ${plan.recommended ? 'text-amber-400' : isKarateDummy ? 'text-gray-400' : 'text-white'}`}>
+              <span className={`text-2xl font-bold ${plan.recommended ? 'text-amber-400' : 'text-white'}`}>
                 ₹{plan.price.toLocaleString()}
               </span>
               <span className="text-gray-400 text-xs ml-1">/{plan.period}</span>
@@ -304,7 +303,7 @@ const MembershipPage = () => {
     period: "month",
     description: "Traditional Karate training with belt progression system.",
     programType: "KARATE",
-    image: "https://images.pexels.com/photos/7045573/pexels-photo-7045573.jpeg?auto=compress&fit=crop&w=800&q=80",
+    image: "https://images.pexels.com/photos/4428290/pexels-photo-4428290.jpeg?auto=compress&cs=tinysrgb&w=800&q=80",
     features: [
       { name: "2 classes per week", included: true },
       { name: "Belt progression and certification system", included: true },
@@ -343,7 +342,7 @@ const MembershipPage = () => {
         period: "month",
         description: "Access to all MMA classes including boxing, kickboxing, and grappling.",
         programType: "MMA ONLY",
-        image: "https://images.pexels.com/photos/4761797/pexels-photo-4761797.jpeg?auto=compress&fit=crop&w=800&q=80",
+        image: "https://images.pexels.com/photos/4401810/pexels-photo-4401810.jpeg?auto=compress&cs=tinysrgb&w=800&q=80",
         features: [
           { name: "3 mixed martial arts classes per week", included: true },
           { name: "Boxing, Kickboxing, Muay Thai", included: true },
@@ -378,7 +377,7 @@ const MembershipPage = () => {
         period: "month",
         description: "Traditional Karate training with belt progression system.",
         programType: "KARATE",
-        image: "https://images.pexels.com/photos/7045573/pexels-photo-7045573.jpeg?auto=compress&fit=crop&w=800&q=80",
+        image: "https://images.pexels.com/photos/4428290/pexels-photo-4428290.jpeg?auto=compress&cs=tinysrgb&w=800&q=80",
         features: [
           { name: "2 classes per week", included: true },
           { name: "Belt progression and certification system", included: true },
@@ -395,7 +394,7 @@ const MembershipPage = () => {
         period: "month",
         description: "Unlimited access to our modern gym with top-tier equipment.",
         programType: "GYM ONLY",
-        image: "https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&fit=crop&w=800&q=80",
+        image: "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
           { name: "Access to gym", included: true },
           { name: "Access to gym app", included: true },
@@ -436,7 +435,7 @@ const MembershipPage = () => {
         period: "quarter",
         description: "Access to all MMA classes including boxing, kickboxing, and grappling.",
         programType: "MMA ONLY",
-        image: "https://images.pexels.com/photos/4761797/pexels-photo-4761797.jpeg?auto=compress&fit=crop&w=800&q=80",
+        image: "https://images.pexels.com/photos/4401810/pexels-photo-4401810.jpeg?auto=compress&cs=tinysrgb&w=800&q=80",
         features: [
           { name: "3 mixed martial arts classes per week", included: true },
           { name: "Boxing, Kickboxing, Muay Thai", included: true },
@@ -475,7 +474,7 @@ const MembershipPage = () => {
         period: "quarter",
         description: "Unlimited access to our modern gym with top-tier equipment.",
         programType: "GYM ONLY",
-        image: "https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&fit=crop&w=800&q=80",
+        image: "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
           { name: "Access to gym", included: true },
           { name: "Access to gym app", included: true },
@@ -516,7 +515,7 @@ const MembershipPage = () => {
         period: "6mo",
         description: "Access to all MMA classes including boxing, kickboxing, and grappling.",
         programType: "MMA ONLY",
-        image: "https://images.pexels.com/photos/4761797/pexels-photo-4761797.jpeg?auto=compress&fit=crop&w=800&q=80",
+        image: "https://images.pexels.com/photos/4401810/pexels-photo-4401810.jpeg?auto=compress&cs=tinysrgb&w=800&q=80",
         features: [
           { name: "3 mixed martial arts classes per week", included: true },
           { name: "Boxing, Kickboxing, Muay Thai", included: true },
@@ -555,7 +554,7 @@ const MembershipPage = () => {
         period: "6mo",
         description: "Unlimited access to our modern gym with top-tier equipment.",
         programType: "GYM ONLY",
-        image: "https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&fit=crop&w=800&q=80",
+        image: "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
           { name: "Access to gym", included: true },
           { name: "Access to gym app", included: true },
@@ -596,7 +595,7 @@ const MembershipPage = () => {
         period: "year",
         description: "Access to all MMA classes including boxing, kickboxing, and grappling.",
         programType: "MMA ONLY",
-        image: "https://images.pexels.com/photos/4761797/pexels-photo-4761797.jpeg?auto=compress&fit=crop&w=800&q=80",
+        image: "https://images.pexels.com/photos/4401810/pexels-photo-4401810.jpeg?auto=compress&cs=tinysrgb&w=800&q=80",
         features: [
           { name: "3 mixed martial arts classes per week", included: true },
           { name: "Boxing, Kickboxing, Muay Thai", included: true },
@@ -635,7 +634,7 @@ const MembershipPage = () => {
         period: "year",
         description: "Unlimited access to our modern gym with top-tier equipment.",
         programType: "GYM ONLY",
-        image: "https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&fit=crop&w=800&q=80",
+        image: "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
           { name: "Access to gym", included: true },
           { name: "Access to gym app", included: true },

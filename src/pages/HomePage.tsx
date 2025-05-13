@@ -36,7 +36,7 @@ const PROGRAMS_DATA = [
     id: 2,
     title: "MMA ONLY",
     description: "Access to all MMA classes including boxing, kickboxing, and grappling techniques.",
-    image: "https://images.pexels.com/photos/4761797/pexels-photo-4761797.jpeg?auto=compress&fit=crop&w=800&q=80",
+    image: "https://images.pexels.com/photos/4401810/pexels-photo-4401810.jpeg?auto=compress&cs=tinysrgb&w=800&q=80",
     link: "/programs",
     category: "mma"
   },
@@ -51,8 +51,8 @@ const PROGRAMS_DATA = [
   {
     id: 4,
     title: "KARATE",
-    description: "Traditional Karate training with belt progression and certification system.",
-    image: "https://images.pexels.com/photos/7045573/pexels-photo-7045573.jpeg?auto=compress&fit=crop&w=800&q=80",
+    description: "Traditional Karate training with belt progression system.",
+    image: "https://images.pexels.com/photos/4428290/pexels-photo-4428290.jpeg?auto=compress&cs=tinysrgb&w=800&q=80",
     link: "/programs",
     category: "karate"
   },
@@ -60,7 +60,7 @@ const PROGRAMS_DATA = [
     id: 5,
     title: "GYM ONLY",
     description: "Unlimited access to our modern gym with top-tier equipment.",
-    image: "https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&fit=crop&w=800&q=80",
+    image: "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?auto=compress&fit=crop&w=800&q=80",
     link: "/programs",
     category: "fitness"
   }
