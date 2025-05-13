@@ -2,12 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, useAnimationControls, AnimatePresence } from 'framer-motion';
 import { CURSOR_ATTRIBUTES } from '../types/cursor';
 import CursorDialog from './CursorDialog';
+import CursorSvg from './CursorSvg';
 
 // Cursor interaction types
 type CursorType = 'default' | 'hover' | 'click' | 'hidden';
 
-// Fallback cursor image URL
-const FALLBACK_CURSOR_URL = 'https://i.postimg.cc/3rqFCsgp/cursor.png';
+// No longer need fallback cursor URL since we're using inline SVG
 
 const CustomCursor = () => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -17,7 +17,7 @@ const CustomCursor = () => {
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [showGlassBreak, setShowGlassBreak] = useState(false);
   const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 });
-  const [cursorImageError, setCursorImageError] = useState(false);
+  // No longer need to track image errors since we're using inline SVG
   const [isCursorEnabled, setIsCursorEnabled] = useState<boolean | null>(null);
   const cursorRef = useRef<HTMLDivElement>(null);
   const controls = useAnimationControls();
@@ -204,30 +204,13 @@ const CustomCursor = () => {
     };
   }, [isCursorEnabled, isTouchDevice]);
 
-  // Preload the cursor image - only once on initial mount
+  // Initialize cursor state - simplified without external image loading
   useEffect(() => {
     if (typeof window === 'undefined' || isTouchDevice || isInitialized.current || isCursorEnabled === false) return;
     isInitialized.current = true;
     
-    // Preload primary cursor image in an optimized way
-    const img = new Image();
-    const handleError = () => {
-      console.warn('Failed to load primary cursor image, using fallback');
-      setCursorImageError(true);
-    };
+    // No need to preload image anymore since we're using inline SVG
     
-    img.onload = () => {
-      // Image loaded successfully
-      setCursorImageError(false);
-    };
-    img.onerror = handleError;
-    img.src = '/cursor.svg';
-    
-    // Set a timeout to use fallback if loading takes too long
-    const timeoutId = setTimeout(handleError, 500);
-    return () => {
-      clearTimeout(timeoutId);
-    };
   }, [isTouchDevice, isCursorEnabled]);
 
   // Option to disable custom cursor with media query
@@ -484,7 +467,7 @@ const CustomCursor = () => {
     });
   };
 
-  const cursorImageUrl = cursorImageError ? FALLBACK_CURSOR_URL : '/cursor.svg';
+  // Using inline SVG component instead of external image URL
 
   return (
     <>
@@ -528,22 +511,16 @@ const CustomCursor = () => {
             willChange: 'transform' // Optimization for smoother transitions
           }}
         >
-          <img 
-            src={cursorImageUrl}
-            alt="" 
+          <CursorSvg 
+            width={24}
+            height={24}
             className="w-full h-full"
-            onError={() => {
-              setCursorImageError(true);
-            }}
             style={{ 
               filter: cursorType === 'hover' || cursorType === 'click' 
                 ? 'drop-shadow(0 0 2px rgba(251, 191, 36, 0.7))' 
                 : 'none',
               willChange: 'filter' // Optimization for smoother filter transitions
             }}
-            loading="eager"
-            width={24}
-            height={24}
           />
         </motion.div>
       )}

@@ -721,7 +721,6 @@ const ProgramDetailsModal = ({
         >
           <X size={14} className="text-white/70 group-hover:text-white transition-colors" />
         </button>
-        
         {/* Image with overlay gradient */}
         <div className="relative">
           {program?.image && (
@@ -729,20 +728,20 @@ const ProgramDetailsModal = ({
               <img 
                 src={program.image} 
                 alt={program.title || 'Program'} 
-                className="w-full h-48 object-cover" 
+                className="w-full h-36 object-cover" 
               />
               <div className="absolute inset-0 bg-gradient-to-t from-dark-900/80 via-transparent to-dark-900/30"></div>
             </>
           )}
         </div>
         
-        {/* Enhanced content section - reduced padding */}
-        <div className="p-4 pb-3">
-          <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500 mb-3">
+        {/* Enhanced content section - further reduced padding */}
+        <div className="p-3 pb-2">
+          <h3 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-500 mb-2">
             {program?.title || 'Program Details'}
           </h3>
           
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <div className="flex items-start gap-2">
               <div className="w-5 h-5 rounded-full bg-amber-400/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <Timer size={12} className="text-amber-400" />
@@ -767,9 +766,9 @@ const ProgramDetailsModal = ({
             </div>
           </div>
           
-          <div className="mt-3 pt-2 border-t border-white/5">
-            <p className="text-xs font-medium text-amber-400/80 mb-2">Features</p>
-            <ul className="space-y-1">
+          <div className="mt-2 pt-1.5 border-t border-white/5">
+            <p className="text-xs font-medium text-amber-400/80 mb-1.5">Features</p>
+            <ul className="space-y-0.5">
               {details.features?.map((feature: string, idx: number) => (
                 <li key={idx} className="flex items-start gap-2">
                   <div className="w-3 h-3 rounded-full bg-amber-400/10 flex items-center justify-center flex-shrink-0 mt-1">
@@ -782,10 +781,10 @@ const ProgramDetailsModal = ({
           </div>
           
           {/* Membership Button */}
-          <div className="mt-4 px-4 pb-4">
+          <div className="mt-3 px-2 pb-3">
             <Link 
               to="/membership" 
-              className="block w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium text-center rounded-lg transition-all shadow-lg hover:shadow-amber-500/20"
+              className="block w-full py-2 px-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-medium text-center rounded-lg transition-all shadow-lg hover:shadow-amber-500/20"
               onClick={() => {
                 // Close the modal when navigating
                 onClose();
