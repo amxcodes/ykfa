@@ -59,7 +59,7 @@ export const TimerContext = createContext<TimerContextProps | undefined>(undefin
 const SOUND_URLS = {
   start: './sounds/start.mp3', // Local start sound
   stop: './sounds/stop.mp3',  // Local stop sound
-  round: './sounds/workout.mp3', // Workout sound for round changes
+  round: './sounds/start.mp3', // Changed to avoid conflict with workout sound
   complete: 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3', // Game experience level increased
   countdown: 'https://assets.mixkit.co/active_storage/sfx/254/254-preview.mp3', // Mixkit Click Tone
   // Round announcement sounds
@@ -75,7 +75,7 @@ const SOUND_URLS = {
   // Workout sound during rounds
   workout: './sounds/workout.mp3', // Workout sound during rounds
   // Ambient background sound
-  ambient: 'https://assets.mixkit.co/active_storage/sfx/2466/2466-preview.mp3' // Medium speed heartbeat for background
+  ambient: '' // Disabled ambient sound to reduce memory usage and avoid conflicts
 };
 
 // Add phase color constants for the background gradients
