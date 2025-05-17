@@ -1,14 +1,15 @@
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import TimerDisplay from '../components/TimerDisplay';
 import TimerControls from '../components/TimerControls';
 import TimerSettings from '../components/TimerSettings';
 import { useTimerContext } from '../context/TimerContext';
-import { useEffect, useState } from 'react';
 import { CSSProperties } from 'react';
 import { Timer, Activity, BadgeCheck } from 'lucide-react';
 
 // Phase color definitions with higher quality uneven gradient flow - no textures
+// Move outside component to prevent recreation on each render
 const PHASE_GRADIENTS = {
   warmup: 'radial-gradient(circle at 40% 20%, rgba(96, 165, 250, 0.8) 0%, rgba(37, 99, 235, 0.6) 25%, rgba(29, 78, 216, 0.4) 50%, rgba(9, 17, 40, 0.95) 75%, rgba(0, 0, 0, 1) 100%)',
   round: 'radial-gradient(circle at 70% 30%, rgba(245, 158, 11, 0.8) 0%, rgba(217, 119, 6, 0.6) 25%, rgba(180, 83, 9, 0.4) 50%, rgba(9, 17, 40, 0.95) 75%, rgba(0, 0, 0, 1) 100%)',
@@ -27,28 +28,40 @@ interface GradientLayer {
   zIndex: number;
 }
 
-// App loading component
+// Define static features array to prevent recreation
+const DEFAULT_FEATURES = [
+  { 
+    icon: <Timer className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />, 
+    text: "Initializing timer core", 
+    loaded: false 
+  },
+  { 
+    icon: <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />, 
+    text: "Loading workout profiles", 
+    loaded: false 
+  },
+  { 
+    icon: <BadgeCheck className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />, 
+    text: "Ready to train!", 
+    loaded: false 
+  }
+];
+
+// App loading component - extracted to its own memoized component
 const TimerAppLoading = ({ onComplete }: { onComplete: () => void }) => {
   const [progress, setProgress] = useState(0);
   const [isAppReady, setIsAppReady] = useState(false);
   const isMobile = useMediaQuery('(max-width: 640px)');
-  const [features, setFeatures] = useState<{icon: JSX.Element, text: string, loaded: boolean}[]>([
-    { 
-      icon: <Timer className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />, 
-      text: "Initializing timer core", 
-      loaded: false 
-    },
-    { 
-      icon: <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />, 
-      text: "Loading workout profiles", 
-      loaded: false 
-    },
-    { 
-      icon: <BadgeCheck className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />, 
-      text: "Ready to train!", 
-      loaded: false 
-    }
-  ]);
+  const [features, setFeatures] = useState(() => [...DEFAULT_FEATURES]);
+  
+  // Use a single ref to track all timeouts for cleanup
+  const timeoutsRef = useRef<number[]>([]);
+
+  // Cleanup function
+  const clearAllTimeouts = useCallback(() => {
+    timeoutsRef.current.forEach(window.clearTimeout);
+    timeoutsRef.current = [];
+  }, []);
 
   useEffect(() => {
     // Simulate loading sequence for each feature
@@ -58,10 +71,12 @@ const TimerAppLoading = ({ onComplete }: { onComplete: () => void }) => {
       const itemDelay = isMobile ? 250 : 300;
       const delay = baseDelay + (index * itemDelay);
       
-      setTimeout(() => {
+      // Store timeoutId for cleanup
+      const timeoutId = window.setTimeout(() => {
+        // Use functional state update for safety
         setFeatures(prev => {
           const newFeatures = [...prev];
-          newFeatures[index].loaded = true;
+          if (newFeatures[index]) newFeatures[index].loaded = true;
           return newFeatures;
         });
         
@@ -70,14 +85,21 @@ const TimerAppLoading = ({ onComplete }: { onComplete: () => void }) => {
         
         // When all features are loaded
         if (index === features.length - 1) {
-          setTimeout(() => {
+          const innerTimeoutId1 = window.setTimeout(() => {
             setIsAppReady(true);
-            setTimeout(onComplete, isMobile ? 400 : 500); // Faster completion on mobile
+            const innerTimeoutId2 = window.setTimeout(onComplete, isMobile ? 400 : 500);
+            timeoutsRef.current.push(innerTimeoutId2);
           }, isMobile ? 300 : 400);
+          timeoutsRef.current.push(innerTimeoutId1);
         }
       }, delay);
+      
+      timeoutsRef.current.push(timeoutId);
     });
-  }, [isMobile]);
+
+    // Cleanup function to clear all timeouts
+    return clearAllTimeouts;
+  }, [isMobile, onComplete, features.length, clearAllTimeouts]);
 
   return (
     <motion.div 
@@ -186,14 +208,71 @@ const TimerAppLoading = ({ onComplete }: { onComplete: () => void }) => {
   );
 };
 
+// Memoize the TimerAppLoading component to prevent unnecessary re-renders
+const MemoizedTimerAppLoading = React.memo(TimerAppLoading);
+
+// Animation variants defined outside component to prevent recreation
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1, 
+    transition: { 
+      duration: 0.5,
+      staggerChildren: 0.1,
+      when: 'beforeChildren'
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { type: 'spring', stiffness: 50, damping: 10 }
+  }
+};
+
+// CSS for the gradient layers - no texture overlay
+const getGradientLayerStyle = (layer: GradientLayer): CSSProperties => ({
+  position: 'absolute',
+  inset: 0,
+  background: layer.gradient,
+  opacity: layer.opacity,
+  zIndex: layer.zIndex,
+  transition: 'opacity 3s ease-in-out',
+});
+
+// Vignette effect style
+const vignetteStyle: CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  background: 'radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%)',
+  opacity: 0.7,
+  pointerEvents: 'none',
+  zIndex: 2,
+};
+
 const TimerPage = () => {
   const { currentPhase, timerMode } = useTimerContext();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const isTablet = useMediaQuery('(min-width: 769px) and (max-width: 1024px)');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Use two background layers that we'll swap between
-  const [bgLayers, setBgLayers] = useState({
+  // Use refs to track timeouts for proper cleanup
+  const transitionTimeoutsRef = useRef<number[]>([]);
+  
+  // Clear all transition timeouts
+  const clearTransitionTimeouts = useCallback(() => {
+    transitionTimeoutsRef.current.forEach(window.clearTimeout);
+    transitionTimeoutsRef.current = [];
+  }, []);
+
+  // Use two background layers that we'll swap between - memoized initial state
+  const [bgLayers, setBgLayers] = useState<{
+    layer1: GradientLayer;
+    layer2: GradientLayer;
+  }>(() => ({
     layer1: {
       gradient: timerMode === 'running' ? PHASE_GRADIENTS[currentPhase] : SETTINGS_GRADIENT,
       opacity: 1,
@@ -204,9 +283,9 @@ const TimerPage = () => {
       opacity: 0,
       zIndex: 0
     }
-  });
+  }));
 
-  // Update gradient when timer mode changes
+  // Update gradient when timer mode changes - optimized with useCallback
   useEffect(() => {
     // If we're not in running mode, use the settings gradient
     if (timerMode !== 'running') {
@@ -237,7 +316,7 @@ const TimerPage = () => {
         }
       });
     }
-  }, [timerMode]);
+  }, [timerMode, currentPhase]);
 
   // Phase change handler with smoother transition (only used when timer is running)
   useEffect(() => {
@@ -261,8 +340,11 @@ const TimerPage = () => {
       }
     }));
     
+    // Clear existing timeouts first
+    clearTransitionTimeouts();
+    
     // Give the DOM time to update before starting the transition
-    setTimeout(() => {
+    const timeout1 = window.setTimeout(() => {
       // Fade in the inactive layer with the new gradient
       setBgLayers(prev => ({
         ...prev,
@@ -276,10 +358,11 @@ const TimerPage = () => {
         }
       }));
     }, 50);
+    transitionTimeoutsRef.current.push(timeout1);
     
     // After transition completes, reset z-indices for next change
     const transitionDuration = 3000; // 3 seconds for a slower, smoother transition
-    setTimeout(() => {
+    const timeout2 = window.setTimeout(() => {
       setBgLayers(prev => ({
         ...prev,
         [activeLayer]: {
@@ -289,70 +372,39 @@ const TimerPage = () => {
         [inactiveLayer]: {
           ...prev[inactiveLayer],
           zIndex: 1
-    }
+        }
       }));
     }, transitionDuration);
-    
-  }, [currentPhase, timerMode]);
+    transitionTimeoutsRef.current.push(timeout2);
+
+    // Clean up timeouts when unmounting or when dependencies change
+    return clearTransitionTimeouts;
+  }, [currentPhase, timerMode, bgLayers.layer1.opacity, clearTransitionTimeouts]);
   
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1, 
-      transition: { 
-        duration: 0.5,
-        staggerChildren: 0.1,
-        when: 'beforeChildren'
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { type: 'spring', stiffness: 50, damping: 10 }
-    }
-  };
-
-  // CSS for the gradient layers - no texture overlay
-  const gradientLayerStyle = (layer: GradientLayer): CSSProperties => ({
-    position: 'absolute',
-    inset: 0,
-    background: layer.gradient,
-    opacity: layer.opacity,
-    zIndex: layer.zIndex,
-    transition: 'opacity 3s ease-in-out',
-  });
-  
-  // Add a subtle vignette effect
-  const vignetteStyle: CSSProperties = {
-    position: 'absolute',
-    inset: 0,
-    background: 'radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%)',
-    opacity: 0.7,
-    pointerEvents: 'none',
-    zIndex: 2,
-  };
-
   // Handle loading complete
-  const handleLoadingComplete = () => {
+  const handleLoadingComplete = useCallback(() => {
     // Scroll to top of page
     window.scrollTo(0, 0);
     setIsLoading(false);
-  };
+  }, []);
+  
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Clear all transition timeouts
+      clearTransitionTimeouts();
+    };
+  }, [clearTransitionTimeouts]);
   
   // Show app loading screen
   if (isLoading) {
-    return <TimerAppLoading onComplete={handleLoadingComplete} />;
+    return <MemoizedTimerAppLoading onComplete={handleLoadingComplete} />;
   }
   
-  // Full-screen running mode
+  // Full-screen running mode - rendered outside of condition to avoid DOM tree changes
   if (timerMode === 'running') {
-  return (
-      <AnimatePresence>
+    return (
+      <AnimatePresence mode="wait">
         <motion.div 
           key="running-mode"
           className="absolute top-0 left-0 right-0 bottom-0 min-h-screen z-[20] backdrop-blur-[15px] pt-24 sm:pt-16 md:pt-12 pb-0 flex flex-col items-center justify-center overflow-hidden"
@@ -363,12 +415,12 @@ const TimerPage = () => {
         >
           {/* Gradient background layers - extended to connect with footer */}
           <div style={{
-            ...gradientLayerStyle(bgLayers.layer1),
+            ...getGradientLayerStyle(bgLayers.layer1),
             bottom: '-20px', /* Extended to better connect with footer */
             height: 'auto'
           }} />
           <div style={{
-            ...gradientLayerStyle(bgLayers.layer2),
+            ...getGradientLayerStyle(bgLayers.layer2),
             bottom: '-20px', /* Extended to better connect with footer */
             height: 'auto'
           }} />
@@ -383,22 +435,20 @@ const TimerPage = () => {
           {/* Content - Push down on mobile with better spacing */}
           <div className="relative z-10 w-full h-full flex flex-col items-center justify-center mt-28 sm:mt-16 md:mt-0 mb-16 sm:mb-10 md:mb-0">
             <TimerDisplay fullscreen />
-                </div>
+          </div>
 
           {/* Controls - Positioned below the fitness facts box */}
           <div className="fixed bottom-6 sm:bottom-8 md:bottom-10 left-0 right-0 z-20 mx-auto max-w-md">
             <TimerControls className="px-4" />
           </div>
-            </motion.div>
+        </motion.div>
       </AnimatePresence>
     );
   }
 
   // Setup mode with yellow and black gradient
   return (
-    <div 
-      className="min-h-screen pt-16 md:pt-20 pb-0 backdrop-blur-[10px] relative overflow-hidden"
-    >
+    <div className="min-h-screen pt-16 md:pt-20 pb-0 backdrop-blur-[10px] relative overflow-hidden">
       {/* Settings mode: Fixed yellow and black gradient background */}
       <div className="absolute inset-0 z-0" style={{
         background: SETTINGS_GRADIENT,
@@ -416,7 +466,7 @@ const TimerPage = () => {
       {/* Content */}
       <div className="relative z-10">
         <div className="container mx-auto px-4 py-4 md:py-8 h-full">
-            <motion.div
+          <motion.div
             className="max-w-6xl mx-auto h-full"
             variants={containerVariants}
             initial="hidden"
@@ -425,10 +475,7 @@ const TimerPage = () => {
             {/* Mobile Layout */}
             {isMobile && (
               <div className="flex flex-col items-center gap-8">
-                <motion.div
-                  variants={itemVariants}
-                  className="w-full"
-                >
+                <motion.div variants={itemVariants} className="w-full">
                   <TimerSettings className="mb-8" />
                 </motion.div>
               </div>
@@ -437,10 +484,7 @@ const TimerPage = () => {
             {/* Tablet Layout */}
             {isTablet && (
               <div className="flex flex-col items-center gap-8">
-                <motion.div
-                  variants={itemVariants}
-                  className="w-full max-w-[600px]"
-                >
+                <motion.div variants={itemVariants} className="w-full max-w-[600px]">
                   <TimerSettings className="mb-8" />
                 </motion.div>
               </div>
@@ -449,9 +493,7 @@ const TimerPage = () => {
             {/* Desktop Layout */}
             {!isMobile && !isTablet && (
               <div className="grid grid-cols-1 max-w-[700px] mx-auto">
-                <motion.div
-                  variants={itemVariants}
-                >
+                <motion.div variants={itemVariants}>
                   <TimerSettings />
                 </motion.div>
               </div>
@@ -484,8 +526,8 @@ const TimerPage = () => {
                 </motion.div>
               </motion.div>
             )}
-            </motion.div>
-          </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );

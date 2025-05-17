@@ -1,11 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Check, X, ChevronRight, ArrowRight, HelpCircle } from 'lucide-react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-// Register ScrollTrigger plugin
-gsap.registerPlugin(ScrollTrigger);
 
 interface PlanFeature {
   name: string;
@@ -237,58 +232,70 @@ const MembershipPage = () => {
     setPlanDuration('monthly');
   };
 
-  // Animation on scroll for pricing cards
+  // Animation on scroll for pricing cards using Intersection Observer
   useEffect(() => {
+    // Create an intersection observer to trigger animations when cards enter viewport
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px 0px -10% 0px',
+      threshold: 0.1
+    };
+    
+    const cardObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry, index) => {
+        if (entry.isIntersecting) {
+          // Add visible class with staggered delay based on index
+          setTimeout(() => {
+            entry.target.classList.add('visible');
+          }, index * 100); // 100ms stagger
+          
+          // Unobserve once animated
+          cardObserver.unobserve(entry.target);
+        }
+      });
+    }, observerOptions);
+    
+    // Observe all pricing cards
     const cards = document.querySelectorAll('.pricing-card');
-    
-    gsap.set(cards, { 
-      opacity: 0,
-      y: 50
+    cards.forEach(card => {
+      cardObserver.observe(card);
     });
     
-    ScrollTrigger.batch(cards, {
-      interval: 0.1,
-      onEnter: (elements) => {
-        gsap.to(elements, {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          stagger: 0.1,
-          ease: "power3.out"
-        });
-      },
-      start: "top 90%"
-    });
-    
+    // Clean up observer
     return () => {
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      cardObserver.disconnect();
     };
   }, []);
   
-  // Animation on duration change
+  // Animation on duration change using CSS classes
   useEffect(() => {
     if (pricingCardsRef.current && prevDurationRef.current !== planDuration) {
       const cards = pricingCardsRef.current.querySelectorAll('.pricing-card');
       
-      // Clear any existing animations
-      gsap.killTweensOf(cards);
-      
-      // First hide the cards
-      gsap.set(cards, { 
-        opacity: 0,
-        x: -20,
-        rotateY: -5
-      });
-      
-      // Then animate them in with a staggered effect
-      gsap.to(cards, { 
-        opacity: 1,
-        x: 0,
-        rotateY: 0,
-        duration: 0.6,
-        stagger: 0.08,
-        ease: "back.out(1.2)",
-        clearProps: "transform"
+      // Apply animations to each card with staggered delays
+      cards.forEach((card, index) => {
+        // Remove visible class first (if any)
+        card.classList.remove('visible');
+        
+        // Apply enter animation classes
+        card.classList.add('duration-change-enter');
+        
+        // Force a reflow
+        if (card instanceof HTMLElement) {
+          void card.offsetWidth;
+        }
+        
+        // Start animation after a staggered delay
+        setTimeout(() => {
+          card.classList.remove('duration-change-enter');
+          card.classList.add('duration-change-enter-active');
+          
+          // Clean up animation classes after animation completes
+          setTimeout(() => {
+            card.classList.remove('duration-change-enter-active');
+            card.classList.add('visible');
+          }, 700); // Match the transition duration
+        }, index * 120); // Increase stagger delay for more visual separation
       });
       
       prevDurationRef.current = planDuration;

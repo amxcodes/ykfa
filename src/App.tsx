@@ -7,7 +7,6 @@ import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import AboutUsPage from './pages/AboutUsPage';
 import ProgramsPage from './pages/ProgramsPage';
-import InstructorsPage from './pages/InstructorsPage';
 import MembershipPage from './pages/MembershipPage';
 import ContactPage from './pages/ContactPage';
 import TimerPage from './pages/TimerPage';
@@ -16,6 +15,7 @@ import SchedulePage from './pages/SchedulePage';
 import ErrorPage from './pages/ErrorPage';
 import NetworkErrorBoundary from './components/NetworkErrorBoundary';
 import { TimerProvider } from './context/TimerContext';
+import { useOptimizedObserver, useAnimationFrames } from './hooks/useMemoryOptimized';
 
 // Define widget types
 export type WidgetType = 'whatsapp' | 'chatbot' | 'bmi' | null;
@@ -32,9 +32,10 @@ export const WidgetContext = createContext<{
 function App() {
   const location = useLocation();
   const [activeWidget, setActiveWidget] = useState<WidgetType>(null);
-  const observerRef = useRef<IntersectionObserver | null>(null);
   const pageLoadedRef = useRef(false);
-  const animFrameRef = useRef<number | null>(null);
+  
+  // Use optimized animation frame handling
+  const { requestFrame, cancelAllFrames } = useAnimationFrames();
 
   // Signal page load completion
   useEffect(() => {
@@ -43,16 +44,10 @@ function App() {
     if (!pageLoadedRef.current) {
       pageLoadedRef.current = true;
       
-      // Cancel any pending animation frames
-      if (animFrameRef.current) {
-        cancelAnimationFrame(animFrameRef.current);
-      }
-      
       // Force browser to complete loading state 
       loadTimeoutId = window.setTimeout(() => {
-        // Signal to browser that the page has finished loading
+        // Signal to browser that the page has loaded
         if (document && window) {
-          // Cannot assign to readyState since it's read-only
           // Just dispatch the events to indicate page is loaded
           window.dispatchEvent(new Event('load'));
           window.dispatchEvent(new Event('pageshow'));
@@ -71,96 +66,69 @@ function App() {
     
     return () => {
       // Clean up any pending operations when component unmounts
-      if (animFrameRef.current) {
-        cancelAnimationFrame(animFrameRef.current);
-        animFrameRef.current = null;
-      }
+      cancelAllFrames();
+      
       // Clear the timeout to prevent memory leaks
       if (loadTimeoutId) {
         clearTimeout(loadTimeoutId);
       }
       pageLoadedRef.current = false;
     };
-  }, []);
+  }, [cancelAllFrames]);
 
-  useEffect(() => {
-    // Initialize animation observer
-    const initializeObserver = () => {
-      // Clean up any existing observer first
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-      
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('active');
-              observer.unobserve(entry.target);
-            }
-          });
-        },
-        {
-          root: null,
-          rootMargin: '0px',
-          threshold: 0.1
-        }
-      );
-
-      observerRef.current = observer;
-      
-      try {
-        // Limit the number of elements to observe to prevent performance issues
-        const elements = document.querySelectorAll('.animate-fade-up');
-        const maxElements = 20; // Arbitrary limit to avoid performance issues
-        
-        // Observe elements with a limit
-        Array.from(elements).slice(0, maxElements).forEach((element) => {
-          // Remove any existing active class to reset animation
-          element.classList.remove('active');
-          observer.observe(element);
-          
-          // Add active class immediately if element is already in viewport
-          const rect = element.getBoundingClientRect();
-          if (rect.top < window.innerHeight && rect.bottom >= 0) {
-            element.classList.add('active');
-            observer.unobserve(element);
+  // Use optimized observer
+  const observerRef = useOptimizedObserver(() => {
+    return new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('active');
+            observerRef.current?.unobserve(entry.target);
           }
         });
-      } catch (error) {
-        console.error('Error initializing IntersectionObserver:', error);
+      },
+      {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
       }
+    );
+  }, [location.pathname]);
 
-      return observer;
-    };
-
+  // Setup animation observers after route change
+  useEffect(() => {
     // Small delay to ensure DOM is updated after route change
     const timeoutId = setTimeout(() => {
-      // Use a safe requestAnimationFrame pattern
-      if (animFrameRef.current) {
-        cancelAnimationFrame(animFrameRef.current);
+      // Initialize observer elements
+      if (observerRef.current) {
+        try {
+          // Limit the number of elements to observe to prevent performance issues
+          const elements = document.querySelectorAll('.animate-fade-up');
+          const maxElements = 20; // Arbitrary limit to avoid performance issues
+          
+          // Observe elements with a limit
+          Array.from(elements).slice(0, maxElements).forEach((element) => {
+            // Remove any existing active class to reset animation
+            element.classList.remove('active');
+            observerRef.current?.observe(element);
+            
+            // Add active class immediately if element is already in viewport
+            const rect = element.getBoundingClientRect();
+            if (rect.top < window.innerHeight && rect.bottom >= 0) {
+              element.classList.add('active');
+              observerRef.current?.unobserve(element);
+            }
+          });
+        } catch (error) {
+          console.error('Error initializing IntersectionObserver:', error);
+        }
       }
-      
-      animFrameRef.current = requestAnimationFrame(() => {
-        initializeObserver();
-        animFrameRef.current = null;
-      });
     }, 100);
 
     return () => {
       clearTimeout(timeoutId);
-      // Clean up observer on unmount
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-        observerRef.current = null;
-      }
-      // Cancel any pending animation frames
-      if (animFrameRef.current) {
-        cancelAnimationFrame(animFrameRef.current);
-        animFrameRef.current = null;
-      }
     };
-  }, [location.pathname]); // Re-run when route changes
+  }, [location.pathname, observerRef]);
 
   // Reset active widget when navigating away from home page
   useEffect(() => {
@@ -168,6 +136,172 @@ function App() {
       setActiveWidget(null);
     }
   }, [location.pathname, activeWidget]);
+
+  // Add a memory management routine
+  useEffect(() => {
+    // Run garbage collection helper when tab becomes invisible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        // Clean up any cached resources
+        console.log('Tab hidden - cleaning up resources');
+        
+        // Force image cache cleanup
+        const imgs = document.querySelectorAll('img');
+        imgs.forEach(img => {
+          if (!img.closest('.current-image') && !img.classList.contains('critical')) {
+            // Non-critical images can have their src cleared when hidden
+            if (img.src) (img as HTMLImageElement).dataset.cachedSrc = img.src;
+            (img as HTMLImageElement).src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // Tiny transparent image
+          }
+        });
+      } else if (document.visibilityState === 'visible') {
+        // Restore images when tab becomes visible again
+        console.log('Tab visible - restoring resources');
+        const imgs = document.querySelectorAll('img[data-cached-src]');
+        imgs.forEach(img => {
+          if ((img as HTMLImageElement).dataset.cachedSrc) {
+            const cachedSrc = (img as HTMLImageElement).dataset.cachedSrc;
+            if (typeof cachedSrc === 'string') {
+              (img as HTMLImageElement).src = cachedSrc;
+            }
+          }
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
+  // Add image optimization on load
+  useEffect(() => {
+    // Function to optimize image memory usage
+    const optimizeImages = () => {
+      // Don't optimize in production - too much visual quality loss
+      if (process.env.NODE_ENV === 'production') return;
+      
+      // Find all large images
+      const imagesToOptimize = document.querySelectorAll('img:not(.critical):not(.optimized)');
+      
+      imagesToOptimize.forEach((img) => {
+        const imgElement = img as HTMLImageElement;
+        
+        // Skip small images and critical ones
+        if (!imgElement.src || imgElement.src.includes('data:image') || 
+            imgElement.width < 100 || imgElement.height < 100 ||
+            imgElement.classList.contains('critical')) {
+          return;
+        }
+        
+        // When image loads, process it if it's large
+        const originalSrc = imgElement.src;
+        
+        // Don't process already processed images
+        if (originalSrc.includes('blob:') || originalSrc.startsWith('data:image/')) return;
+        
+        // --- START MODIFICATION: Prevent visual alteration ---
+        // Skip actual optimization to prevent visual changes
+        // We can re-enable specific, non-altering optimizations later if needed.
+        imgElement.classList.add('optimized'); // Mark as processed
+        return; 
+        // --- END MODIFICATION ---
+
+        /* Original optimization logic commented out for now:
+        try {
+          // Create temporary canvas for downscaling
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+          
+          // Create a temporary image to load the original
+          const tempImg = new Image();
+          
+          tempImg.onload = () => {
+            // Set maximum dimensions - drastically reduces memory usage
+            const MAX_WIDTH = 800;
+            const MAX_HEIGHT = 600;
+            
+            // Calculate new dimensions while maintaining aspect ratio
+            let width = tempImg.width;
+            let height = tempImg.height;
+            
+            if (width > MAX_WIDTH) {
+              height = Math.round(height * (MAX_WIDTH / width));
+              width = MAX_WIDTH;
+            }
+            
+            if (height > MAX_HEIGHT) {
+              width = Math.round(width * (MAX_HEIGHT / height));
+              height = MAX_HEIGHT;
+            }
+            
+            // Skip if already small enough
+            if (tempImg.width <= MAX_WIDTH && tempImg.height <= MAX_HEIGHT) {
+              tempImg.onload = null;
+              return;
+            }
+            
+            // Downscale the image
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(tempImg, 0, 0, width, height);
+            
+            // Convert to lower quality JPEG for massive memory savings
+            try {
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+              
+              // Only update if optimization worked
+              if (dataUrl && dataUrl !== 'data:,') {
+                // Store original for restoration if needed
+                imgElement.dataset.originalSrc = originalSrc;
+                imgElement.src = dataUrl;
+              }
+            } catch (e) {
+              console.log('Image optimization failed:', e);
+            }
+            
+            // Clean up
+            tempImg.onload = null;
+            canvas.width = 0;
+            canvas.height = 0;
+          };
+          
+          // Handle load errors
+          tempImg.onerror = () => {
+            tempImg.onload = null;
+            tempImg.onerror = null;
+          };
+          
+          // Load the image
+          tempImg.crossOrigin = 'anonymous';
+          tempImg.src = originalSrc;
+        } catch (e) {
+          console.log('Error optimizing image:', e);
+        }
+        */
+      });
+    };
+    
+    // Run optimization after a short delay to allow critical content to load
+    const optimizeTimeout = setTimeout(optimizeImages, 2000);
+    
+    // Also optimize after visibility change
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        setTimeout(optimizeImages, 500);
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibility);
+    
+    return () => {
+      clearTimeout(optimizeTimeout);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, []);
 
   return (
     <NetworkErrorBoundary>
@@ -181,7 +315,6 @@ function App() {
                 <Route path="about-us" element={<AboutUsPage />} />
                 <Route path="blog" element={<AboutPage />} />
                 <Route path="programs" element={<ProgramsPage />} />
-                <Route path="instructors" element={<InstructorsPage />} />
                 <Route path="membership" element={<MembershipPage />} />
                 <Route path="contact" element={<ContactPage />} />
                 <Route path="store" element={<StorePage />} />

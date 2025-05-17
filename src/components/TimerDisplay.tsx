@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimerContext } from '../context/TimerContext';
 import { Lightbulb, ArrowRight } from 'lucide-react';
-import { gsap } from 'gsap';
+import { AnimationController } from '../utils/AnimationController';
 
 interface TimerDisplayProps {
   className?: string;
@@ -108,28 +108,37 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
   // GSAP animations for phase transitions
   useEffect(() => {
     if (timerRef.current && transitionActive) {
-      gsap.fromTo(
-        timerRef.current.querySelector('.timer-circle-primary'),
-        { 
-          strokeDashoffset: '0',
-          stroke: getPhaseColors().gradientEnd
-        },
-        { 
-          strokeDashoffset: '0',
-          stroke: getNextPhaseColors().gradientEnd,
-          duration: settings.transitionDelay,
-          ease: 'power2.inOut'
-        }
-      );
+      // Find the circle element inside the ref
+      const circleElement = timerRef.current.querySelector('.timer-circle-primary') as HTMLElement;
+      if (circleElement) {
+        AnimationController.fromTo(
+          circleElement,
+          { 
+            strokeDashoffset: '0',
+            stroke: getPhaseColors().gradientEnd
+          },
+          { 
+            strokeDashoffset: '0',
+            stroke: getNextPhaseColors().gradientEnd
+          },
+          { 
+            duration: settings.transitionDelay,
+            ease: 'ease-in-out' // Equivalent to power2.inOut
+          }
+        );
+      }
       
       // Pulse animation
-      gsap.to(timerRef.current, {
-        scale: 1.05,
-        duration: 0.5,
-        yoyo: true,
-        repeat: 1,
-        ease: 'power2.inOut'
-      });
+      if (timerRef.current) {
+        AnimationController.animate(timerRef.current, {
+          scale: 1.05
+        }, {
+          duration: 0.5,
+          yoyo: true,
+          repeat: 1,
+          ease: 'ease-in-out' // Equivalent to power2.inOut
+        });
+      }
     }
   }, [transitionActive, currentPhase, currentRound, settings.transitionDelay]);
 
@@ -140,10 +149,14 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
     // Only animate if the time has changed and we're running
     if (isRunning && prevTimeRef.current !== currentTime && timeDisplayRef.current) {
       // Update without bounce, just a quick opacity shift
-      gsap.fromTo(
+      AnimationController.fromTo(
         timeDisplayRef.current,
         { opacity: 0.8 },
-        { opacity: 1, duration: 0.2, ease: 'power1.out' }
+        { opacity: 1 },
+        { 
+          duration: 0.2, 
+          ease: 'ease-out' // Equivalent to power1.out
+        }
       );
     }
     
@@ -153,13 +166,17 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
   // Add pulse animation when changing phases
   useEffect(() => {
     if (timerRef.current) {
-      gsap.to(timerRef.current.querySelector('.phase-label'), {
-        scale: 1.2,
-        duration: 0.3,
-        yoyo: true,
-        repeat: 1,
-        ease: 'power2.inOut'
-      });
+      const phaseLabel = timerRef.current.querySelector('.phase-label') as HTMLElement;
+      if (phaseLabel) {
+        AnimationController.animate(phaseLabel, {
+          scale: 1.2
+        }, {
+          duration: 0.3,
+          yoyo: true,
+          repeat: 1,
+          ease: 'ease-in-out' // Equivalent to power2.inOut
+        });
+      }
     }
   }, [currentPhase]);
 

@@ -3,7 +3,132 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTimerContext } from '../context/TimerContext';
 import { 
   Play, Flame, Clock, Activity, Coffee, Fan, Volume2, Plus, Minus, VolumeX, Volume1} from 'lucide-react';
-import { gsap } from 'gsap';
+
+// Animation controller for replacing GSAP
+class AnimationController {
+  // Apply CSS transition to an element
+  static animate(element: HTMLElement | null, properties: Record<string, any>, options: {
+    duration?: number;
+    ease?: string;
+    delay?: number;
+    onComplete?: () => void;
+    repeat?: number;
+    yoyo?: boolean;
+  } = {}) {
+    if (!element) return null;
+    
+    const { duration = 0.3, ease = 'ease', delay = 0, onComplete, repeat = 0 } = options;
+    
+    // Save original transition and other properties
+    const originalTransition = element.style.transition;
+    const originalBoxShadow = element.style.boxShadow;
+    
+    // Set transition property
+    element.style.transition = `all ${duration}s ${ease} ${delay}s`;
+    
+    // Apply properties
+    setTimeout(() => {
+      Object.entries(properties).forEach(([prop, value]) => {
+        // Handle special properties
+        if (prop === 'scale') {
+          element.style.transform = `scale(${value})`;
+        } else if (prop === 'boxShadow') {
+          element.style.boxShadow = value as string;
+        } else if (prop === 'color') {
+          element.style.color = value as string;
+        } else {
+          // For standard CSS properties
+          (element.style as any)[prop] = value;
+        }
+      });
+    }, 10);
+    
+    // Handle repeating animations for things like pulsing
+    if (repeat === -1 && 'boxShadow' in properties) {
+      // Special handling for infinite pulsing boxShadow
+      let isFirstState = false;
+      const pulseDuration = duration * 1000;
+      
+      const pulseInterval = setInterval(() => {
+        isFirstState = !isFirstState;
+        
+        // Apply pulsing effect by toggling between states
+        if (isFirstState) {
+          element.style.boxShadow = '0 0 0px rgba(96, 165, 250, 0), 0 0 15px rgba(96, 165, 250, 0.5), 0 0 0px rgba(96, 165, 250, 0)';
+        } else {
+          element.style.boxShadow = '0 0 5px rgba(96, 165, 250, 0.3), 0 0 10px rgba(96, 165, 250, 0), 0 0 15px rgba(96, 165, 250, 0)';
+        }
+      }, pulseDuration);
+      
+      // Store the interval ID on the element to clear it later if needed
+      (element as any)._pulseIntervalId = pulseInterval;
+    } else {
+      // Call onComplete after animation finishes
+      setTimeout(() => {
+        // Restore original transition
+        element.style.transition = originalTransition;
+        if (onComplete) onComplete();
+      }, (duration + delay) * 1000);
+    }
+    
+    return {
+      // Cleanup function to cancel animations
+      cancel: () => {
+        element.style.transition = originalTransition;
+        element.style.boxShadow = originalBoxShadow;
+        if ((element as any)._pulseIntervalId) {
+          clearInterval((element as any)._pulseIntervalId);
+          delete (element as any)._pulseIntervalId;
+        }
+      }
+    };
+  }
+  
+  // Apply CSS transition with from and to values
+  static fromTo(
+    element: HTMLElement | null, 
+    fromProps: Record<string, any>, 
+    toProps: Record<string, any>, 
+    options: {
+      duration?: number;
+      ease?: string;
+      delay?: number;
+      onComplete?: () => void;
+    } = {}
+  ) {
+    if (!element) return null;
+    
+    // Apply from properties immediately without transition
+    const originalTransition = element.style.transition;
+    element.style.transition = 'none';
+    
+    Object.entries(fromProps).forEach(([prop, value]) => {
+      if (prop === 'scale') {
+        element.style.transform = `scale(${value})`;
+      } else if (prop === 'color') {
+        element.style.color = value as string;
+      } else {
+        (element.style as any)[prop] = value;
+      }
+    });
+    
+    // Force reflow to ensure from properties are applied
+    void element.offsetWidth;
+    
+    // Reset transition and animate to target properties
+    setTimeout(() => {
+      element.style.transition = originalTransition;
+      AnimationController.animate(element, toProps, options);
+    }, 20);
+    
+    return {
+      // Cleanup function
+      cancel: () => {
+        element.style.transition = originalTransition;
+      }
+    };
+  }
+}
 
 interface TimerSettingsProps {
   className?: string;
@@ -183,9 +308,9 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
     
     // Animate the value change with a more subtle effect
     if (settingsRef.current) {
-      const target = settingsRef.current.querySelector(`.${setting}-value`);
+      const target = settingsRef.current.querySelector(`.${setting}-value`) as HTMLElement;
       if (target) {
-        gsap.fromTo(
+        AnimationController.fromTo(
           target,
           { 
             scale: 1.1,
@@ -193,9 +318,11 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
           },
           { 
             scale: 1,
-            color: '#ffffff',
+            color: '#ffffff'
+          },
+          { 
             duration: 0.5,
-            ease: 'elastic.out(1, 0.5)'
+            ease: 'cubic-bezier(0.34, 1.56, 0.64, 1)' // elastic.out(1, 0.5)
           }
         );
       }
@@ -210,12 +337,16 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
   // Animation for settings changes
   const animateSettingChange = (element: string) => {
     if (settingsRef.current) {
-      const target = settingsRef.current.querySelector(element);
+      const target = settingsRef.current.querySelector(element) as HTMLElement;
       if (target) {
-        gsap.fromTo(
+        AnimationController.fromTo(
           target,
           { scale: 1.1, color: '#60a5fa' },
-          { scale: 1, color: '#ffffff', duration: 0.3, ease: 'power2.out' }
+          { scale: 1, color: '#ffffff' },
+          { 
+            duration: 0.3, 
+            ease: 'ease-out' // power2.out
+          }
         );
       }
     }
@@ -224,15 +355,24 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
   // Animation to pulse the button when ready
   useEffect(() => {
     if (settingsRef.current) {
-      const startButton = settingsRef.current.querySelector('.start-button');
+      const startButton = settingsRef.current.querySelector('.start-button') as HTMLElement;
       if (startButton) {
-        gsap.to(startButton, {
-          boxShadow: '0 0 0px rgba(96, 165, 250, 0), 0 0 15px rgba(96, 165, 250, 0.5), 0 0 0px rgba(96, 165, 250, 0)',
-          repeat: -1,
+        AnimationController.animate(startButton, {
+          boxShadow: '0 0 0px rgba(96, 165, 250, 0), 0 0 15px rgba(96, 165, 250, 0.5), 0 0 0px rgba(96, 165, 250, 0)'
+        }, {
           duration: 2,
-          ease: 'sine.inOut'
+          ease: 'ease-in-out', // sine.inOut
+          repeat: -1
         });
       }
+      
+      // Clean up animation on unmount
+      return () => {
+        const startButton = settingsRef.current?.querySelector('.start-button') as HTMLElement;
+        if (startButton && (startButton as any)._pulseIntervalId) {
+          clearInterval((startButton as any)._pulseIntervalId);
+        }
+      };
     }
   }, []);
 

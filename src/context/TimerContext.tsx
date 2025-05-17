@@ -1,6 +1,7 @@
 import { createContext, useState, useContext, ReactNode, useCallback, useEffect, useRef } from 'react';
 import { useTimer } from 'react-timer-hook';
-import gsap from 'gsap';
+// import gsap from 'gsap'; - Removing GSAP
+import { AnimationController } from '../utils/AnimationController';
 
 export interface TimerSettings {
   warmupDuration: number;
@@ -108,6 +109,9 @@ const PHASE_COLORS = {
 };
 
 export function TimerProvider({ children }: { children: ReactNode }) {
+  // Cache audio instances to avoid recreating them
+  const audioCache = useRef<Record<string, HTMLAudioElement>>({});
+  
   const [settings, setSettings] = useState<TimerSettings>(defaultSettings);
   const [currentPhase, setCurrentPhase] = useState<TimerPhase>('warmup');
   const [currentRound, setCurrentRound] = useState(1);
@@ -121,6 +125,22 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   
   const isInPhaseTransition = useRef(false);
   const transitionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Refs for timeouts in callbacks
+  const timeoutRefs = useRef<Array<ReturnType<typeof setTimeout>>>([]);
+  
+  // Centralized function to create timeouts that are automatically tracked for cleanup
+  const createTrackedTimeout = useCallback((callback: () => void, delay: number) => {
+    const timeoutId = setTimeout(callback, delay);
+    timeoutRefs.current.push(timeoutId);
+    return timeoutId;
+  }, []);
+
+  // Clear all tracked timeouts
+  const clearAllTimeouts = useCallback(() => {
+    timeoutRefs.current.forEach(clearTimeout);
+    timeoutRefs.current = [];
+  }, []);
 
   // Audio elements for sounds
   const startSoundRef = useRef<HTMLAudioElement | null>(null);
@@ -142,164 +162,154 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   // Ambient sound for continuous play
   const ambientSoundRef = useRef<HTMLAudioElement | null>(null);
   
-  // Initialize audio elements - simplified approach to avoid errors
+  // More efficient audio initialization
   useEffect(() => {
-    try {
-      // Create new audio elements each time to ensure they're fresh
-      startSoundRef.current = new Audio(SOUND_URLS.start);
-      stopSoundRef.current = new Audio(SOUND_URLS.stop);
-      roundChangeSoundRef.current = new Audio(SOUND_URLS.round);
-      completeSoundRef.current = new Audio(SOUND_URLS.complete);
-      countdownSoundRef.current = new Audio(SOUND_URLS.countdown);
+    // Helper function to create or get cached audio element
+    const getAudio = (url: string): HTMLAudioElement => {
+      if (!url) return new Audio(); // Empty audio for empty URLs
       
-      // Round announcement audio
-      roundOneSoundRef.current = new Audio(SOUND_URLS.roundOne);
-      nextRoundSoundRef.current = new Audio(SOUND_URLS.nextRound);
-      lastRoundSoundRef.current = new Audio(SOUND_URLS.lastRound);
-      finalRoundSoundRef.current = new Audio(SOUND_URLS.finalRound);
-      
-      // Phase announcement audio
-      warmupSoundRef.current = new Audio(SOUND_URLS.warmup);
-      cooldownSoundRef.current = new Audio(SOUND_URLS.cooldown);
-      breakSoundRef.current = new Audio(SOUND_URLS.break);
-      
-      // Workout sound for during rounds - enable looping
-      workoutSoundRef.current = new Audio(SOUND_URLS.workout);
-      if (workoutSoundRef.current) {
-        workoutSoundRef.current.loop = true; // Enable looping
+      // Return from cache if available
+      if (audioCache.current[url]) {
+        return audioCache.current[url];
       }
       
-      // Ambient sound
-      ambientSoundRef.current = new Audio(SOUND_URLS.ambient);
-      if (ambientSoundRef.current) {
+      try {
+        const audio = new Audio(url);
+        audioCache.current[url] = audio; // Cache for reuse
+        return audio;
+      } catch (error) {
+        console.error(`Failed to create audio for ${url}:`, error);
+        return new Audio(); // Return empty audio on error
+      }
+    };
+    
+    try {
+      // Initialize all audio elements at once
+      startSoundRef.current = getAudio(SOUND_URLS.start);
+      stopSoundRef.current = getAudio(SOUND_URLS.stop);
+      roundChangeSoundRef.current = getAudio(SOUND_URLS.round);
+      completeSoundRef.current = getAudio(SOUND_URLS.complete);
+      countdownSoundRef.current = getAudio(SOUND_URLS.countdown);
+      roundOneSoundRef.current = getAudio(SOUND_URLS.roundOne);
+      nextRoundSoundRef.current = getAudio(SOUND_URLS.nextRound);
+      lastRoundSoundRef.current = getAudio(SOUND_URLS.lastRound);
+      finalRoundSoundRef.current = getAudio(SOUND_URLS.finalRound);
+      warmupSoundRef.current = getAudio(SOUND_URLS.warmup);
+      cooldownSoundRef.current = getAudio(SOUND_URLS.cooldown);
+      breakSoundRef.current = getAudio(SOUND_URLS.break);
+      
+      // Configure workout sound
+      workoutSoundRef.current = getAudio(SOUND_URLS.workout);
+      if (workoutSoundRef.current) {
+        workoutSoundRef.current.loop = true;
+      }
+      
+      // Configure ambient sound
+      ambientSoundRef.current = getAudio(SOUND_URLS.ambient);
+      if (ambientSoundRef.current && ambientSoundRef.current.src) {
         ambientSoundRef.current.loop = true;
       }
       
-      console.log('All audio elements initialized successfully');
+      // Set volume for all sounds
+      const allSoundRefs = [
+        startSoundRef, stopSoundRef, roundChangeSoundRef, completeSoundRef,
+        countdownSoundRef, roundOneSoundRef, nextRoundSoundRef, lastRoundSoundRef,
+        finalRoundSoundRef, warmupSoundRef, cooldownSoundRef, breakSoundRef
+      ];
+      
+      allSoundRefs.forEach(ref => {
+        if (ref.current) {
+          ref.current.volume = settings.soundVolume;
+        }
+      });
+      
+      // Set lower volume for ambient sound
+      if (ambientSoundRef.current && ambientSoundRef.current.src) {
+        ambientSoundRef.current.volume = settings.soundVolume * 0.3;
+      }
+      
     } catch (error) {
       console.error('Error initializing audio elements:', error);
     }
     
-    // Set volume for all sounds
-    [
-      startSoundRef,
-      stopSoundRef,
-      roundChangeSoundRef,
-      completeSoundRef,
-      countdownSoundRef,
-      roundOneSoundRef,
-      nextRoundSoundRef,
-      lastRoundSoundRef,
-      finalRoundSoundRef,
-      warmupSoundRef,
-      cooldownSoundRef
-    ].forEach(ref => {
-      if (ref.current) {
-        ref.current.volume = settings.soundVolume;
-      }
-    });
-    
-    // Set lower volume for ambient sound
-    if (ambientSoundRef.current) {
-      ambientSoundRef.current.volume = settings.soundVolume * 0.3;
-    }
-    
-    // Clean up audio elements on unmount
+    // Clean up function
     return () => {
-      [
-        startSoundRef,
-        stopSoundRef,
-        roundChangeSoundRef,
-        completeSoundRef,
-        countdownSoundRef,
-        roundOneSoundRef,
-        nextRoundSoundRef,
-        lastRoundSoundRef,
-        finalRoundSoundRef,
-        warmupSoundRef,
-        cooldownSoundRef,
-        breakSoundRef,
-        workoutSoundRef,
-        ambientSoundRef
-      ].forEach(ref => {
-        if (ref.current) {
-          ref.current.pause();
-          ref.current.src = '';
+      // Stop and nullify all audio elements
+      Object.values(audioCache.current).forEach(audio => {
+        try {
+          audio.pause();
+          audio.src = '';
+        } catch (e) {
+          // Silently handle errors
         }
       });
+      
+      // Clear the cache to release memory
+      audioCache.current = {};
+      
+      // Clear all timeouts
+      clearAllTimeouts();
     };
-  }, [settings.soundVolume]);
-  
-  // Update mute status for workout sounds
+  }, []); // Only run on mount and unmount
+
+  // Update sound volume separately - avoids recreating audio elements
   useEffect(() => {
-    const workoutSoundRefs = [
-      roundChangeSoundRef,
-      roundOneSoundRef,
-      nextRoundSoundRef,
-      lastRoundSoundRef,
-      finalRoundSoundRef,
-      warmupSoundRef,
-      cooldownSoundRef,
-      breakSoundRef,
-      workoutSoundRef
-    ];
-    
-    // Apply mute status to all workout sounds
-    workoutSoundRefs.forEach(ref => {
-      if (ref.current) {
-        // We don't actually mute the audio element, as we control playback in the playSound function
-        // This is just for future reference if needed
+    const updateVolume = () => {
+      const allSoundRefs = [
+        startSoundRef, stopSoundRef, roundChangeSoundRef, completeSoundRef,
+        countdownSoundRef, roundOneSoundRef, nextRoundSoundRef, lastRoundSoundRef,
+        finalRoundSoundRef, warmupSoundRef, cooldownSoundRef, breakSoundRef
+      ];
+      
+      allSoundRefs.forEach(ref => {
+        if (ref.current) {
+          ref.current.volume = settings.soundVolume;
+        }
+      });
+      
+      if (workoutSoundRef.current) {
+        workoutSoundRef.current.volume = isWorkoutSoundMuted ? 0 : settings.soundVolume;
       }
-    });
-  }, [isWorkoutSoundMuted]);
-  
-  // Update sound volume when settings change
-  useEffect(() => {
-    [
-      startSoundRef, stopSoundRef, roundChangeSoundRef, completeSoundRef, countdownSoundRef,
-      roundOneSoundRef, nextRoundSoundRef, lastRoundSoundRef, finalRoundSoundRef,
-      warmupSoundRef, cooldownSoundRef, breakSoundRef
-    ].forEach(ref => {
-      if (ref.current) {
-        ref.current.volume = settings.soundVolume;
+      
+      if (ambientSoundRef.current && ambientSoundRef.current.src) {
+        ambientSoundRef.current.volume = settings.soundVolume * 0.3;
       }
-    });
+    };
     
-    // Special handling for workout sound to respect mute state
-    if (workoutSoundRef.current) {
-      workoutSoundRef.current.volume = isWorkoutSoundMuted ? 0 : settings.soundVolume;
-    }
-    
-    if (ambientSoundRef.current) {
-      ambientSoundRef.current.volume = settings.soundVolume * 0.3; // Lower volume for ambient sound
-    }
+    updateVolume();
   }, [settings.soundVolume, isWorkoutSoundMuted]);
   
-  // Sound player function that supports both one-time sounds and continuous sounds
+  // Memory-optimized sound player function
   const playSound = useCallback((soundRef: React.RefObject<HTMLAudioElement>, isWorkoutSound: boolean = false) => {
     try {
       // Skip if sound is muted and it's a workout sound
-      if (isWorkoutSound && isWorkoutSoundMuted) {
-        return;
-      }
+      if (isWorkoutSound && isWorkoutSoundMuted) return;
       
       if (soundRef.current) {
-        // For regular sounds (not workout music), create a new instance for reliable playback
-        if (soundRef !== workoutSoundRef) {
-          const audio = new Audio(soundRef.current.src);
-          audio.volume = settings.soundVolume;
-          audio.play().catch(() => console.log('Auto-play prevented by browser'));
-        } else {
-          // For workout music, use the existing reference to maintain playback position
-          soundRef.current.volume = settings.soundVolume;
-          soundRef.current.play().catch(() => console.log('Auto-play prevented by browser'));
+        // For regular sounds, clone for reliable playback without memory leaks
+        if (soundRef !== workoutSoundRef && soundRef.current.src) {
+          // Create temporary audio element for one-time playback
+          const tempAudio = new Audio(soundRef.current.src);
+          tempAudio.volume = settings.soundVolume;
+          
+          // Automatically clean up after playing
+          const onEndedHandler = () => {
+            tempAudio.removeEventListener('ended', onEndedHandler);
+            tempAudio.src = '';
+          };
+          tempAudio.addEventListener('ended', onEndedHandler);
+          
+          tempAudio.play().catch(() => {});
+        } else if (soundRef.current.src) {
+          // For workout/continuous sounds, use the existing reference
+          soundRef.current.play().catch(() => {});
         }
       }
     } catch (error) {
-      // Silently handle errors to prevent app crashes
+      // Silently handle errors
     }
   }, [isWorkoutSoundMuted, settings.soundVolume]);
-  
+
   const playStartSound = useCallback(() => playSound(startSoundRef), [playSound]);
   const playStopSound = useCallback(() => playSound(stopSoundRef), [playSound]);
   const playRoundChangeSound = useCallback(() => playSound(roundChangeSoundRef, true), [playSound]);
@@ -443,61 +453,75 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   }, [currentPhase, backgroundGradient]);
 
   const animatePhaseChange = useCallback(() => {
-    const timeline = gsap.timeline();
+    const timeline = AnimationController.timeline();
     
     if (navigator.vibrate) {
       navigator.vibrate([100, 50, 100]);
     }
     
     // Add animation for background gradient
-    gsap.to('body', {
+    AnimationController.animate('body', {
       background: PHASE_COLORS[currentPhase].gradient,
+    }, {
       duration: 1.2,
-      ease: 'power2.inOut'
+      ease: 'ease-in-out'  // CSS equivalent of power2.inOut
     });
     
     timeline.to('.timer-display', {
       scale: 1.05,
-      duration: 0.3,
-      ease: 'power2.out',
       opacity: 0.9,
+    }, {
+      duration: 0.3,
+      ease: 'ease-out'  // CSS equivalent of power2.out
     });
     
+    // Timer background animation
+    const bgColor = currentPhase === 'round' ? 'rgba(237, 137, 54, 0.15)' : 
+                    currentPhase === 'break' ? 'rgba(72, 187, 120, 0.15)' : 
+                    currentPhase === 'cooldown' ? 'rgba(102, 126, 234, 0.15)' : 
+                    currentPhase === 'complete' ? 'rgba(159, 122, 234, 0.15)' : 'rgba(66, 153, 225, 0.15)';
+                    
     timeline.to('.timer-background', {
-      backgroundColor: `rgba(${currentPhase === 'round' ? '237, 137, 54' : 
-                             currentPhase === 'break' ? '72, 187, 120' : 
-                             currentPhase === 'cooldown' ? '102, 126, 234' : 
-                             currentPhase === 'complete' ? '159, 122, 234' : '66, 153, 225'}, 0.15)`,
+      backgroundColor: bgColor,
+    }, {
       duration: 0.2,
-      ease: 'power1.inOut',
-    }, '<');
+      ease: 'ease-in-out',  // CSS equivalent of power1.inOut
+      delay: 0  // Equivalent to the '<' timing in GSAP
+    });
     
     timeline.to('.phase-label', {
-      y: -10,
       opacity: 0,
+      y: -10,
+    }, {
       duration: 0.25,
-      ease: 'power2.in',
-    }, '<');
+      ease: 'ease-in',  // CSS equivalent of power2.in
+      delay: 0  // Equivalent to the '<' timing in GSAP
+    });
     
     timeline.to('.timer-display', {
       scale: 1,
       opacity: 1,
+    }, {
       duration: 0.3,
-      ease: 'power2.in',
+      ease: 'ease-in',  // CSS equivalent of power2.in
+      delay: 0.3  // Add delay for sequential animation
     });
     
     timeline.to('.timer-background', {
       backgroundColor: 'rgba(0, 0, 0, 0)',
+    }, {
       duration: 0.3,
-      ease: 'power1.inOut',
-    }, '<');
+      ease: 'ease-in-out',  // CSS equivalent of power1.inOut
+      delay: 0.3  // Equivalent to the '<' timing in GSAP
+    });
     
     timeline.to('.phase-label', {
-      y: 0,
       opacity: 1,
+      y: 0,
+    }, {
       duration: 0.25,
-      ease: 'power2.out',
-      delay: 0.1,
+      ease: 'ease-out',  // CSS equivalent of power2.out
+      delay: 0.7  // Combined delay for timing (0.3 + 0.3 + 0.1)
     });
     
     return timeline;
@@ -510,12 +534,13 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     const { phase: nextPhase, round: nextRound } = getNextPhaseInfo();
     
     if (nextPhase === 'complete') {
-      const completionTimeline = gsap.timeline();
-      completionTimeline.to('.timer-display', {
+      // Use our new AnimationController instead of GSAP
+      AnimationController.animate('.timer-display', {
         scale: 1.1,
-        duration: 0.5,
-        ease: 'elastic.out(1, 0.3)',
         opacity: 1,
+      }, {
+        duration: 0.5,
+        ease: 'cubic-bezier(0.34, 1.56, 0.64, 1)',  // Equivalent to elastic.out(1, 0.3)
       });
       
       if (navigator.vibrate) {
@@ -732,13 +757,32 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     }
   }, [settings, getCurrentPhaseDuration, getExpiryTimestamp, isRunning, restart, transitionActive, isPaused]);
 
+  // Main cleanup effect
   useEffect(() => {
     return () => {
+      // Stop all audio playback
+      [
+        startSoundRef, stopSoundRef, roundChangeSoundRef, completeSoundRef,
+        countdownSoundRef, roundOneSoundRef, nextRoundSoundRef, lastRoundSoundRef,
+        finalRoundSoundRef, warmupSoundRef, cooldownSoundRef, breakSoundRef,
+        workoutSoundRef, ambientSoundRef
+      ].forEach(ref => {
+        if (ref.current) {
+          ref.current.pause();
+          ref.current.src = '';
+        }
+      });
+      
+      // Clear all timeouts
+      clearAllTimeouts();
+      
+      // Clear transition timeout specifically
       if (transitionTimeout.current) {
         clearTimeout(transitionTimeout.current);
+        transitionTimeout.current = null;
       }
     };
-  }, []);
+  }, [clearAllTimeouts]);
 
   const formatTime = useCallback((m: number, s: number): string => {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
@@ -812,14 +856,16 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     }
     
     // Visual feedback animation
-    gsap.to('.timer-display', {
+    AnimationController.animate('.timer-display', {
       opacity: 0.5,
       scale: 0.95,
+    }, {
       duration: 0.3,
       onComplete: () => {
-        gsap.to('.timer-display', {
+        AnimationController.animate('.timer-display', {
           opacity: 1,
           scale: 1,
+        }, {
           duration: 0.3
         });
       }
@@ -854,13 +900,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       setTimerMode('running');
       
       // Animation for starting the timer
-      gsap.fromTo('.timer-display', 
+      AnimationController.fromTo('.timer-display', 
         { scale: 0.95, opacity: 0.8 },
+        { scale: 1, opacity: 1 },
         { 
-          scale: 1, 
-          opacity: 1, 
-          duration: 0.4, 
-          ease: 'back.out(1.2)'
+          duration: 0.4,
+          ease: 'cubic-bezier(0.34, 1.56, 0.64, 1)'  // Equivalent to back.out(1.2)
         }
       );
       
@@ -869,13 +914,13 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         playWarmupSound();
         
         // Small delay to let announcement play
-        setTimeout(() => {
+        createTrackedTimeout(() => {
           // Start timer after announcement
           start();
           setIsPaused(false);
           
           // Start ambient sound after a short delay
-          setTimeout(() => {
+          createTrackedTimeout(() => {
             if (ambientSoundRef.current) {
               ambientSoundRef.current.play().catch(() => {
                 // Silent catch for autoplay restrictions
@@ -922,11 +967,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       }
       
       // Animation for pausing
-      gsap.to('.timer-display', {
+      AnimationController.animate('.timer-display', {
         scale: 0.98,
         opacity: 0.9,
+      }, {
         duration: 0.2,
-        ease: 'power2.out'
+        ease: 'ease-out'  // CSS equivalent of power2.out
       });
     } 
     // Resuming the timer
@@ -974,14 +1020,15 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       }
       
       // Animation for resuming
-      gsap.to('.timer-display', {
+      AnimationController.animate('.timer-display', {
         scale: 1,
         opacity: 1,
+      }, {
         duration: 0.3,
-        ease: 'back.out(1.2)'
+        ease: 'cubic-bezier(0.34, 1.56, 0.64, 1)'  // Equivalent to back.out(1.2)
       });
     }
-  }, [isRunning, start, pause, playStartSound, playStopSound, timerMode, currentPhase, playWarmupSound, transitionActive]);
+  }, [isRunning, start, pause, playStartSound, playStopSound, timerMode, currentPhase, playWarmupSound, transitionActive, createTrackedTimeout]);
 
   const updateTimerMode = useCallback((mode: TimerMode) => {
     if (mode === 'running' && timerMode === 'setup') {
@@ -991,12 +1038,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       if (currentPhase === 'warmup') {
         playWarmupSound();
         
-        setTimeout(() => {
+        createTrackedTimeout(() => {
           start();
           setIsPaused(false);
         }, 1200);
       } else {
-        setTimeout(() => {
+        createTrackedTimeout(() => {
           start();
           setIsPaused(false);
           playStartSound();
@@ -1005,7 +1052,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     } else {
       setTimerMode(mode);
     }
-  }, [timerMode, start, playStartSound, setTimerMode, currentPhase, playWarmupSound]);
+  }, [timerMode, start, playStartSound, setTimerMode, currentPhase, playWarmupSound, createTrackedTimeout]);
 
   const updateSettings = useCallback((key: keyof TimerSettings, value: number | boolean) => {
     setSettings(prev => ({
@@ -1047,15 +1094,15 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       restart(newTimestamp, wasRunning);
     }
     
-    gsap.fromTo('.settings-item',
+    // Animate the settings update
+    AnimationController.fromTo('.settings-item',
       { scale: 1 },
+      { scale: 1.02 },
       { 
-        scale: 1.02, 
-        duration: 0.2, 
-        yoyo: true, 
+        duration: 0.2,
+        ease: 'ease-in-out',  // CSS equivalent of power1.inOut
         repeat: 1,
-        stagger: 0.05,
-        ease: 'power1.inOut' 
+        yoyo: true
       }
     );
   }, [currentPhase, calculateProgress, getExpiryTimestamp, isPaused, pause, restart]);
@@ -1066,11 +1113,12 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       setIsPaused(true);
     }
     
-    gsap.to('.timer-display', {
+    AnimationController.animate('.timer-display', {
       scale: 0.9,
       opacity: 0,
+    }, {
       duration: 0.3,
-      ease: 'power2.in'
+      ease: 'ease-in'  // CSS equivalent of power2.in
     });
     
     setTimerMode('setup');
@@ -1080,11 +1128,11 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Play warmup sound when transitioning from setup to running mode
     if (timerMode === 'running' && currentPhase === 'warmup' && !isRunning && !transitionActive) {
-      setTimeout(() => {
+      createTrackedTimeout(() => {
         playWarmupSound();
       }, 100);
     }
-  }, [timerMode, currentPhase, isRunning, transitionActive, playWarmupSound]);
+  }, [timerMode, currentPhase, isRunning, transitionActive, playWarmupSound, createTrackedTimeout]);
 
   const value = {
     settings,

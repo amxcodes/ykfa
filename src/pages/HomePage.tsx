@@ -6,12 +6,7 @@ import { useState, useEffect, useRef, useContext, useCallback } from 'react';
 import { ShuffleCards } from '../components/ui/shuffle-cards';
 import ChatbotInterface from '../components/ChatbotInterface';
 import { WidgetContext } from '../App';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { PROGRAM_SELECTED_EVENT } from '../components/Footer';
-
-// Register GSAP plugins
-gsap.registerPlugin(ScrollTrigger);
 
 // Moved static arrays outside components and optimized image dimensions
 const ABOUT_IMAGES_DATA = [
@@ -511,9 +506,57 @@ const ProgramDetailsModal = ({
   const modalRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const isMobile = useRef(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
-  const gsapTimelineRef = useRef<gsap.core.Timeline | null>(null);
-  const originalBodyOverflowRef = useRef<string>('');
-  const didHideScrollRef = useRef<boolean>(false);
+  
+  // Use a single animation state with a unified type
+  const [modalState, setModalState] = useState<'closed' | 'opening' | 'open' | 'closing'>(isOpen ? 'opening' : 'closed');
+  
+  // Handle open/close animation states
+  useEffect(() => {
+    console.log("Modal isOpen changed:", isOpen, "Current state:", modalState);
+    
+    if (isOpen) {
+      setModalState('opening');
+      setTimeout(() => {
+        console.log("Setting modal to open state");
+        setModalState('open');
+      }, 10);
+    } else {
+      if (modalState === 'open' || modalState === 'opening') {
+        setModalState('closing');
+        console.log("Setting modal to closing state");
+        setTimeout(() => {
+          console.log("Setting modal to closed state");
+          setModalState('closed');
+        }, 300);
+      }
+    }
+  }, [isOpen]);
+  
+  // Add proper ESC key handler cleanup
+  useEffect(() => {
+    // Add ESC key handler only when modal is open
+    if (isOpen) {
+      const handleEsc = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      };
+      
+      document.addEventListener('keydown', handleEsc);
+      
+      // Prevent scrolling on the body while modal is open
+      document.body.style.overflow = 'hidden';
+      
+      // Cleanup function to remove event listener and restore scroll
+      return () => {
+        document.removeEventListener('keydown', handleEsc);
+        document.body.style.overflow = '';
+      };
+    }
+    
+    // Empty cleanup when modal is not open
+    return () => {};
+  }, [isOpen, onClose]);
   
   const getProgramDetails = useCallback(() => {
     const pTitle = program?.title || '';
@@ -563,196 +606,36 @@ const ProgramDetailsModal = ({
   
   const details = getProgramDetails();
   
-  useEffect(() => {
-    if (!modalRef.current || !contentRef.current) return;
-    
-    const modalElement = modalRef.current;
-    const contentElement = contentRef.current;
-    
-    // Track if component is still mounted
-    let isMounted = true;
-
-    // Clean up previous timeline to prevent memory leaks
-    try {
-      if (gsapTimelineRef.current) {
-        // Use optional chaining to safely access the kill method
-        gsapTimelineRef.current?.kill?.();
-        gsapTimelineRef.current = null;
-      }
-    } catch (error) {
-      console.error('Error cleaning up GSAP timeline:', error);
-    }
-
-    if (isOpen) {
-      // Manage scroll behavior
-      if (!didHideScrollRef.current) {
-        originalBodyOverflowRef.current = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-        didHideScrollRef.current = true;
-      }
-
-      // Set initial states directly without GSAP to reduce overhead
-      modalElement.style.display = 'flex';
-      modalElement.style.opacity = '1';
-      
-      // Use a more efficient approach with fewer GSAP instances
-      // Create a single timeline for all animations
-      gsapTimelineRef.current = gsap.timeline({
-        paused: true,
-        onComplete: () => {
-          // Only update if component is still mounted
-          if (!isMounted) return;
-          
-          // Clear the timeline reference to free memory
-          try {
-            if (gsapTimelineRef.current) {
-              // Kill the timeline to release resources
-              gsapTimelineRef.current.kill();
-              gsapTimelineRef.current = null;
-            }
-          } catch (error) {
-            console.error('Error cleaning up GSAP timeline:', error);
-          }
-        }
-      });
-
-      // Optimize animation by using fewer properties and shorter durations
-      gsapTimelineRef.current
-        .fromTo(modalElement, 
-          { backgroundColor: 'rgba(0, 0, 0, 0)' }, 
-          { backgroundColor: 'rgba(0, 0, 0, 0.8)', duration: 0.25, ease: 'power1.out' }
-        )
-        .fromTo(contentElement, 
-          { opacity: 0, y: 20 }, // Remove scale to reduce GPU usage
-          { opacity: 1, y: 0, duration: 0.3, ease: 'power1.out' },
-          "-=0.15" // Reduce overlap time
-        );
-        
-      // Start the paused timeline
-      gsapTimelineRef.current.play();
-    } else {
-      if (modalElement.style.display === 'flex') {
-        // Clean up previous timeline to prevent memory leaks
-        try {
-          if (gsapTimelineRef.current) {
-            // Use optional chaining to safely access the kill method
-            gsapTimelineRef.current?.kill?.();
-          }
-        } catch (error) {
-          console.error('Error cleaning up GSAP timeline:', error);
-        }
-        
-        // Create a new timeline with memory cleanup
-        gsapTimelineRef.current = gsap.timeline({
-          paused: true,
-          onComplete: () => {
-            // Restore scroll behavior
-            if (didHideScrollRef.current) {
-              document.body.style.overflow = originalBodyOverflowRef.current;
-              didHideScrollRef.current = false;
-            }
-            
-            // Set final state directly without creating new GSAP instances
-            modalElement.style.display = 'none';
-            modalElement.style.opacity = '0';
-            
-            // Clear the timeline reference to free memory
-            try {
-              if (gsapTimelineRef.current) {
-                // Use optional chaining to safely access the kill method
-                gsapTimelineRef.current?.kill?.();
-                gsapTimelineRef.current = null;
-              }
-            } catch (error) {
-              console.error('Error cleaning up GSAP timeline:', error);
-            }
-          }
-        });
-
-        // Simplified animation with fewer properties
-        gsapTimelineRef.current
-          .to(contentElement, {
-            opacity: 0, 
-            y: 20, 
-            scale: 0.95, 
-            duration: 0.25,
-            overwrite: 'auto'
-          })
-          .to(modalElement, {
-            backgroundColor: 'rgba(0, 0, 0, 0)',
-            backdropFilter: 'blur(0px)',
-            opacity: 0,
-            duration: 0.25,
-            overwrite: 'auto'
-          }, "-=0.1");
-          
-        // Start the paused timeline
-        gsapTimelineRef.current.play();
-      } else {
-        // Handle case when modal is already hidden
-        if (didHideScrollRef.current) {
-          document.body.style.overflow = originalBodyOverflowRef.current;
-          didHideScrollRef.current = false;
-        }
-        modalElement.style.display = 'none';
-        modalElement.style.opacity = '0';
-      }
-    }
-    
-    return () => {
-      if (gsapTimelineRef.current) {
-        gsapTimelineRef.current.kill();
-        gsapTimelineRef.current = null;
-      }
-      if (didHideScrollRef.current) {
-        document.body.style.overflow = originalBodyOverflowRef.current;
-        didHideScrollRef.current = false;
-      }
-    };
-  }, [isOpen, getProgramDetails]);
-  
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-      window.addEventListener('keydown', handleEsc);
-    return () => {
-      window.removeEventListener('keydown', handleEsc);
-    };
-  }, [isOpen, onClose]);
-  
-  // Conditional rendering: Don't render if not open and not currently animating out.
-  if (!isOpen && modalRef.current && modalRef.current.style.display === 'none' && 
-      (!gsapTimelineRef.current || !gsapTimelineRef.current.isActive())) {
+  // Don't render anything if closed and animation is complete
+  if (!isOpen && modalState === 'closed') {
     return null;
   }
   
   return (
     <div 
       ref={modalRef}
-      className="fixed inset-0 z-50 items-start justify-center"
+      className={`fixed inset-0 z-[100] flex items-center justify-center transition-all duration-300 ease-in-out ${
+        modalState === 'closed' ? 'opacity-0 pointer-events-none' : 
+        modalState === 'closing' ? 'opacity-0' : 'opacity-100'
+      }`}
       style={{
-        display: 'none', // Start hidden; GSAP controls display:flex
-        opacity: 0,      // Start transparent; GSAP controls opacity
-        backgroundColor: 'rgba(0, 0, 0, 0)', // Initial
-        backdropFilter: 'blur(0px)',      // Initial
-        paddingTop: 'calc(64px + 8vh)', // Reduced top padding for mobile
-        paddingBottom: '2vh',
-        paddingLeft: '16px',
-        paddingRight: '16px'
+        backgroundColor: modalState === 'open' || modalState === 'opening' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0)',
+        backdropFilter: modalState === 'open' || modalState === 'opening' ? 'blur(5px)' : 'blur(0px)',
+        padding: '20px'
       }}
     >
       <div className="absolute inset-0 z-0" onClick={onClose}></div>
       <div 
         ref={contentRef}
-        className="relative w-full max-w-sm bg-gradient-to-b from-dark-800/95 to-dark-900/95 backdrop-blur-lg border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl z-10"
+        className={`relative w-full max-w-sm bg-gradient-to-b from-dark-800/95 to-dark-900/95 backdrop-blur-lg border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl z-20 transition-all duration-300 ease-in-out ${
+          modalState === 'opening' ? 'opacity-0 translate-y-8 scale-95' : 
+          modalState === 'open' ? 'opacity-100 translate-y-0 scale-100' : 
+          modalState === 'closing' ? 'opacity-0 translate-y-8 scale-95' : 
+          'opacity-0 translate-y-8 scale-95'
+        }`}
         style={{ 
-          opacity: 0,
-          transform: 'translateY(30px) scale(0.95)', // Initial state for GSAP entrance
           maxWidth: isMobile.current ? '90%' : '500px',
-          marginTop: isMobile.current ? '-20px' : '0px', // Negative margin to push up on mobile
+          margin: '0 auto'
         }}
       >
         {/* Enhanced close button */}
@@ -859,13 +742,14 @@ const AboutDetailsModal = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const glareRef = useRef<HTMLDivElement>(null);
   const isMobile = useRef(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
-  const gsapTimelineRef = useRef<gsap.core.Timeline | null>(null);
-  const originalBodyOverflowRef = useRef<string>('');
-  const didHideScrollRef = useRef<boolean>(false);
   
-  // Enhanced mouse effects for desktop
+  // Animation state using CSS transitions
+  const [animationState, setAnimationState] = useState('closed'); // 'closed', 'opening', 'open', 'closing'
+  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 }); // Starting in the middle
+  
+  // Enhanced mouse effects for desktop - using CSS variables for better performance
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (isMobile.current || !glareRef.current || !contentRef.current) return;
+    if (isMobile.current || !contentRef.current) return;
     
     const rect = contentRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -874,139 +758,85 @@ const AboutDetailsModal = ({
     const xPercent = x / rect.width * 100;
     const yPercent = y / rect.height * 100;
     
-    // Enhanced glare effect
-    glareRef.current.style.background = `
-      radial-gradient(circle at ${xPercent}% ${yPercent}%, 
-        rgba(255,255,255,0.15) 0%, 
-        rgba(255,255,255,0.1) 25%, 
-        rgba(255,255,255,0) 50%)
-    `;
+    // Update state (React will batch these updates)
+    setMousePosition({ x: xPercent, y: yPercent });
     
+    // Apply immediate glare effect via direct DOM manipulation for responsive feel
+    if (glareRef.current) {
+      glareRef.current.style.background = `
+        radial-gradient(circle at ${xPercent}% ${yPercent}%, 
+          rgba(255,255,255,0.15) 0%, 
+          rgba(255,255,255,0.1) 25%, 
+          rgba(255,255,255,0) 50%)
+      `;
+    }
+    
+    // Apply 3D transforms via CSS variables for smooth animation
     if (contentRef.current) {
-      // Enhanced 3D rotation with subtle scaling
-      gsap.to(contentRef.current, {
-        rotateX: (yPercent - 50) / 20,
-        rotateY: (xPercent - 50) / 20,
-        scale: 1.02,
-        duration: 0.5,
-        ease: "power2.out"
-      });
+      contentRef.current.style.setProperty('--rotateX', `${(yPercent - 50) / 20}deg`);
+      contentRef.current.style.setProperty('--rotateY', `${(xPercent - 50) / 20}deg`);
+      contentRef.current.style.setProperty('--scale', '1.02');
     }
   }, []);
 
   const handleMouseLeave = useCallback(() => {
-    if (!isMobile.current && contentRef.current) {
-      gsap.to(contentRef.current, {
-        rotateX: 0,
-        rotateY: 0,
-        scale: 1,
-        duration: 0.6,
-        ease: "elastic.out(1, 0.8)"
-      });
+    if (isMobile.current || !contentRef.current) return;
+    
+    // Reset transforms via CSS variables
+    if (contentRef.current) {
+      contentRef.current.style.setProperty('--rotateX', '0deg');
+      contentRef.current.style.setProperty('--rotateY', '0deg');
+      contentRef.current.style.setProperty('--scale', '1');
     }
   }, []);
   
+  // Handle open/close with CSS transitions
   useEffect(() => {
-    if (!modalRef.current || !contentRef.current) return;
-
-    const modalElement = modalRef.current;
-    const contentElement = contentRef.current;
-
-    if (gsapTimelineRef.current) {
-      gsapTimelineRef.current.kill();
-      gsapTimelineRef.current = null;
-    }
-
+    console.log("About modal isOpen changed:", isOpen);
+    
+    // Handle body scroll
     if (isOpen) {
-      if (!didHideScrollRef.current) { // Only capture if we haven't hidden scroll yet
-        originalBodyOverflowRef.current = document.body.style.overflow;
-        document.body.style.overflow = 'hidden';
-        didHideScrollRef.current = true;
-      }
-
-      gsap.set(modalElement, { display: 'flex', opacity: 1 });
-      gsap.set(contentElement, { opacity: 0, y: 20, scale: 0.95, rotateX: 5 });
-
-      gsapTimelineRef.current = gsap.timeline({ defaults: { ease: "power3.out" } });
-      gsapTimelineRef.current
-        .to(modalElement, {
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        backdropFilter: 'blur(12px)',
-        duration: 0.5
-      })
-        .to(contentElement, {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        rotateX: 0,
-        duration: 0.6,
-        ease: "back.out(1.7)"
-      }, "-=0.3");
-
+      document.body.style.overflow = 'hidden';
+      setAnimationState('opening');
+      
+      // Transition to open state after a brief delay
+      const timer = setTimeout(() => {
+        setAnimationState('open');
+      }, 50);
+      
+      return () => clearTimeout(timer);
     } else {
-      if (modalElement.style.display === 'flex') {
-        gsapTimelineRef.current = gsap.timeline({
-          defaults: { ease: "power3.in" },
-          onComplete: () => {
-            if (didHideScrollRef.current) {
-              document.body.style.overflow = originalBodyOverflowRef.current;
-              didHideScrollRef.current = false;
-            }
-            gsap.set(modalElement, { display: 'none', opacity: 0 });
-          }
-        });
-
-        gsapTimelineRef.current
-          .to(contentElement, {
-        opacity: 0,
-            y: -20, // Changed to -20 to match visual expectation of animating "out and up"
-        scale: 0.95,
-            rotateX: -5, // Changed to -5
-        duration: 0.4
-      })
-          .to(modalElement, {
-        backgroundColor: 'rgba(0, 0, 0, 0)',
-        backdropFilter: 'blur(0px)',
-            opacity: 0,
-        duration: 0.3
-      }, "-=0.2");
-      } else {
-        if (didHideScrollRef.current) {
-          document.body.style.overflow = originalBodyOverflowRef.current;
-          didHideScrollRef.current = false;
-        }
-        gsap.set(modalElement, { display: 'none', opacity: 0 });
+      document.body.style.overflow = '';
+      
+      if (animationState !== 'closed') {
+        setAnimationState('closing');
+        
+        // Set to fully closed after animation duration
+        const timer = setTimeout(() => {
+          setAnimationState('closed');
+        }, 500); // Match the CSS transition duration
+        
+        return () => clearTimeout(timer);
       }
     }
-
-    return () => {
-      if (gsapTimelineRef.current) {
-        gsapTimelineRef.current.kill();
-        gsapTimelineRef.current = null;
-      }
-      if (didHideScrollRef.current) {
-        document.body.style.overflow = originalBodyOverflowRef.current;
-        didHideScrollRef.current = false;
-      }
-    };
   }, [isOpen]);
-
-  // Conditional rendering to allow animations to finish
-  if (!isOpen && modalRef.current && modalRef.current.style.display === 'none' && 
-      (!gsapTimelineRef.current || !gsapTimelineRef.current.isActive()) ) {
+  
+  // Don't render if closed and animation is complete
+  if (!isOpen && animationState === 'closed') {
     return null;
   }
 
   return (
     <div 
       ref={modalRef}
-      className="fixed inset-0 z-50 flex items-start justify-center"
+      className={`fixed inset-0 z-50 flex items-start justify-center transition-all duration-500 ease-in-out ${
+        animationState === 'closed' ? 'opacity-0 pointer-events-none' : 
+        animationState === 'closing' ? 'opacity-0' : 'opacity-100'
+      }`}
       style={{
-        display: 'none', 
-        opacity: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0)',
-        backdropFilter: 'blur(0px)',
-        paddingTop: 'calc(64px + 6vh)', 
+        backgroundColor: animationState === 'open' || animationState === 'opening' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0)',
+        backdropFilter: animationState === 'open' || animationState === 'opening' ? 'blur(12px)' : 'blur(0px)',
+        paddingTop: 'calc(64px + 6vh)',
         paddingBottom: '2vh',
         paddingLeft: '16px',
         paddingRight: '16px'
@@ -1021,14 +851,24 @@ const AboutDetailsModal = ({
       
       <div 
         ref={contentRef}
-        className="relative w-full bg-dark-800/30 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden shadow-2xl z-10"
+        className={`relative w-full bg-dark-800/30 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden shadow-2xl z-10 transition-all duration-600 ${
+          animationState === 'opening' ? 'opacity-0 translate-y-8 scale-95' : 
+          animationState === 'open' ? 'opacity-100 translate-y-0 scale-100' : 
+          animationState === 'closing' ? 'opacity-0 -translate-y-8 scale-95' : 
+          'opacity-0 translate-y-8 scale-95'
+        }`}
         style={{ 
-          opacity: 0,
-          transform: 'perspective(1000px)',
           maxWidth: '360px', 
           maxHeight: '80vh', 
           margin: '0 auto',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)'
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1)',
+          transform: `
+            perspective(1000px) 
+            rotateX(var(--rotateX, 0deg)) 
+            rotateY(var(--rotateY, 0deg)) 
+            scale(var(--scale, 1))
+          `,
+          transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
@@ -1064,7 +904,7 @@ const AboutDetailsModal = ({
               <div className="absolute -bottom-1 left-0 h-0.5 w-8 bg-gradient-to-r from-amber-400 to-amber-500 rounded-full"></div>
             </h2>
           </div>
-        </div>
+          </div>
         
         <div className="p-2.5 max-h-[calc(80vh-96px)] overflow-y-auto scrollbar-hide bg-dark-800/20 backdrop-blur-sm"> 
           <div className="space-y-2.5"> 
@@ -1237,10 +1077,21 @@ const ProgramCard = ({
         maxWidth: compact ? '100%' : undefined
       }}
     >
-      <div className={`card relative overflow-hidden backdrop-blur-md bg-white/5 border border-white/10
+      <div 
+        onClick={(e) => {
+          // Important: Check if the click target is NOT the button or its children
+          const target = e.target as HTMLElement;
+          const isButtonClick = target.closest('button') !== null;
+          
+          if (!isButtonClick) {
+            console.log('📌 Card clicked (not button) for:', program.title);
+            onDetailsClick(program);
+          }
+        }}
+        className={`card relative overflow-hidden backdrop-blur-md bg-white/5 border border-white/10
         ${compact ? 'p-2' : 'p-2 md:p-4'}
         group-hover:border-amber-500/30 group-hover:bg-white/10 shadow-lg
-        transition-all duration-500 ease-out
+        transition-all duration-500 ease-out cursor-pointer
       `}>
         {/* Glass effect with light reflection */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 opacity-30 rounded-xl -z-10"></div>
@@ -1263,11 +1114,16 @@ const ProgramCard = ({
             className="w-full h-full object-cover object-center img-active group-hover:scale-105"
             loading="lazy"
           />
-          <div className="absolute bottom-0 left-0 right-0 p-2 z-20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out">
+          <div className="absolute bottom-0 left-0 right-0 p-2 z-20 overflow-hidden">
             <button 
-              onClick={() => onDetailsClick(program)}
-              className="inline-flex items-center text-black bg-gradient-to-r from-amber-400/90 to-amber-500/90 hover:from-amber-400 hover:to-amber-500 px-2 py-1 rounded-lg transition-all text-xs shadow-md hover:shadow-amber-400/50 backdrop-blur-sm"
+              onClick={(e: React.MouseEvent) => {
+                e.stopPropagation();
+                console.log('🔥 Learn more button clicked for:', program.title, program);
+                onDetailsClick(program);
+              }}
+              className="inline-flex items-center text-black bg-gradient-to-r from-amber-400/90 to-amber-500/90 hover:from-amber-400 hover:to-amber-500 px-2 py-1 rounded-lg transition-all text-xs shadow-sm hover:shadow-md backdrop-blur-sm cursor-pointer z-30 transform translate-y-[150%] group-hover:translate-y-0 transition-transform duration-300 ease-out"
               aria-label={`Learn more about ${title}`}
+              type="button"
             >
               Learn more <ArrowRight className="ml-1 w-3 h-3" />
             </button>
@@ -1342,8 +1198,13 @@ const HomePage = () => {
   
   // Handle opening modal with program details
   const handleProgramDetailsClick = (program: any) => {
+    console.log('🔍 Opening modal for program:', program.title);
+    console.log('🔍 Program object:', program);
+    
+    // Set directly without delay
     setSelectedProgram(program);
     setIsModalOpen(true);
+    console.log('🔍 Modal state updated:', { isModalOpen: true, program: program.title });
   };
   
   // Handle closing modal
@@ -1461,12 +1322,6 @@ const HomePage = () => {
   const changeImage = useCallback((direction: 'next' | 'prev') => {
     if (imageTransitionInProgress.current) return;
     
-    // Interval is now managed by useEffect, so we only clear it here if it exists
-    if (autoImageChangeInterval.current) {
-      clearInterval(autoImageChangeInterval.current);
-      autoImageChangeInterval.current = null;
-    }
-    
     // Clear any existing timeouts
     imageTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
     imageTimeoutsRef.current = [];
@@ -1494,10 +1349,12 @@ const HomePage = () => {
         ? (aboutImageIndex + 1) % ABOUT_IMAGES_DATA.length
         : (aboutImageIndex - 1 + ABOUT_IMAGES_DATA.length) % ABOUT_IMAGES_DATA.length;
       
-      // Use a more memory-efficient approach to preload images
+      // Use a more memory-efficient approach to handle the transition
       const continueTransition = () => {
-        // Use requestAnimationFrame for better performance
-        requestAnimationFrame(() => {
+        // Track this animation frame for cleanup
+        const animFrameId = requestAnimationFrame(() => {
+          if (!isMounted.current) return; // Safety check
+        
           if (isMounted.current) {
             if (direction === 'next') {
               setAboutImageIndex(prevIndex => (prevIndex + 1) % ABOUT_IMAGES_DATA.length);
@@ -1506,18 +1363,18 @@ const HomePage = () => {
             }
           }
           
-          const timeout2 = setTimeout(() => {
-            if (container) {
-              container.classList.remove('transitioning');
-              container.classList.remove(`transitioning-${direction}`);
-              
-              // Reset will-change to free up resources
-              images.forEach(img => {
-                if (img instanceof HTMLElement) {
-                  img.style.willChange = 'auto';
-                }
-              });
-            }
+          const timeout = setTimeout(() => {
+            if (!container || !isMounted.current) return; // Safety check
+            
+            container.classList.remove('transitioning');
+            container.classList.remove(`transitioning-${direction}`);
+            
+            // Reset will-change to free up resources
+            images.forEach(img => {
+              if (img instanceof HTMLElement) {
+                img.style.willChange = 'auto';
+              }
+            });
             
             imageTransitionInProgress.current = false;
             if (isMounted.current) {
@@ -1526,65 +1383,145 @@ const HomePage = () => {
             }
           }, 800);
           
-          imageTimeoutsRef.current.push(timeout2);
+          imageTimeoutsRef.current.push(timeout);
         });
+        
+        // Return the animation frame ID for cleanup
+        return animFrameId;
       };
       
-      // Check if the target image is already loaded in the DOM
-      const existingImages = Array.from(document.images);
-      const isPreloaded = existingImages.some(img => img.src === ABOUT_IMAGES_DATA[targetImageIndex]);
+      // Check if target image is accessible without creating new Image objects
+      let animFrameId: number | null = null;
       
-      if (isPreloaded) {
-        continueTransition();
-      } else {
-        // Only create a new Image object if needed
-        const preloadImg = new Image();
-        preloadImg.src = ABOUT_IMAGES_DATA[targetImageIndex];
-        
-        if (preloadImg.complete) {
-          continueTransition();
-          // Clean up to avoid memory leaks
-          preloadImg.onload = null;
-          preloadImg.onerror = null;
-        } else {
-          preloadImg.onload = () => {
-            continueTransition();
-            // Clean up to avoid memory leaks
-            preloadImg.onload = null;
-            preloadImg.onerror = null;
-          };
-          preloadImg.onerror = () => {
-            // Continue anyway if image fails to load
-            continueTransition();
-            // Clean up to avoid memory leaks
-            preloadImg.onload = null;
-            preloadImg.onerror = null;
-          };
-          
-          // Fallback timeout with shorter duration
-          const fallbackTimeout = setTimeout(() => {
-            continueTransition();
-            // Clean up to avoid memory leaks
-            preloadImg.onload = null;
-            preloadImg.onerror = null;
-          }, 200);
-          imageTimeoutsRef.current.push(fallbackTimeout);
+      // Instead of creating new Image objects, just proceed with transition
+      // after a small delay to allow browser to optimize
+      const transitionTimeout = setTimeout(() => {
+        animFrameId = continueTransition();
+      }, 50);
+      
+      imageTimeoutsRef.current.push(transitionTimeout);
+      
+      // Return a cleanup function
+      return () => {
+        if (animFrameId !== null) {
+          cancelAnimationFrame(animFrameId);
         }
-      }
+        
+        // Clean up any created timeouts
+        clearTimeout(transitionTimeout);
+        
+        // Reset transition flags in case of early abort
+        imageTransitionInProgress.current = false;
+        if (isMounted.current) {
+          setImageTransitioning(false);
+          setTransitionDirection(null);
+        }
+      };
     }
-  }, [aboutImageIndex]); // Removed ABOUT_IMAGES_DATA as it's a constant
+  }, [aboutImageIndex]);
   
   // Clean up all timeouts when component unmounts
+  // Clean up all timeouts when component unmounts or when transitioning starts
   useEffect(() => {
     return () => {
+      // Clear all timeouts
       imageTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
       imageTimeoutsRef.current = [];
+      
+      // Clear any autoImageChangeInterval
+      if (autoImageChangeInterval.current) {
+        clearInterval(autoImageChangeInterval.current);
+        autoImageChangeInterval.current = null;
+      }
+      
+      // Mark not transitioning to prevent memory leaks
+      imageTransitionInProgress.current = false;
+    };
+  }, []);
+
+  // Preload images for smoother transitions (useEffect for imageCache and preloadAllImages)
+  useEffect(() => {
+    // Use a single shared cache for all image operations
+    const imageCache = new Map();
+    let loadPromises: Promise<void>[] = [];
+    let isMounted = true; // Track component mount state
+    
+    const preloadAllImages = async () => {
+      // Only preload in production or if explicitly enabled
+      const shouldPreload = process.env.NODE_ENV === 'production' || true;
+      if (!shouldPreload) return;
+      
+      // Limit how many images we preload at once
+      const imagesToPreload = ABOUT_IMAGES_DATA.slice(0, 1); // MODIFIED: Preload only the first image
+      
+      loadPromises = imagesToPreload.map((src) => {
+        return new Promise<void>((resolvePromise) => {
+          if (imageCache.has(src)) {
+            resolvePromise();
+            return;
+          }
+          
+          const img = new Image();
+          let timerId: NodeJS.Timeout | null = null;
+
+          const cleanupAndResolve = () => {
+            if (timerId) {
+              clearTimeout(timerId);
+              timerId = null;
+            }
+            img.onload = null;
+            img.onerror = null;
+            resolvePromise();
+          };
+
+          timerId = setTimeout(() => {
+            // console.log(`Image ${src} timed out individually after 7s`);
+            cleanupAndResolve();
+          }, 7000); // MODIFIED: Individual image timeout increased to 7 seconds
+
+          img.onload = () => {
+            if (isMounted) { // Only update cache if component is still mounted
+              imageCache.set(src, true);
+            }
+            cleanupAndResolve();
+          };
+          
+          img.onerror = () => {
+            // console.warn(`Failed to preload image: ${src}`);
+            cleanupAndResolve();
+          };
+          
+          img.src = src;
+        });
+      });
+      
+      // Set a timeout for the entire preloading operation
+      const timeoutPromise = new Promise<void>(resolveTimeoutGlobal => {
+        setTimeout(() => {
+          console.log('Preloading images timed out (overall 15s timeout)'); // MODIFIED: Log message
+          resolveTimeoutGlobal();
+        }, 15000); // MODIFIED: Overall timeout increased to 15 seconds
+      });
+      
+      // Wait for all images to preload or timeout
+      await Promise.race([Promise.all(loadPromises), timeoutPromise]);
+    };
+    
+    // Start preloading
+    // preloadAllImages(); // MODIFIED: Temporarily commented out to address timeout issues
+    
+    return () => {
+      // Clear cache references and abort any pending operations when component unmounts
+      isMounted = false;
+      imageCache.clear();
+      loadPromises = [];
     };
   }, []);
 
   // Optimized auto image change interval with IntersectionObserver for better performance
   useEffect(() => {
     let observer: IntersectionObserver | null = null;
+    let intervalId: NodeJS.Timeout | null = null;
     
     // Only start auto-rotation when the image slider is visible in viewport
     if (aboutImageRef.current && 'IntersectionObserver' in window) {
@@ -1593,18 +1530,22 @@ const HomePage = () => {
           // Start/stop interval based on visibility
           if (entry.isIntersecting) {
             // Start the interval only if component is mounted and visible
-            if (!autoImageChangeInterval.current && !imageTransitionInProgress.current && isMounted.current) {
-              autoImageChangeInterval.current = setInterval(() => {
+            if (!intervalId && !imageTransitionInProgress.current && isMounted.current) {
+              intervalId = setInterval(() => {
                 // Only proceed if component is still mounted and not transitioning
                 if (!imageTransitionInProgress.current && isMounted.current) {
                   changeImage('next');
                 }
               }, 5000);
+              
+              // Store interval in ref for cleanup elsewhere
+              autoImageChangeInterval.current = intervalId;
             }
           } else {
             // Stop the interval when not visible to save resources
-            if (autoImageChangeInterval.current) {
-              clearInterval(autoImageChangeInterval.current);
+            if (intervalId) {
+              clearInterval(intervalId);
+              intervalId = null;
               autoImageChangeInterval.current = null;
             }
           }
@@ -1613,27 +1554,37 @@ const HomePage = () => {
       
       observer.observe(aboutImageRef.current);
     } else {
-      // Fallback for browsers without IntersectionObserver
-      if (!autoImageChangeInterval.current && !imageTransitionInProgress.current && isMounted.current) {
-        autoImageChangeInterval.current = setInterval(() => {
+      // Fallback for browsers without IntersectionObserver - use a reduced interval
+      if (!intervalId && !imageTransitionInProgress.current && isMounted.current) {
+        intervalId = setInterval(() => {
           if (!imageTransitionInProgress.current && isMounted.current) {
             changeImage('next');
           }
-        }, 5000);
+        }, 8000); // Longer interval for fallback
+        
+        // Store interval in ref for cleanup elsewhere
+        autoImageChangeInterval.current = intervalId;
       }
     }
 
     // Cleanup: clear interval and disconnect observer on unmount
     return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+      
       if (autoImageChangeInterval.current) {
         clearInterval(autoImageChangeInterval.current);
         autoImageChangeInterval.current = null;
       }
+      
       if (observer) {
         observer.disconnect();
+        observer = null;
       }
     };
-  }, [changeImage, isMounted]);
+  }, [changeImage]);
   
   // Optimized animation enhancements with better memory management
   useEffect(() => {
@@ -1648,6 +1599,29 @@ const HomePage = () => {
 
     // Use requestAnimationFrame for smoother performance and better memory usage
     let animationFrameId: number | null = null;
+    // Track all applied styles to reset them correctly
+    const originalStyles: Record<string, Record<string, string>> = {
+      current: {},
+      prev: {},
+      next: {}
+    };
+    
+    // Store original styles to restore them later
+    const saveOriginalStyles = (element: HTMLElement, key: 'current' | 'prev' | 'next') => {
+      originalStyles[key] = {
+        opacity: element.style.opacity,
+        transform: element.style.transform,
+        filter: element.style.filter,
+        transition: element.style.transition,
+        willChange: element.style.willChange,
+        boxShadow: element.style.boxShadow
+      };
+    };
+    
+    // Save original styles
+    if (currentImage instanceof HTMLElement) saveOriginalStyles(currentImage, 'current');
+    if (prevImage instanceof HTMLElement) saveOriginalStyles(prevImage, 'prev');
+    if (nextImage instanceof HTMLElement) saveOriginalStyles(nextImage, 'next');
     
     if (imageTransitioning && transitionDirection) {
       // Only add will-change during transitions to optimize memory usage
@@ -1666,33 +1640,57 @@ const HomePage = () => {
       // Transition is over, reset inline styles to allow CSS to take over for the resting state
       animationFrameId = requestAnimationFrame(() => {
         if (currentImage instanceof HTMLElement) {
-          currentImage.style.opacity = '';
-          currentImage.style.transform = '';
-          currentImage.style.filter = '';
-          currentImage.style.transition = '';
+          currentImage.style.opacity = originalStyles.current.opacity || '';
+          currentImage.style.transform = originalStyles.current.transform || '';
+          currentImage.style.filter = originalStyles.current.filter || '';
+          currentImage.style.transition = originalStyles.current.transition || '';
           currentImage.style.willChange = 'auto'; // Reset will-change to free up resources
         }
         if (nextImage instanceof HTMLElement) {
-          nextImage.style.opacity = '';
-          nextImage.style.transform = '';
-          nextImage.style.boxShadow = '';
-          nextImage.style.transition = '';
+          nextImage.style.opacity = originalStyles.next.opacity || '';
+          nextImage.style.transform = originalStyles.next.transform || '';
+          nextImage.style.boxShadow = originalStyles.next.boxShadow || '';
+          nextImage.style.transition = originalStyles.next.transition || '';
           nextImage.style.willChange = 'auto'; // Reset will-change to free up resources
         }
         if (prevImage instanceof HTMLElement) {
-          prevImage.style.opacity = '';
-          prevImage.style.transform = '';
-          prevImage.style.boxShadow = '';
-          prevImage.style.transition = '';
+          prevImage.style.opacity = originalStyles.prev.opacity || '';
+          prevImage.style.transform = originalStyles.prev.transform || '';
+          prevImage.style.boxShadow = originalStyles.prev.boxShadow || '';
+          prevImage.style.transition = originalStyles.prev.transition || '';
           prevImage.style.willChange = 'auto'; // Reset will-change to free up resources
         }
       });
     }
     
-    // Cleanup function to cancel any pending animation frames
+    // Cleanup animation frame to prevent memory leaks
     return () => {
       if (animationFrameId !== null) {
         cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+      
+      // Make sure we reset will-change on cleanup to free GPU memory
+      if (currentImage instanceof HTMLElement) {
+        currentImage.style.willChange = 'auto';
+        // Reset all styles to original state
+        Object.entries(originalStyles.current).forEach(([prop, value]) => {
+          if (value) (currentImage.style as any)[prop] = value;
+        });
+      }
+      if (nextImage instanceof HTMLElement) {
+        nextImage.style.willChange = 'auto';
+        // Reset all styles to original state
+        Object.entries(originalStyles.next).forEach(([prop, value]) => {
+          if (value) (nextImage.style as any)[prop] = value;
+        });
+      }
+      if (prevImage instanceof HTMLElement) {
+        prevImage.style.willChange = 'auto';
+        // Reset all styles to original state
+        Object.entries(originalStyles.prev).forEach(([prop, value]) => {
+          if (value) (prevImage.style as any)[prop] = value;
+        });
       }
     };
   }, [imageTransitioning, transitionDirection]);
@@ -1837,56 +1835,6 @@ const HomePage = () => {
   }, [aboutImageIndex]);
   /* const aboutImages = ABOUT_IMAGES_DATA; */ // Now using ABOUT_IMAGES_DATA directly
 
-  // Preload images for smoother transitions (useEffect for imageCache and preloadAllImages)
-  useEffect(() => {
-    const imageCache = new Map();
-    const preloadAllImages = async () => {
-      const loadPromises = ABOUT_IMAGES_DATA.map((src) => { // Use ABOUT_IMAGES_DATA
-        return new Promise<void>((resolve) => {
-          if (imageCache.has(src)) {
-            resolve();
-            return;
-          }
-          
-        const img = new Image();
-        img.src = src;
-          
-          // Handle both load event and decode method
-          const completeLoad = () => {
-          imageCache.set(src, true);
-            resolve();
-        };
-          
-          if (img.complete) {
-            completeLoad();
-          } else {
-            img.onload = completeLoad;
-            // Fallback in case image loading takes too long
-            setTimeout(resolve, 1000);
-          }
-          
-          // Force decode the image if browser supports it
-        if ('decode' in img) {
-          img.decode().catch(() => {
-              // Silently catch decode errors
-          });
-        }
-        });
-    });
-      
-      // Wait for all images to preload
-      await Promise.all(loadPromises);
-    };
-    
-    // Start preloading
-    preloadAllImages();
-    
-    return () => {
-      // Clear cache references when component unmounts
-      imageCache.clear();
-    };
-  }, []);
-
   // Regular scroll handler for testimonials
   useEffect(() => {
     const handleScroll = () => {
@@ -1919,6 +1867,20 @@ const HomePage = () => {
 
   // Add state for about modal
   const [showAboutModal, setShowAboutModal] = useState(false);
+
+  // This code adds a listener for page visibility to help with debugging modal issues
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Page is now visible');
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   return (
     <>
@@ -2015,21 +1977,25 @@ const HomePage = () => {
                       className="w-full h-full object-cover transition-opacity duration-300"
                       loading="eager"
                       decoding="async"
-                      fetchPriority="high"
                       style={{
                         opacity: imageTransitioning ? 0.8 : 1,
                         transform: 'translateZ(0)' // Hardware acceleration hint
                       }}
-                      onLoad={(e) => {
-                        if (e.currentTarget) {
-                          e.currentTarget.style.opacity = '1';
-                          // Clean up any references
-                          const img = e.currentTarget;
-                          requestAnimationFrame(() => {
-                            if (img) img.style.opacity = '1';
-                          });
-                        }
-                      }}
+                            onLoad={(e) => {
+        if (e.currentTarget) {
+          e.currentTarget.style.opacity = '1';
+          // Clean up any references
+          const img = e.currentTarget;
+          const rafId = requestAnimationFrame(() => {
+            if (img) img.style.opacity = '1';
+          });
+          
+          // Cleanup function for the event
+          return () => {
+            cancelAnimationFrame(rafId);
+          };
+        }
+      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
                   </div>

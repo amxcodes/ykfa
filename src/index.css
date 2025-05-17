@@ -450,6 +450,56 @@
     background-size: 200% 200%;
     animation: gradientShift 3s ease infinite;
   }
+
+  /* Pricing Card Animations */
+  .pricing-card {
+    opacity: 0;
+    transform: translateY(50px);
+    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .pricing-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Duration change animation */
+  .duration-change-enter {
+    opacity: 0;
+    transform: translateY(15px) scale(0.95);
+    filter: blur(5px);
+  }
+
+  .duration-change-enter-active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+    transition: 
+      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), 
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* Fancy animation for price changes */
+  @keyframes grow-strikethrough {
+    0% { width: 0; left: 0; right: auto; }
+    50% { width: 100%; left: 0; right: auto; }
+    51% { width: 100%; right: 0; left: auto; }
+    100% { width: 0; right: 0; left: auto; }
+  }
+
+  .animate-grow-strikethrough {
+    animation: grow-strikethrough 1.5s cubic-bezier(0.6, 0.2, 0.1, 1) forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease forwards;
+  }
 }
 
 @layer utilities {
