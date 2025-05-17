@@ -343,7 +343,7 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     // Contact information
     {
       keywords: ["contact", "phone", "email", "call", "message", "get in touch", "reach out", "whatsapp"],
-      response: "You can contact us at +91 7736488858 or email us at yaseenkfa@gmail.com. You can also visit our academy at Y&Y Arcade, Vp Marakkar Road, Edappally Po, Kochi 682024 or use the contact form on our website.",
+      response: "You can contact us at +91 7736488858 or email us at team@yaseens-ykfa.com. You can also visit our academy at Y&Y Arcade, Vp Marakkar Road, Edappally Po, Kochi 682024 or use the contact form on our website.",
       actions: [
         { 
           label: "Contact Us", 

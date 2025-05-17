@@ -205,10 +205,11 @@ const InstructorsPage = () => {
         "First Aid and CPR Certified"
       ],
       social: {
-        email: "master.yaseen@yaseensykfa.com",
+        email: "team@yaseens-ykfa.com",
         facebook: "#",
-        instagram: "#",
-        linkedin: "#"
+        instagram: "mastery_yaseen",
+        linkedin: "#",
+        twitter: "@masterYaseen"
       }
     },
     {
@@ -231,9 +232,9 @@ const InstructorsPage = () => {
         "Kettlebell Certification"
       ],
       social: {
-        email: "sarah.chen@yaseensykfa.com",
-        instagram: "#",
-        twitter: "#"
+        email: "team@yaseens-ykfa.com",
+        instagram: "coach_sarah",
+        twitter: "@sarahchen"
       }
     },
     {
@@ -256,9 +257,10 @@ const InstructorsPage = () => {
         "Functional Movement Specialist"
       ],
       social: {
-        email: "david.rodriguez@yaseensykfa.com",
-        instagram: "#",
-        linkedin: "#"
+        email: "team@yaseens-ykfa.com",
+        instagram: "coach_david",
+        linkedin: "#",
+        twitter: "@coachrodriguez"
       }
     },
     {
@@ -281,9 +283,10 @@ const InstructorsPage = () => {
         "First Aid and CPR Certified"
       ],
       social: {
-        email: "aisha.johnson@yaseensykfa.com",
+        email: "team@yaseens-ykfa.com",
         facebook: "#",
-        instagram: "#"
+        instagram: "coach_aisha",
+        twitter: "@coachAisha"
       }
     },
     {
@@ -306,9 +309,10 @@ const InstructorsPage = () => {
         "Authorized Instructor of Classical Kata"
       ],
       social: {
-        email: "michael.tanaka@yaseensykfa.com",
+        email: "team@yaseens-ykfa.com",
         facebook: "#",
-        instagram: "#"
+        instagram: "coach_michael",
+        twitter: "@coachTanaka"
       }
     },
     {
@@ -331,9 +335,10 @@ const InstructorsPage = () => {
         "Law Enforcement Defensive Tactics Instructor"
       ],
       social: {
-        email: "emma.wilson@yaseensykfa.com",
-        twitter: "#",
-        linkedin: "#"
+        email: "team@yaseens-ykfa.com",
+        twitter: "@emmaFitness",
+        linkedin: "#",
+        instagram: "coach_emma"
       }
     }
   ];

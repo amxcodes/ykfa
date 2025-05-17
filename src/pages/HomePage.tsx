@@ -339,13 +339,29 @@ const FloatingButtons = () => {
               ></style>
             </div>
 
-            <button
-              onClick={() => toggleWidget('bmi')}
-              className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg hover:bg-white/20 transition-all group relative"
-              style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
-            >
-              <Calculator className={`w-5 h-5 sm:w-6 sm:h-6 text-amber-400 group-hover:scale-110 transition-transform duration-300 ${showBMICalculator ? 'rotate-180' : 'rotate-0'}`} />
-            </button>
+            {/* BMI Calculator Button with pulse animation */}
+            <div className="relative group">
+              <button
+                onClick={() => toggleWidget('bmi')}
+                className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg hover:bg-white/20 transition-all group relative"
+                style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
+              >
+                <Calculator className={`w-5 h-5 sm:w-6 sm:h-6 text-amber-400 group-hover:scale-110 transition-transform duration-300 ${showBMICalculator ? 'rotate-180' : 'rotate-0'}`} />
+                
+                {/* Floating label */}
+                <span 
+                  className={`absolute bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-lg text-white text-xs whitespace-nowrap transition-all duration-500 pointer-events-none border border-white/10 shadow-lg group-hover:bg-amber-400/20 group-hover:border-amber-400/30
+                max-sm:bottom-full max-sm:mb-2 max-sm:left-1/2 max-sm:-translate-x-1/2
+                sm:right-full sm:mr-3
+                ${isExpanded ? 'opacity-100 translate-y-0 sm:translate-x-0' : 'opacity-0 translate-y-1 sm:-translate-x-2'}`}
+                  style={{
+                    transitionDelay: isExpanded ? '200ms' : '0ms'
+                  }}
+                >
+                  BMI Calculator
+                </span>
+              </button>
+            </div>
           </div>
 
           {/* WhatsApp Widget Container */}
@@ -401,6 +417,19 @@ const FloatingButtons = () => {
               style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
             >
               <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 group-hover:scale-110 transition-transform duration-300" />
+              
+              {/* Floating label */}
+              <span 
+                className={`absolute bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-lg text-white text-xs whitespace-nowrap transition-all duration-500 pointer-events-none border border-white/10 shadow-lg group-hover:bg-green-400/20 group-hover:border-green-400/30
+                max-sm:bottom-full max-sm:mb-2 max-sm:left-1/2 max-sm:-translate-x-1/2
+                sm:right-full sm:mr-3
+                ${isExpanded ? 'opacity-100 translate-y-0 sm:translate-x-0' : 'opacity-0 translate-y-1 sm:-translate-x-2'}`}
+                style={{
+                  transitionDelay: isExpanded ? '100ms' : '0ms'
+                }}
+              >
+                WhatsApp
+              </span>
             </button>
           </div>
 
@@ -411,6 +440,19 @@ const FloatingButtons = () => {
             style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
           >
             <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 group-hover:scale-110 transition-transform duration-300" />
+            
+            {/* Floating label */}
+            <span 
+              className={`absolute bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-lg text-white text-xs whitespace-nowrap transition-all duration-500 pointer-events-none border border-white/10 shadow-lg group-hover:bg-blue-400/20 group-hover:border-blue-400/30
+              max-sm:bottom-full max-sm:mb-2 max-sm:left-1/2 max-sm:-translate-x-1/2
+              sm:right-full sm:mr-3
+              ${isExpanded ? 'opacity-100 translate-y-0 sm:translate-x-0' : 'opacity-0 translate-y-1 sm:-translate-x-2'}`}
+              style={{
+                transitionDelay: isExpanded ? '0ms' : '0ms'
+              }}
+            >
+              AI Assistant
+            </span>
           </button>
         </div>
 
@@ -476,14 +518,14 @@ const ProgramDetailsModal = ({
   const getProgramDetails = useCallback(() => {
     const pTitle = program?.title || '';
     return {
-      schedule: pTitle === "MMA + GYM" ? "24/7 gym access (3 days per week), 3 mixed martial arts classes per week" :
+      schedule: pTitle === "MMA + GYM" ? "Gym access (3 days per week), 3 mixed martial arts classes per week" :
                 pTitle === "MMA ONLY" ? "3 mixed martial arts classes per week" :
                 pTitle === "GROUP FITNESS" ? "2 days cardio, 4 days strength training" :
-                pTitle === "KARATE" ? "2 classes per week" : "24/7 access",
-      trainer: pTitle === "MMA + GYM" ? "Yaseen & Team" :
-               pTitle === "MMA ONLY" ? "Yaseen" :
+                pTitle === "KARATE" ? "2 classes per week" : "Gym access",
+      trainer: pTitle === "MMA + GYM" ? "Coach Yaseen & Team" :
+               pTitle === "MMA ONLY" ? "Coach Yaseen & Team" :
                pTitle === "GROUP FITNESS" ? "Fitness Coach" :
-               pTitle === "KARATE" ? "Master Yaseen" : "Self-guided with assistance",
+               pTitle === "KARATE" ? "Master Yaseen & Team" : "Self-guided with assistance",
       features: pTitle === "MMA + GYM" ? [
                   "Access to gym, 3 days per week", 
                   "3 mixed martial arts classes per week", 

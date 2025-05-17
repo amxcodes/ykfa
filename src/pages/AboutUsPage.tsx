@@ -221,7 +221,7 @@ const AboutUsPage = () => {
                     </div>
                     <div className="md:w-2/3 space-y-4 text-gray-300 mt-4 md:mt-0">
                       <p>
-                        Sensei Ahmmed Yaseen M.A. is the Head Coach and Founder of YKFA. With over two decades of martial arts experience, he is a 3rd Dan Black Belt in Karate and a recognized National-level Karate Coach & Referee under the Karate Association of India (KAI).
+                        Sensei Ahmmed Yaseen M.A. is the Head Coach and Founder of YKFA. With over two decades of martial arts experience, he is a 3rd Dan Black Belt in Karate and a recognized National-level Karate Coach & Referee under the Karate Association of India (KAI)/Karate India Organisation (KIO).
                       </p>
                       <p>
                         He is also a certified Self-Defense Coach, MMA Coach & Referee, and a Level-4 Certified Fitness Trainer. His dedication to holistic martial arts education extends to specialties in Sports Injury Management and Kobudo (traditional weapons training).
@@ -289,10 +289,10 @@ const AboutUsPage = () => {
                       <ul className="space-y-3">
                         <li className="flex items-start gap-3">
                           <div className="w-6 h-6 rounded-full bg-amber-400/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                            <span className="text-amber-400 text-xs font-medium">KAI</span>
+                            <span className="text-amber-400 text-xs font-medium">KIO</span>
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-white">Karate Association of India</p>
+                            <p className="text-sm font-medium text-white">Karate India Organisation</p>
                             <p className="text-xs text-gray-400">Official recognition and affiliation</p>
                           </div>
                         </li>
@@ -486,11 +486,11 @@ const AboutUsPage = () => {
                           </li>
                           <li className="flex items-start gap-2">
                             <Award className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-                            <span>National-level Certified Karate Coach & Referee (KAI)</span>
+                            <span>National-level Certified Karate Coach & Referee (KAI & KIO)</span>
                           </li>
                           <li className="flex items-start gap-2">
                             <Award className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-                            <span>Certified Self-Defense Coach (Govt. of India)</span>
+                            <span>Certified Self-Defense Coach (Recognised by Gov. of India)</span>
                           </li>
                           <li className="flex items-start gap-2">
                             <Award className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
@@ -498,7 +498,7 @@ const AboutUsPage = () => {
                           </li>
                           <li className="flex items-start gap-2">
                             <Award className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
-                            <span>Level-4 Certified Fitness Trainer (Govt. of India)</span>
+                            <span>Level-4 Certified Fitness Trainer (Recognised by Gov. of India)</span>
                           </li>
                           <li className="flex items-start gap-2">
                             <Award className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
@@ -559,7 +559,7 @@ const AboutUsPage = () => {
                     </div>
                     <div>
                       <p className="text-xs text-gray-400">Email</p>
-                      <p className="text-white">info@ykfa.com</p>
+                      <p className="text-white">team@yaseens-ykfa.com</p>
                     </div>
                   </div>
                   
@@ -569,7 +569,7 @@ const AboutUsPage = () => {
                     </div>
                     <div>
                       <p className="text-xs text-gray-400">Location</p>
-                      <p className="text-white">Calicut, Kerala</p>
+                      <p className="text-white">Edappally, Kerala</p>
                     </div>
                   </div>
                 </div>

@@ -17,7 +17,7 @@ interface ScheduleCategory {
 }
 
 const SchedulePage = () => {
-  const [activeTab, setActiveTab] = useState<string>('mma');
+  const [activeTab, setActiveTab] = useState<string>('mmagym');
   const [animatedItems, setAnimatedItems] = useState<boolean>(false);
 
   // Animate items on tab change
@@ -31,6 +31,29 @@ const SchedulePage = () => {
 
   // Schedule data from WhatsApp screenshot
   const scheduleData: Record<string, ScheduleCategory[]> = {
+    mmagym: [
+      {
+        title: "MMA Sessions",
+        icon: <Users size={20} className="text-amber-400" />,
+        timeSlots: [
+          { title: "Monday", time: "07:30pm to 09:30pm", notes: "MMA" },
+          { title: "Wednesday", time: "07:30pm to 09:30pm", notes: "MMA" },
+          { title: "Thursday", time: "06:00pm to 09:30pm", notes: "MMA" }
+        ]
+      },
+      {
+        title: "GYM Sessions",
+        icon: <Dumbbell size={20} className="text-amber-400" />,
+        timeSlots: [
+          { title: "Tuesday", time: "06:00am to 10:30am", notes: "Morning" },
+          { title: "Tuesday", time: "05:00pm to 10:00pm", notes: "Evening" },
+          { title: "Friday", time: "06:00am to 10:30am", notes: "Morning" },
+          { title: "Friday", time: "05:00pm to 10:00pm", notes: "Evening" },
+          { title: "Saturday", time: "06:00am to 10:30am", notes: "Morning" },
+          { title: "Saturday", time: "05:00pm to 10:00pm", notes: "Evening" }
+        ]
+      }
+    ],
     mma: [
       {
         title: "Batch A",
@@ -144,6 +167,19 @@ const SchedulePage = () => {
         {/* Schedule Tabs */}
         <div className="mb-8 overflow-x-auto overflow-y-hidden -mx-4 px-4 pb-3">
           <div className="inline-flex p-1 bg-black/40 backdrop-blur-md border border-white/10 rounded-full shadow-lg whitespace-nowrap">
+            <motion.button
+              className={`px-4 sm:px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 flex-shrink-0 ${
+                activeTab === 'mmagym' 
+                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black' 
+                  : 'text-white hover:bg-white/10'
+              }`}
+              onClick={() => setActiveTab('mmagym')}
+              whileHover={activeTab !== 'mmagym' ? { scale: 1.05 } : {}}
+              whileTap={{ scale: 0.97 }}
+            >
+              MMA+GYM
+            </motion.button>
+            
             <motion.button
               className={`px-4 sm:px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 flex-shrink-0 ${
                 activeTab === 'mma' 

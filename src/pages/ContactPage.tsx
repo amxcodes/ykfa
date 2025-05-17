@@ -323,8 +323,8 @@ ${message}
                     <ContactCard 
                       icon={<Mail className="w-4 h-4" />}
                       title="Email Address"
-                      content="yaseenkfa@gmail.com"
-                      href="mailto:yaseenkfa@gmail.com"
+                      content="team@yaseens-ykfa.com"
+                      href="mailto:team@yaseens-ykfa.com"
                     />
                     
                     <ContactCard 
