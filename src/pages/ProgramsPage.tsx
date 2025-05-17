@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Camera, Share2, ChevronLeft, ChevronRight, Info, Play } from 'lucide-react';
-import { cursorProps } from '../types/cursor';
 
 // Define types for better TypeScript support
 interface GalleryImage {
@@ -614,7 +613,6 @@ const ProgramsPage = () => {
                   ? 'bg-amber-500 text-black' 
                   : 'text-gray-300 hover:text-white hover:bg-white/10'
               }`}
-              {...cursorProps('click')}
             >
               All
             </button>
@@ -625,7 +623,6 @@ const ProgramsPage = () => {
                   ? 'bg-amber-500 text-black' 
                   : 'text-gray-300 hover:text-white hover:bg-white/10'
               }`}
-              {...cursorProps('click')}
             >
               Images
             </button>
@@ -636,7 +633,6 @@ const ProgramsPage = () => {
                   ? 'bg-amber-500 text-black' 
                   : 'text-gray-300 hover:text-white hover:bg-white/10'
               }`}
-              {...cursorProps('click')}
             >
               Videos
             </button>
@@ -673,7 +669,6 @@ const ProgramsPage = () => {
                     maxHeight: '240px',
                     transformStyle: 'preserve-3d',
                   }}
-                  {...cursorProps('hover')}
                 >
                   <div className="relative overflow-hidden rounded-xl h-full">
                     {/* Content Container */}
@@ -696,7 +691,6 @@ const ProgramsPage = () => {
                               className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-amber-400/90 flex items-center justify-center backdrop-blur-sm border border-amber-300/50"
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.95 }}
-                              {...cursorProps('click')}
                             >
                               <Play className="w-5 h-5 md:w-6 md:h-6 text-black" fill="currentColor" />
                             </motion.div>
@@ -749,7 +743,6 @@ const ProgramsPage = () => {
               <button 
                 onClick={() => setActiveFilter('all')}
                 className="mt-4 px-4 py-2 bg-amber-500 text-black rounded-lg text-sm font-medium hover:bg-amber-400 transition-colors"
-                {...cursorProps('click')}
               >
                 Show All Items
               </button>
@@ -808,7 +801,6 @@ const ProgramsPage = () => {
               onClick={() => setSelectedImage(null)}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              {...cursorProps('click')}
             >
                 <X className="w-4 h-4" />
             </motion.button>
@@ -837,7 +829,6 @@ const ProgramsPage = () => {
               }}
               whileHover={{ scale: 1.1, x: -3 }}
               whileTap={{ scale: 0.9 }}
-              {...cursorProps('click')}
             >
                     <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
             </motion.button>
@@ -850,7 +841,6 @@ const ProgramsPage = () => {
               }}
               whileHover={{ scale: 1.1, x: 3 }}
               whileTap={{ scale: 0.9 }}
-              {...cursorProps('click')}
             >
                     <ChevronRight className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2.5} />
             </motion.button>
@@ -941,7 +931,6 @@ const ProgramsPage = () => {
                         whileTap={{ scale: 0.97 }}
                         className="h-11 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-400 text-black rounded-lg font-medium text-sm"
                         onClick={(e) => handleShare(e, selectedImageData)}
-                        {...cursorProps('click')}
                       >
                         <Share2 className="w-4 h-4" />
                         <span>Share</span>
@@ -952,7 +941,6 @@ const ProgramsPage = () => {
                         whileTap={{ scale: 0.97 }}
                         className="h-11 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white rounded-lg font-medium text-sm"
                         onClick={() => setSelectedImage(null)}
-                        {...cursorProps('click')}
                       >
                         <X className="w-4 h-4" />
                         <span>Close</span>
@@ -1027,7 +1015,6 @@ const ProgramsPage = () => {
                     whileTap={{ scale: 0.97 }}
                     className="h-11 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-400 text-black rounded-lg font-medium text-sm"
                     onClick={(e) => handleShare(e, selectedImageData)}
-                    {...cursorProps('click')}
                   >
                     <Share2 className="w-4 h-4" />
                     <span>Share</span>
@@ -1038,7 +1025,6 @@ const ProgramsPage = () => {
                     whileTap={{ scale: 0.97 }}
                     className="h-11 flex items-center justify-center gap-2 bg-white/10 hover:bg-white/15 text-white rounded-lg font-medium text-sm"
                     onClick={() => setSelectedImage(null)}
-                    {...cursorProps('click')}
                   >
                     <X className="w-4 h-4" />
                     <span>Close</span>

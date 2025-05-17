@@ -4,7 +4,6 @@ import { Menu, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import MobileMenu from './MobileMenu';
 import AppStoreWidget from './AppStoreWidget';
-import NavbarCursorControl from './NavbarCursorControl';
 
 // Google Play Store SVG icon component
 const PlayStoreIcon = () => (
@@ -221,9 +220,6 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                   <PlayStoreIcon />
                   <span className="font-medium">Get App</span>
                 </motion.a>
-                
-                {/* Cursor Control Toggle */}
-                <NavbarCursorControl className="ml-3" />
               </div>
             </nav>
 
