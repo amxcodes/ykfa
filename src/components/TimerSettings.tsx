@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimerContext } from '../context/TimerContext';
 import { 
-  Play, Flame, Clock, Activity, Coffee, Fan, Volume2, Plus, Minus, VolumeX, Volume1} from 'lucide-react';
+  Play, Flame, Clock, Activity, Coffee, Fan, Plus, Minus } from 'lucide-react';
 
 // Animation controller for replacing GSAP
 class AnimationController {
@@ -153,12 +153,14 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
   // Local state for input fields
   const [inputValues, setInputValues] = useState<Record<string, { minutes?: string; seconds?: string; value?: string }>>({});
   
-  // Add state for tracking muted status
-  const [isMuted, setIsMuted] = useState<boolean>(false);
-  const previousVolume = useRef<number>(settings.soundVolume);
-  
   // Set slider mode as default state
   const [isSliderMode, setIsSliderMode] = useState<boolean>(true);
+
+  // Set sound volume to full and rounds to 1 on mount
+  useEffect(() => {
+    updateSettings('soundVolume', 1);
+    updateSettings('rounds', 1); 
+  }, [updateSettings]);
   
   // Update input values when settings change
   useEffect(() => {
@@ -400,38 +402,6 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
     }
   };
 
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = parseFloat(e.target.value);
-    updateSettings('soundVolume', newVolume);
-    if (isMuted && newVolume > 0) {
-      setIsMuted(false);
-    }
-  };
-  
-  const toggleMute = () => {
-    if (isMuted) {
-      // Unmute - restore previous volume or default to 0.5
-      updateSettings('soundVolume', previousVolume.current > 0 ? previousVolume.current : 0.5);
-      setIsMuted(false);
-    } else {
-      // Mute - save current volume first
-      previousVolume.current = settings.soundVolume;
-      updateSettings('soundVolume', 0);
-      setIsMuted(true);
-    }
-  };
-  
-  // Function to get appropriate volume icon based on level
-  const getVolumeIcon = () => {
-    if (isMuted || settings.soundVolume === 0) {
-      return <VolumeX className="w-5 h-5 text-pink-400" />;
-    } else if (settings.soundVolume < 0.5) {
-      return <Volume1 className="w-5 h-5 text-pink-400" />;
-    } else {
-      return <Volume2 className="w-5 h-5 text-pink-400" />;
-    }
-  };
-
   const handleStartWorkout = () => {
     // Update to running mode
     setTimerMode('running');
@@ -516,7 +486,7 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       showMinutes: false,
       sliderMin: 0,
       sliderMax: 10,
-      sliderStep: 5
+      sliderStep: 1
     }
   ];
 
@@ -692,46 +662,6 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
               </div>
             </motion.div>
           ))}
-
-          {/* Sound Volume Control */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            transition={{ duration: 0.3, delay: settingSections.length * 0.05 }}
-            className="bg-dark-800/50 rounded-lg p-3 border border-white/5 hover:border-amber-500/30 transition-all duration-300"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={toggleMute}
-                  className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 transition-colors"
-                >
-                  {getVolumeIcon()}
-                </motion.button>
-                <span className="font-medium text-white text-sm">Sound Volume</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={settings.soundVolume}
-                  onChange={handleVolumeChange}
-                  className="w-24 h-1 bg-dark-700 rounded-lg appearance-none cursor-pointer 
-                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 
-                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-amber-400 
-                    [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:hover:bg-amber-300
-                    [&::-webkit-slider-thumb]:transition-all [&::-webkit-slider-thumb]:shadow-lg"
-                />
-                <span className="text-amber-400 font-medium text-sm w-6 text-right">
-                  {Math.round(settings.soundVolume * 10)}
-                </span>
-              </div>
-            </div>
-          </motion.div>
         </AnimatePresence>
       </div>
 

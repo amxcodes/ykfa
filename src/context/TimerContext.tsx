@@ -126,6 +126,9 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   const isInPhaseTransition = useRef(false);
   const transitionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Add phase announcement tracking ref
+  const phaseAnnouncementsMadeRef = useRef<{ [key in TimerPhase]?: boolean }>({});
+  
   // Refs for timeouts in callbacks
   const timeoutRefs = useRef<Array<ReturnType<typeof setTimeout>>>([]);
   
@@ -1100,9 +1103,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       { scale: 1.02 },
       { 
         duration: 0.2,
-        ease: 'ease-in-out',  // CSS equivalent of power1.inOut
-        repeat: 1,
-        yoyo: true
+        ease: 'ease-in-out' // CSS equivalent of power1.inOut
       }
     );
   }, [currentPhase, calculateProgress, getExpiryTimestamp, isPaused, pause, restart]);
@@ -1133,6 +1134,23 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       }, 100);
     }
   }, [timerMode, currentPhase, isRunning, transitionActive, playWarmupSound, createTrackedTimeout]);
+
+  // Example: Play warmup announcement only once per phase activation
+  useEffect(() => {
+    if (currentPhase === 'warmup') {
+      if (!phaseAnnouncementsMadeRef.current.warmup) {
+        if (warmupSoundRef.current) {
+          warmupSoundRef.current.currentTime = 0;
+          warmupSoundRef.current.volume = settings.soundVolume;
+          warmupSoundRef.current.play();
+        }
+        phaseAnnouncementsMadeRef.current.warmup = true;
+      }
+    } else {
+      // Reset flag when leaving warmup phase
+      phaseAnnouncementsMadeRef.current.warmup = false;
+    }
+  }, [currentPhase, settings.soundVolume]);
 
   const value = {
     settings,

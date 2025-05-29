@@ -33,24 +33,39 @@ const SchedulePage = () => {
   const scheduleData: Record<string, ScheduleCategory[]> = {
     mmagym: [
       {
-        title: "MMA Sessions",
+        title: "MMA - Batch A",
         icon: <Users size={20} className="text-amber-400" />,
         timeSlots: [
-          { title: "Monday", time: "07:30pm to 09:30pm", notes: "MMA" },
-          { title: "Wednesday", time: "07:30pm to 09:30pm", notes: "MMA" },
-          { title: "Thursday", time: "06:00pm to 09:30pm", notes: "MMA" }
+          { title: "Monday", time: "07:30pm to 08:30pm", notes: "MMA" },
+          { title: "Wednesday", time: "07:30pm to 08:30pm", notes: "MMA" },
+          { title: "Thursday", time: "06:00pm to 07:30pm", notes: "MMA" }
         ]
       },
       {
-        title: "GYM Sessions",
+        title: "MMA - Batch B",
+        icon: <Users size={20} className="text-amber-400" />,
+        timeSlots: [
+          { title: "Monday", time: "08:30pm to 09:30pm", notes: "MMA" },
+          { title: "Wednesday", time: "08:30pm to 09:30pm", notes: "MMA" },
+          { title: "Thursday", time: "08:00pm to 09:30pm", notes: "MMA" }
+        ]
+      },
+      {
+        title: "GYM - Batch A",
         icon: <Dumbbell size={20} className="text-amber-400" />,
         timeSlots: [
-          { title: "Tuesday", time: "06:00am to 10:30am", notes: "Morning" },
-          { title: "Tuesday", time: "05:00pm to 10:00pm", notes: "Evening" },
-          { title: "Friday", time: "06:00am to 10:30am", notes: "Morning" },
-          { title: "Friday", time: "05:00pm to 10:00pm", notes: "Evening" },
-          { title: "Saturday", time: "06:00am to 10:30am", notes: "Morning" },
-          { title: "Saturday", time: "05:00pm to 10:00pm", notes: "Evening" }
+          { title: "Tuesday", time: "07:30pm to 08:30pm", notes: "Evening" },
+          { title: "Friday", time: "07:30pm to 08:30pm", notes: "Evening" },
+          { title: "Saturday", time: "07:30pm to 08:30pm", notes: "Evening" }
+        ]
+      },
+      {
+        title: "GYM - Batch B",
+        icon: <Dumbbell size={20} className="text-amber-400" />,
+        timeSlots: [
+          { title: "Tuesday", time: "08:30pm to 09:30pm", notes: "Evening" },
+          { title: "Friday", time: "08:30pm to 09:30pm", notes: "Evening" },
+          { title: "Saturday", time: "08:30pm to 09:30pm", notes: "Evening" }
         ]
       }
     ],

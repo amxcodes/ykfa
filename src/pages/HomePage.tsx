@@ -23,7 +23,7 @@ const PROGRAMS_DATA = [
     id: 1,
     title: "MMA + GYM",
     description: "Complete package with access to all MMA classes and gym facilities.",
-    image: "https://images.pexels.com/photos/4761798/pexels-photo-4761798.jpeg?auto=compress&fit=crop&w=800&q=80",
+    image: "https://images.pexels.com/photos/6295763/pexels-photo-6295763.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
     link: "/programs",
     category: "mma"
   },
@@ -346,11 +346,12 @@ const FloatingButtons = () => {
                 {/* Floating label */}
                 <span 
                   className={`absolute bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-lg text-white text-xs whitespace-nowrap transition-all duration-500 pointer-events-none border border-white/10 shadow-lg group-hover:bg-amber-400/20 group-hover:border-amber-400/30
-                max-sm:bottom-full max-sm:mb-2 max-sm:left-1/2 max-sm:-translate-x-1/2
-                sm:right-full sm:mr-3
-                ${isExpanded ? 'opacity-100 translate-y-0 sm:translate-x-0' : 'opacity-0 translate-y-1 sm:-translate-x-2'}`}
+                right-full mr-3
+                ${isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}
                   style={{
-                    transitionDelay: isExpanded ? '200ms' : '0ms'
+                    transitionDelay: isExpanded ? '200ms' : '0ms',
+                    top: '50%',
+                    transform: `translateY(-50%) ${isExpanded ? 'translateX(0)' : 'translateX(-10px)'}`
                   }}
                 >
                   BMI Calculator
@@ -416,11 +417,12 @@ const FloatingButtons = () => {
               {/* Floating label */}
               <span 
                 className={`absolute bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-lg text-white text-xs whitespace-nowrap transition-all duration-500 pointer-events-none border border-white/10 shadow-lg group-hover:bg-green-400/20 group-hover:border-green-400/30
-                max-sm:bottom-full max-sm:mb-2 max-sm:left-1/2 max-sm:-translate-x-1/2
-                sm:right-full sm:mr-3
-                ${isExpanded ? 'opacity-100 translate-y-0 sm:translate-x-0' : 'opacity-0 translate-y-1 sm:-translate-x-2'}`}
+                right-full mr-3
+                ${isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}
                 style={{
-                  transitionDelay: isExpanded ? '100ms' : '0ms'
+                  transitionDelay: isExpanded ? '100ms' : '0ms',
+                  top: '50%',
+                  transform: `translateY(-50%) ${isExpanded ? 'translateX(0)' : 'translateX(-10px)'}`
                 }}
               >
                 WhatsApp
@@ -439,11 +441,12 @@ const FloatingButtons = () => {
             {/* Floating label */}
             <span 
               className={`absolute bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-lg text-white text-xs whitespace-nowrap transition-all duration-500 pointer-events-none border border-white/10 shadow-lg group-hover:bg-blue-400/20 group-hover:border-blue-400/30
-              max-sm:bottom-full max-sm:mb-2 max-sm:left-1/2 max-sm:-translate-x-1/2
-              sm:right-full sm:mr-3
-              ${isExpanded ? 'opacity-100 translate-y-0 sm:translate-x-0' : 'opacity-0 translate-y-1 sm:-translate-x-2'}`}
+              right-full mr-3
+              ${isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}
               style={{
-                transitionDelay: isExpanded ? '0ms' : '0ms'
+                transitionDelay: isExpanded ? '0ms' : '0ms',
+                top: '50%',
+                transform: `translateY(-50%) ${isExpanded ? 'translateX(0)' : 'translateX(-10px)'}`
               }}
             >
               AI Assistant
@@ -745,7 +748,6 @@ const AboutDetailsModal = ({
   
   // Animation state using CSS transitions
   const [animationState, setAnimationState] = useState('closed'); // 'closed', 'opening', 'open', 'closing'
-  const [mousePosition, setMousePosition] = useState({ x: 50, y: 50 }); // Starting in the middle
   
   // Enhanced mouse effects for desktop - using CSS variables for better performance
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
@@ -757,9 +759,6 @@ const AboutDetailsModal = ({
     
     const xPercent = x / rect.width * 100;
     const yPercent = y / rect.height * 100;
-    
-    // Update state (React will batch these updates)
-    setMousePosition({ x: xPercent, y: yPercent });
     
     // Apply immediate glare effect via direct DOM manipulation for responsive feel
     if (glareRef.current) {
@@ -973,7 +972,6 @@ const ProgramCard = ({
   title: string; 
   description: string; 
   image: string; 
-  link: string;
   index: number;
   compact?: boolean;
   program: any;
@@ -997,76 +995,104 @@ const ProgramCard = ({
   // Check if device is mobile
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+      if (isMounted.current) {
+        setIsMobile(window.innerWidth <= 768);
+      }
     };
-    
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
     return () => {
       window.removeEventListener('resize', checkMobile);
     };
   }, []);
 
-  // Use IntersectionObserver for smooth blur reveal
+  // Effect 1: Setup IntersectionObserver to set isVisible
   useEffect(() => {
-    let observer: IntersectionObserver;
     const currentCardRef = cardRef.current;
+    // If no ref, or already visible (e.g., from a previous observation), do nothing.
+    // The isVisible check here prevents re-observing if the component re-renders for other reasons while already visible.
+    if (!currentCardRef || isVisible) return;
 
-    if (currentCardRef) {
-      observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !isVisible) {
-            if (isMounted.current) {
-          setIsVisible(true);
-            }
-          
-          const card = cardRef.current;
-          if (card) {
-            card.style.transitionDelay = `${index * 120}ms`;
+    let observerInstance: IntersectionObserver | undefined;
+
+    const handleIntersection: IntersectionObserverCallback = (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          if (isMounted.current) { // Ensure component is still mounted
+            console.log(`ProgramCard ${index} (${title}): Intersecting, setting isVisible to true`);
+            setIsVisible(true); // Set state to trigger animation effect
           }
-          if (imageRef.current) {
-            setTimeout(() => {
-                if (isMounted.current && imageRef.current) {
-                  imageRef.current.classList.add('visible');
-                }
-            }, index * 120 + 250);
+          // Important: Unobserve the target element after it has intersected and isVisible is set.
+          if (observerInstance && entry.target) {
+            observerInstance.unobserve(entry.target);
           }
-          if (titleRef.current) {
-            setTimeout(() => {
-                if (isMounted.current && titleRef.current) {
-                  titleRef.current.classList.add('visible');
-                }
-            }, index * 120 + 400);
-          }
-          if (descRef.current) {
-            setTimeout(() => {
-                if (isMounted.current && descRef.current) {
-                  descRef.current.classList.add('visible');
-                }
-            }, index * 120 + 500);
-          }
-          
-          observer.unobserve(entry.target);
         }
-      },
-      {
-          threshold: 0.12, 
-          rootMargin: '0px 0px -40px 0px'
-      }
-    );
-      observer.observe(currentCardRef);
-    }
+      });
+    };
+
+    observerInstance = new IntersectionObserver(handleIntersection, {
+      threshold: 0.12, // How much of the item must be visible to trigger
+      rootMargin: '0px 0px -40px 0px', // Adjust viewport bounds
+    });
+
+    observerInstance.observe(currentCardRef);
 
     return () => {
-      if (observer && currentCardRef) {
-        observer.unobserve(currentCardRef);
-      }
-      if (observer) {
-      observer.disconnect();
+      if (observerInstance) {
+        // Disconnect the observer when the component unmounts or dependencies change
+        // For this effect, deps are [index, title, isVisible]. If isVisible becomes true,
+        // this cleanup runs, observer is disconnected. Then the effect re-runs, but `!isVisible` is false, so it exits.
+        observerInstance.disconnect();
       }
     };
-  }, [isVisible, index]);
+  }, [index, title, isVisible]); // isVisible is a key dependency here.
+
+  // Effect 2: Trigger animations when isVisible becomes true
+  useEffect(() => {
+    // Only run animations if isVisible is true and component is mounted
+    if (isVisible && isMounted.current) {
+      console.log(`ProgramCard ${index} (${title}): isVisible is true, applying animations.`);
+      const timeouts: NodeJS.Timeout[] = [];
+
+      // Animate image
+      if (imageRef.current) {
+        const timeoutId = setTimeout(() => {
+          if (isMounted.current && imageRef.current) {
+            imageRef.current.classList.add('visible');
+            console.log(`ProgramCard ${index} (${title}): imageRef classList.add 'visible'`);
+          }
+        }, index * 100 + 150); // Stagger appearance based on card index + base delay
+        timeouts.push(timeoutId);
+      }
+
+      // Animate title
+      if (titleRef.current) {
+        const timeoutId = setTimeout(() => {
+          if (isMounted.current && titleRef.current) {
+            titleRef.current.classList.add('visible');
+            console.log(`ProgramCard ${index} (${title}): titleRef classList.add 'visible'`);
+          }
+        }, index * 100 + 300); // Stagger appearance
+        timeouts.push(timeoutId);
+      }
+
+      // Animate description
+      if (descRef.current) {
+        const timeoutId = setTimeout(() => {
+          if (isMounted.current && descRef.current) {
+            descRef.current.classList.add('visible');
+            console.log(`ProgramCard ${index} (${title}): descRef classList.add 'visible'`);
+          }
+        }, index * 100 + 450); // Stagger appearance
+        timeouts.push(timeoutId);
+      }
+
+      // Cleanup function for this effect
+      return () => {
+        timeouts.forEach(clearTimeout);
+      };
+    }
+  }, [isVisible, index, title]); // This effect runs when isVisible changes (or index/title, less likely)
 
   return (
     <div 
@@ -1078,20 +1104,10 @@ const ProgramCard = ({
       }}
     >
       <div 
-        onClick={(e) => {
-          // Important: Check if the click target is NOT the button or its children
-          const target = e.target as HTMLElement;
-          const isButtonClick = target.closest('button') !== null;
-          
-          if (!isButtonClick) {
-            console.log('📌 Card clicked (not button) for:', program.title);
-            onDetailsClick(program);
-          }
-        }}
         className={`card relative overflow-hidden backdrop-blur-md bg-white/5 border border-white/10
         ${compact ? 'p-2' : 'p-2 md:p-4'}
         group-hover:border-amber-500/30 group-hover:bg-white/10 shadow-lg
-        transition-all duration-500 ease-out cursor-pointer
+        transition-all duration-500 ease-out cursor-pointer 
       `}>
         {/* Glass effect with light reflection */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 opacity-30 rounded-xl -z-10"></div>
@@ -1111,7 +1127,7 @@ const ProgramCard = ({
             ref={imageRef}
             src={image} 
             alt={title} 
-            className="w-full h-full object-cover object-center img-active group-hover:scale-105"
+            className="w-full h-full object-cover object-center program-card-image group-hover:scale-105"
             loading="lazy"
           />
           <div className="absolute bottom-0 left-0 right-0 p-2 z-20 overflow-hidden">
@@ -1132,7 +1148,7 @@ const ProgramCard = ({
         <div className="p-0 mb-2">
           <h3 
             ref={titleRef}
-            className="font-bold mb-1 text-active group-hover:text-amber-400 transition-colors duration-300"
+            className="font-bold mb-1 program-card-title group-hover:text-amber-400 transition-colors duration-300"
             style={{
               fontSize: compact ? (isMobile ? '0.875rem' : '1rem') : (isMobile ? '1rem' : '1.25rem')
             }}
@@ -1141,7 +1157,7 @@ const ProgramCard = ({
           </h3>
           <p 
             ref={descRef}
-            className="text-gray-400 mb-2 line-clamp-3 text-active group-hover:text-gray-300 transition-colors duration-300"
+            className="text-gray-400 mb-2 line-clamp-3 program-card-desc group-hover:text-gray-300 transition-colors duration-300"
             style={{
               fontSize: compact ? '0.75rem' : (isMobile ? '0.75rem' : '0.875rem')
             }}
@@ -1441,10 +1457,10 @@ const HomePage = () => {
 
   // Preload images for smoother transitions (useEffect for imageCache and preloadAllImages)
   useEffect(() => {
-    // Use a single shared cache for all image operations
-    const imageCache = new Map();
+    // Use a Map instead of WeakMap since we're dealing with strings
+    const imageCache = new Map<string, boolean>();
     let loadPromises: Promise<void>[] = [];
-    let isMounted = true; // Track component mount state
+    let isMounted = true;
     
     const preloadAllImages = async () => {
       // Only preload in production or if explicitly enabled
@@ -1452,7 +1468,7 @@ const HomePage = () => {
       if (!shouldPreload) return;
       
       // Limit how many images we preload at once
-      const imagesToPreload = ABOUT_IMAGES_DATA.slice(0, 1); // MODIFIED: Preload only the first image
+      const imagesToPreload = ABOUT_IMAGES_DATA.slice(0, 2); // Only preload 2 images at a time
       
       loadPromises = imagesToPreload.map((src) => {
         return new Promise<void>((resolvePromise) => {
@@ -1473,21 +1489,18 @@ const HomePage = () => {
             img.onerror = null;
             resolvePromise();
           };
-
+          
+          // Set a shorter timeout for each image
           timerId = setTimeout(() => {
-            // console.log(`Image ${src} timed out individually after 7s`);
             cleanupAndResolve();
-          }, 7000); // MODIFIED: Individual image timeout increased to 7 seconds
-
+          }, 3000); // 3 second timeout per image
+          
           img.onload = () => {
-            if (isMounted) { // Only update cache if component is still mounted
-              imageCache.set(src, true);
-            }
+            imageCache.set(src, true);
             cleanupAndResolve();
           };
           
           img.onerror = () => {
-            // console.warn(`Failed to preload image: ${src}`);
             cleanupAndResolve();
           };
           
@@ -1495,20 +1508,25 @@ const HomePage = () => {
         });
       });
       
-      // Set a timeout for the entire preloading operation
-      const timeoutPromise = new Promise<void>(resolveTimeoutGlobal => {
-        setTimeout(() => {
-          console.log('Preloading images timed out (overall 15s timeout)'); // MODIFIED: Log message
-          resolveTimeoutGlobal();
-        }, 15000); // MODIFIED: Overall timeout increased to 15 seconds
-      });
-      
-      // Wait for all images to preload or timeout
-      await Promise.race([Promise.all(loadPromises), timeoutPromise]);
+      try {
+        // Set a reasonable timeout for the entire operation
+        const timeoutPromise = new Promise<void>((_, reject) => {
+          setTimeout(() => {
+            reject(new Error('Preloading images timed out'));
+          }, 5000); // 5 second total timeout
+        });
+        
+        await Promise.race([Promise.all(loadPromises), timeoutPromise]);
+      } catch (error) {
+        console.log('Preloading images timed out');
+      } finally {
+        // Clear references
+        loadPromises = [];
+      }
     };
     
     // Start preloading
-    // preloadAllImages(); // MODIFIED: Temporarily commented out to address timeout issues
+    preloadAllImages();
     
     return () => {
       // Clear cache references and abort any pending operations when component unmounts
@@ -1536,7 +1554,7 @@ const HomePage = () => {
                 if (!imageTransitionInProgress.current && isMounted.current) {
                   changeImage('next');
                 }
-              }, 5000);
+              }, 8000); // Increased interval to reduce memory pressure
               
               // Store interval in ref for cleanup elsewhere
               autoImageChangeInterval.current = intervalId;
@@ -1553,18 +1571,6 @@ const HomePage = () => {
       }, { threshold: 0.2 }); // Start when 20% visible
       
       observer.observe(aboutImageRef.current);
-    } else {
-      // Fallback for browsers without IntersectionObserver - use a reduced interval
-      if (!intervalId && !imageTransitionInProgress.current && isMounted.current) {
-        intervalId = setInterval(() => {
-          if (!imageTransitionInProgress.current && isMounted.current) {
-            changeImage('next');
-          }
-        }, 8000); // Longer interval for fallback
-        
-        // Store interval in ref for cleanup elsewhere
-        autoImageChangeInterval.current = intervalId;
-      }
     }
 
     // Cleanup: clear interval and disconnect observer on unmount
@@ -1583,6 +1589,14 @@ const HomePage = () => {
         observer.disconnect();
         observer = null;
       }
+      
+      // Clear any pending timeouts
+      imageTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+      imageTimeoutsRef.current = [];
+      
+      // Reset all flags
+      imageTransitionInProgress.current = false;
+      isMounted.current = false;
     };
   }, [changeImage]);
   
@@ -2067,7 +2081,6 @@ const HomePage = () => {
                 title={program.title}
                 description={program.description}
                 image={program.image}
-                link={program.link}
                 index={index}
                 compact
                 program={program}
@@ -2337,6 +2350,40 @@ const HomePage = () => {
         .image-nav-button:active:not(:disabled) {
           transform: translateY(-50%) scale(0.95) !important;
           transition: all 0.1s ease;
+        }
+
+        /* Program Card Animation Styles */
+        .program-card-image {
+          opacity: 0;
+          transform: scale(0.95);
+          transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .program-card-image.visible {
+          opacity: 1;
+          transform: scale(1);
+        }
+
+        .program-card-title {
+          opacity: 0;
+          transform: translateY(10px);
+          transition: opacity 0.4s ease-out 0.1s, transform 0.4s ease-out 0.1s; /* Staggered delay */
+        }
+
+        .program-card-title.visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        .program-card-desc {
+          opacity: 0;
+          transform: translateY(10px);
+          transition: opacity 0.4s ease-out 0.2s, transform 0.4s ease-out 0.2s; /* Staggered delay */
+        }
+
+        .program-card-desc.visible {
+          opacity: 1;
+          transform: translateY(0);
         }
       `}} />
     </>
