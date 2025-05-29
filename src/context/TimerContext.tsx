@@ -912,11 +912,16 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         }
       );
       
-      // Play warmup announcement when starting the timer from setup
       if (currentPhase === 'warmup') {
-        playWarmupSound();
-        
-        // Small delay to let announcement play
+        // Play warmup announcement only if not already played for this phase
+        if (!phaseAnnouncementsMadeRef.current.warmup) {
+          if (warmupSoundRef.current) {
+            warmupSoundRef.current.currentTime = 0;
+            warmupSoundRef.current.volume = settings.soundVolume;
+            warmupSoundRef.current.play();
+          }
+          phaseAnnouncementsMadeRef.current.warmup = true;
+        }
         createTrackedTimeout(() => {
           // Start timer after announcement
           start();
@@ -1037,10 +1042,16 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     if (mode === 'running' && timerMode === 'setup') {
       setTimerMode(mode);
       
-      // Play warmup announcement when starting from settings
       if (currentPhase === 'warmup') {
-        playWarmupSound();
-        
+        // Play warmup announcement only if not already played for this phase
+        if (!phaseAnnouncementsMadeRef.current.warmup) {
+          if (warmupSoundRef.current) {
+            warmupSoundRef.current.currentTime = 0;
+            warmupSoundRef.current.volume = settings.soundVolume;
+            warmupSoundRef.current.play();
+          }
+          phaseAnnouncementsMadeRef.current.warmup = true;
+        }
         createTrackedTimeout(() => {
           start();
           setIsPaused(false);
@@ -1055,7 +1066,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     } else {
       setTimerMode(mode);
     }
-  }, [timerMode, start, playStartSound, setTimerMode, currentPhase, playWarmupSound, createTrackedTimeout]);
+  }, [timerMode, start, playStartSound, setTimerMode, currentPhase, createTrackedTimeout, settings.soundVolume]);
 
   const updateSettings = useCallback((key: keyof TimerSettings, value: number | boolean) => {
     setSettings(prev => ({
@@ -1124,33 +1135,6 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     
     setTimerMode('setup');
   }, [isRunning, pause]);
-
-  // Add this useEffect to ensure warmup sound plays after setup
-  useEffect(() => {
-    // Play warmup sound when transitioning from setup to running mode
-    if (timerMode === 'running' && currentPhase === 'warmup' && !isRunning && !transitionActive) {
-      createTrackedTimeout(() => {
-        playWarmupSound();
-      }, 100);
-    }
-  }, [timerMode, currentPhase, isRunning, transitionActive, playWarmupSound, createTrackedTimeout]);
-
-  // Example: Play warmup announcement only once per phase activation
-  useEffect(() => {
-    if (currentPhase === 'warmup') {
-      if (!phaseAnnouncementsMadeRef.current.warmup) {
-        if (warmupSoundRef.current) {
-          warmupSoundRef.current.currentTime = 0;
-          warmupSoundRef.current.volume = settings.soundVolume;
-          warmupSoundRef.current.play();
-        }
-        phaseAnnouncementsMadeRef.current.warmup = true;
-      }
-    } else {
-      // Reset flag when leaving warmup phase
-      phaseAnnouncementsMadeRef.current.warmup = false;
-    }
-  }, [currentPhase, settings.soundVolume]);
 
   const value = {
     settings,
