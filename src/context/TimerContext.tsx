@@ -45,7 +45,7 @@ interface TimerContextProps {
 
 const defaultSettings: TimerSettings = {
   warmupDuration: 0,
-  rounds: 7,
+  rounds: 1,
   roundDuration: 0,
   breakDuration: 0,
   cooldownDuration: 0,
@@ -164,6 +164,8 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   const workoutSoundRef = useRef<HTMLAudioElement | null>(null);
   // Ambient sound for continuous play
   const ambientSoundRef = useRef<HTMLAudioElement | null>(null);
+  
+  const [wakeLock, setWakeLock] = useState<any>(null);
   
   // More efficient audio initialization
   useEffect(() => {
@@ -1069,6 +1071,16 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   }, [timerMode, start, playStartSound, setTimerMode, currentPhase, createTrackedTimeout, settings.soundVolume]);
 
   const updateSettings = useCallback((key: keyof TimerSettings, value: number | boolean) => {
+    // For rounds, ensure the value is between 1 and 30
+    if (key === 'rounds') {
+      const roundValue = Math.min(Math.max(1, value as number), 30);
+      setSettings(prev => ({
+        ...prev,
+        [key]: roundValue
+      }));
+      return;
+    }
+
     setSettings(prev => ({
       ...prev,
       [key]: value
@@ -1135,6 +1147,51 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     
     setTimerMode('setup');
   }, [isRunning, pause]);
+
+  // Initialize and handle wake lock
+  useEffect(() => {
+    const requestWakeLock = async () => {
+      try {
+        if ('wakeLock' in navigator && isRunning && !isPaused) {
+          const lock = await (navigator as any).wakeLock.request('screen');
+          setWakeLock(lock);
+        }
+      } catch (err) {
+        console.log('Wake Lock error:', err);
+      }
+    };
+
+    const releaseWakeLock = async () => {
+      if (wakeLock) {
+        try {
+          await wakeLock.release();
+          setWakeLock(null);
+        } catch (err) {
+          console.log('Wake Lock release error:', err);
+        }
+      }
+    };
+
+    if (isRunning && !isPaused) {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
+
+    // Re-request wake lock if page becomes visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isRunning && !isPaused) {
+        requestWakeLock();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      releaseWakeLock();
+    };
+  }, [isRunning, isPaused]);
 
   const value = {
     settings,

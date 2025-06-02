@@ -996,7 +996,7 @@ const ProgramCard = ({
   useEffect(() => {
     const checkMobile = () => {
       if (isMounted.current) {
-        setIsMobile(window.innerWidth <= 768);
+      setIsMobile(window.innerWidth <= 768);
       }
     };
     checkMobile();
@@ -1055,43 +1055,43 @@ const ProgramCard = ({
       const timeouts: NodeJS.Timeout[] = [];
 
       // Animate image
-      if (imageRef.current) {
+          if (imageRef.current) {
         const timeoutId = setTimeout(() => {
-          if (isMounted.current && imageRef.current) {
-            imageRef.current.classList.add('visible');
+                if (isMounted.current && imageRef.current) {
+                  imageRef.current.classList.add('visible');
             console.log(`ProgramCard ${index} (${title}): imageRef classList.add 'visible'`);
-          }
+                }
         }, index * 100 + 150); // Stagger appearance based on card index + base delay
         timeouts.push(timeoutId);
-      }
+          }
 
       // Animate title
-      if (titleRef.current) {
+          if (titleRef.current) {
         const timeoutId = setTimeout(() => {
-          if (isMounted.current && titleRef.current) {
-            titleRef.current.classList.add('visible');
+                if (isMounted.current && titleRef.current) {
+                  titleRef.current.classList.add('visible');
             console.log(`ProgramCard ${index} (${title}): titleRef classList.add 'visible'`);
-          }
+                }
         }, index * 100 + 300); // Stagger appearance
         timeouts.push(timeoutId);
-      }
+          }
 
       // Animate description
-      if (descRef.current) {
+          if (descRef.current) {
         const timeoutId = setTimeout(() => {
-          if (isMounted.current && descRef.current) {
-            descRef.current.classList.add('visible');
+                if (isMounted.current && descRef.current) {
+                  descRef.current.classList.add('visible');
             console.log(`ProgramCard ${index} (${title}): descRef classList.add 'visible'`);
-          }
+                }
         }, index * 100 + 450); // Stagger appearance
         timeouts.push(timeoutId);
-      }
+        }
 
       // Cleanup function for this effect
-      return () => {
+    return () => {
         timeouts.forEach(clearTimeout);
       };
-    }
+      }
   }, [isVisible, index, title]); // This effect runs when isVisible changes (or index/title, less likely)
 
   return (
@@ -1107,7 +1107,7 @@ const ProgramCard = ({
         className={`card relative overflow-hidden backdrop-blur-md bg-white/5 border border-white/10
         ${compact ? 'p-2' : 'p-2 md:p-4'}
         group-hover:border-amber-500/30 group-hover:bg-white/10 shadow-lg
-        transition-all duration-500 ease-out cursor-pointer 
+        transition-all duration-500 ease-out cursor-pointer
       `}>
         {/* Glass effect with light reflection */}
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 opacity-30 rounded-xl -z-10"></div>
@@ -1500,9 +1500,9 @@ const HomePage = () => {
             cleanupAndResolve();
           };
           
-          img.onerror = () => {
+            img.onerror = () => {
             cleanupAndResolve();
-          };
+            };
           
           img.src = src;
         });
@@ -1511,12 +1511,12 @@ const HomePage = () => {
       try {
         // Set a reasonable timeout for the entire operation
         const timeoutPromise = new Promise<void>((_, reject) => {
-          setTimeout(() => {
+        setTimeout(() => {
             reject(new Error('Preloading images timed out'));
           }, 5000); // 5 second total timeout
-        });
-        
-        await Promise.race([Promise.all(loadPromises), timeoutPromise]);
+      });
+      
+      await Promise.race([Promise.all(loadPromises), timeoutPromise]);
       } catch (error) {
         console.log('Preloading images timed out');
       } finally {

@@ -287,27 +287,23 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
   if (fullscreen) {
     if (isSmallScreen) {
       containerSize = "w-[85%] max-w-[300px] mt-8"; // Reduced top margin for mobile
-      timeSize = "text-4xl";
-      progressSize = "text-5xl";
+      timeSize = "text-5xl";
       labelSize = "text-sm";
       strokeWidth = 12;
     } else if (isMediumScreen) {
       containerSize = "w-[85%] max-w-[400px] mt-16";
-      timeSize = "text-5xl";
-      progressSize = "text-6xl";
+      timeSize = "text-6xl";
       labelSize = "text-base";
       strokeWidth = 16;
     } else {
       containerSize = "w-[85%] max-w-[500px] mt-24";
-      timeSize = "text-6xl";
-      progressSize = "text-7xl";
+      timeSize = "text-7xl";
       labelSize = "text-lg";
       strokeWidth = 20;
     }
   } else {
     containerSize = "w-full max-w-[350px] mt-8";
-    timeSize = "text-3xl";
-    progressSize = "text-4xl";
+    timeSize = "text-4xl";
     labelSize = "text-sm";
     strokeWidth = 14;
   }
@@ -405,22 +401,23 @@ const TimerDisplay = ({ className = '', fullscreen = false }: TimerDisplayProps)
           {/* Center Content */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="flex flex-col items-center justify-center bg-black rounded-full w-[65%] h-[65%]">
-              {/* Progress percentage */}
-              <div ref={timeDisplayRef} className={`${progressSize} font-bold text-white`}>
-                {displayProgress}<span className="text-lg md:text-xl align-top">%</span>
-              </div>
+              {/* Empty space at top - larger to push content down */}
+              <div className="flex-[1.5]"></div>
               
-              {/* Time value */}
-              <div className={`${timeSize} font-medium text-white opacity-90 mt-0`}>
+              {/* Time value - Now lower in the circle */}
+              <div className={`${timeSize} font-bold text-white mb-3`}>
                 {displayMinutes}:{displaySeconds}
               </div>
               
               {/* Current phase label */}
-              <div className={`${labelSize} font-medium text-white opacity-70 mt-1 phase-label`}>
+              <div className={`${labelSize} font-medium text-white/70 phase-label`}>
                 {currentPhase === 'round'
                   ? `Round ${currentRound}/${totalRounds}`
                   : currentPhase.charAt(0).toUpperCase() + currentPhase.slice(1)}
               </div>
+              
+              {/* Empty space at bottom - smaller to keep content lower */}
+              <div className="flex-1"></div>
             </div>
           </div>
         </div>

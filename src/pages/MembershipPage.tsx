@@ -1110,13 +1110,13 @@ const MembershipPage = () => {
                 <div className="absolute bottom-0 right-[5%] w-1/3 h-1 bg-gradient-to-l from-amber-400 to-transparent rounded-full blur-sm"></div>
                 
                 <div className="relative z-10 p-6 md:p-8">
-                  <div className="inline-flex items-center gap-2 mb-6">
-                    <div className="h-px w-8 bg-amber-400"></div>
-                    <span className="text-amber-400 text-sm font-medium uppercase tracking-wider">Elite Experience</span>
-                  </div>
-                  
+                    <div className="inline-flex items-center gap-2 mb-6">
+                      <div className="h-px w-8 bg-amber-400"></div>
+                      <span className="text-amber-400 text-sm font-medium uppercase tracking-wider">Elite Experience</span>
+                    </div>
+                    
                   <h3 className="text-2xl md:text-3xl font-bold mb-4">GYM + CARDIO Training</h3>
-                  
+                    
                   <p className="text-gray-300 mb-8">
                     Personalized gym workouts and cardio sessions designed for your fitness goals.
                   </p>
@@ -1158,7 +1158,7 @@ const MembershipPage = () => {
                       </div>
                     </div>
                     
-                    <Link
+                    <Link 
                       to="/contact?program=membership&type=personal_training_gym"
                       className="inline-flex items-center justify-center px-8 py-3 font-medium text-amber-400 transition-colors duration-300 bg-transparent border-2 border-amber-400 rounded-lg shadow-lg hover:bg-amber-400 hover:text-black focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-dark-900 group"
                     >
@@ -1169,8 +1169,8 @@ const MembershipPage = () => {
                     </Link>
                   </div>
                 </div>
-              </div>
-
+                  </div>
+                  
               {/* MMA + GYM Personal Training */}
               <div className="relative rounded-2xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] group transition-all duration-500 flex flex-col">
                 <div className="absolute inset-0 -z-10">

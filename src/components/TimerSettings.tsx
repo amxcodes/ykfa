@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimerContext } from '../context/TimerContext';
 import { 
@@ -156,36 +156,131 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
   // Set slider mode as default state
   const [isSliderMode, setIsSliderMode] = useState<boolean>(true);
 
-  // Set sound volume to full and rounds to 1 on mount
+  const getMinutes = (totalSeconds: number) => {
+    return Math.floor(totalSeconds / 60);
+  };
+
+  const getSeconds = (totalSeconds: number) => {
+    return totalSeconds % 60;
+  };
+
+  // Icons and colors for each section
+  const settingSections = [
+    { 
+      key: 'warmupDuration', 
+      label: 'Warm Up', 
+      icon: <Flame className="w-5 h-5 text-cyan-400" />,
+      color: 'bg-blue-900/30 border-blue-500/20 hover:bg-blue-800/30',
+      unit: 's',
+      showMinutes: true,
+      sliderMin: 0,
+      sliderMax: 300,
+      sliderStep: 5
+    },
+    { 
+      key: 'rounds', 
+      label: 'Rounds', 
+      icon: <Activity className="w-5 h-5 text-amber-400" />,
+      color: 'bg-amber-900/30 border-amber-500/20 hover:bg-amber-800/30',
+      unit: '',
+      showMinutes: false,
+      sliderMin: 1,
+      sliderMax: 30,
+      sliderStep: 1
+    },
+    { 
+      key: 'roundDuration', 
+      label: 'Round Time', 
+      icon: <Clock className="w-5 h-5 text-amber-400" />,
+      color: 'bg-amber-900/30 border-amber-500/20 hover:bg-amber-800/30',
+      unit: 's',
+      showMinutes: true,
+      sliderMin: 0,
+      sliderMax: 600,
+      sliderStep: 5
+    },
+    { 
+      key: 'breakDuration', 
+      label: 'Break Time', 
+      icon: <Coffee className="w-5 h-5 text-green-400" />,
+      color: 'bg-green-900/30 border-green-500/20 hover:bg-green-800/30',
+      unit: 's',
+      showMinutes: true,
+      sliderMin: 0,
+      sliderMax: 300,
+      sliderStep: 5
+    },
+    { 
+      key: 'cooldownDuration', 
+      label: 'Cool Down', 
+      icon: <Fan className="w-5 h-5 text-blue-400" />,
+      color: 'bg-blue-900/30 border-blue-500/20 hover:bg-blue-800/30',
+      unit: 's',
+      showMinutes: true,
+      sliderMin: 0,
+      sliderMax: 300,
+      sliderStep: 5
+    },
+    {
+      key: 'transitionDelay',
+      label: 'Transition',
+      icon: <Clock className="w-5 h-5 text-purple-400" />,
+      color: 'bg-purple-900/30 border-purple-500/20 hover:bg-purple-800/30',
+      unit: 's',
+      showMinutes: false,
+      sliderMin: 0,
+      sliderMax: 10,
+      sliderStep: 1
+    }
+  ];
+
+  // Set sound volume to full on mount
   useEffect(() => {
-    updateSettings('soundVolume', 1);
-    updateSettings('rounds', 1); 
-  }, [updateSettings]);
-  
+    if (settings.soundVolume !== 1) {
+      updateSettings('soundVolume', 1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
+
   // Update input values when settings change
   useEffect(() => {
-    const newInputValues: Record<string, { minutes?: string; seconds?: string; value?: string }> = {};
-    
-    // Build new input values from settings
-    settingSections.forEach(section => {
+    // Only update input values if they're different from current settings
+    const shouldUpdate = settingSections.some(section => {
       if (section.showMinutes) {
-        newInputValues[section.key] = {
-          minutes: getMinutes(settings[section.key as keyof typeof settings] as number).toString(),
-          seconds: getSeconds(settings[section.key as keyof typeof settings] as number).toString()
-        };
-      } else if (section.key === 'rounds') {
-        newInputValues[section.key] = {
-          value: settings[section.key].toString()
-        };
+        const currentMinutes = getMinutes(settings[section.key as keyof typeof settings] as number).toString();
+        const currentSeconds = getSeconds(settings[section.key as keyof typeof settings] as number).toString();
+        const currentInputs = inputValues[section.key];
+        return !currentInputs || 
+               currentInputs.minutes !== currentMinutes || 
+               currentInputs.seconds !== currentSeconds;
       } else {
-        newInputValues[section.key] = {
-          value: settings[section.key as keyof typeof settings]?.toString() || ''
-        };
+        const currentValue = settings[section.key as keyof typeof settings]?.toString();
+        const currentInput = inputValues[section.key]?.value;
+        return !currentInput || currentInput !== currentValue;
       }
     });
-    
-    setInputValues(newInputValues);
-  }, [settings]);
+
+    if (shouldUpdate) {
+      const newInputValues: Record<string, { minutes?: string; seconds?: string; value?: string }> = {};
+      settingSections.forEach(section => {
+        if (section.showMinutes) {
+          newInputValues[section.key] = {
+            minutes: getMinutes(settings[section.key as keyof typeof settings] as number).toString(),
+            seconds: getSeconds(settings[section.key as keyof typeof settings] as number).toString()
+          };
+        } else if (section.key === 'rounds') {
+          newInputValues[section.key] = {
+            value: settings[section.key].toString()
+          };
+        } else {
+          newInputValues[section.key] = {
+            value: settings[section.key as keyof typeof settings]?.toString() || ''
+          };
+        }
+      });
+      setInputValues(newInputValues);
+    }
+  }, [settings, settingSections, getMinutes, getSeconds]);
 
   // Handler for input changes
   const handleInputChange = (
@@ -274,8 +369,8 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       
     } else { // type === 'value'
       if (setting === 'rounds') {
-        // Clamp rounds between 1-99
-        parsedValue = Math.max(1, Math.min(99, parsedValue));
+        // Clamp rounds between 1-30
+        parsedValue = Math.max(1, Math.min(30, parsedValue));
       } else {
         // For transition delay and other simple values
         // Allow 0 as minimum value
@@ -288,48 +383,18 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
     }
   };
 
-  // Handler for slider changes with smooth animation
-  const handleSliderChange = (
+  // Handler for slider changes
+  const handleSliderChange = useCallback((
     setting: keyof typeof settings,
     value: number
   ) => {
     if (setting === 'rounds') {
-      // Rounds slider
-      const roundsValue = Math.max(1, Math.min(99, value));
-      updateSettings(setting, roundsValue);
-    } else if (setting === 'transitionDelay') {
-      // Transition delay slider (0-60 seconds)
-      const delayValue = Math.max(0, Math.min(60, value));
-      updateSettings(setting, delayValue);
+      const roundsValue = Math.max(1, Math.min(30, value));
+      updateSettings('rounds', roundsValue);
     } else {
-      // Time-based sliders (in seconds)
-      // Round to ensure consistency
-      const roundedValue = Math.round(value);
-      updateSettings(setting, roundedValue);
+      updateSettings(setting, value);
     }
-    
-    // Animate the value change with a more subtle effect
-    if (settingsRef.current) {
-      const target = settingsRef.current.querySelector(`.${setting}-value`) as HTMLElement;
-      if (target) {
-        AnimationController.fromTo(
-          target,
-          { 
-            scale: 1.1,
-            color: '#fbbf24' // amber-400
-          },
-          { 
-            scale: 1,
-            color: '#ffffff'
-          },
-          { 
-            duration: 0.5,
-            ease: 'cubic-bezier(0.34, 1.56, 0.64, 1)' // elastic.out(1, 0.5)
-          }
-        );
-      }
-    }
-  };
+  }, [updateSettings]);
 
   useEffect(() => {
     // Reset the timer when entering settings view
@@ -378,17 +443,9 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
     }
   }, []);
 
-  const getMinutes = (totalSeconds: number) => {
-    return Math.floor(totalSeconds / 60);
-  };
-
-  const getSeconds = (totalSeconds: number) => {
-    return totalSeconds % 60;
-  };
-
   const handleIncreaseRounds = () => {
     const newValue = settings.rounds + 1;
-    if (newValue <= 99) {
+    if (newValue <= 30) {
       updateSettings('rounds', newValue);
       animateSettingChange(`.rounds-value`);
     }
@@ -419,76 +476,6 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       onStartWorkout();
     }
   };
-
-  // Icons and colors for each section
-  const settingSections = [
-    { 
-      key: 'warmupDuration', 
-      label: 'Warm Up', 
-      icon: <Flame className="w-5 h-5 text-cyan-400" />,
-      color: 'bg-blue-900/30 border-blue-500/20 hover:bg-blue-800/30',
-      unit: 's',
-      showMinutes: true,
-      sliderMin: 0,
-      sliderMax: 300,
-      sliderStep: 5
-    },
-    { 
-      key: 'rounds', 
-      label: 'Rounds', 
-      icon: <Activity className="w-5 h-5 text-amber-400" />,
-      color: 'bg-amber-900/30 border-amber-500/20 hover:bg-amber-800/30',
-      unit: '',
-      showMinutes: false,
-      sliderMin: 1,
-      sliderMax: 20,
-      sliderStep: 1
-    },
-    { 
-      key: 'roundDuration', 
-      label: 'Round Time', 
-      icon: <Clock className="w-5 h-5 text-amber-400" />,
-      color: 'bg-amber-900/30 border-amber-500/20 hover:bg-amber-800/30',
-      unit: 's',
-      showMinutes: true,
-      sliderMin: 0,
-      sliderMax: 600,
-      sliderStep: 5
-    },
-    { 
-      key: 'breakDuration', 
-      label: 'Break Time', 
-      icon: <Coffee className="w-5 h-5 text-green-400" />,
-      color: 'bg-green-900/30 border-green-500/20 hover:bg-green-800/30',
-      unit: 's',
-      showMinutes: true,
-      sliderMin: 0,
-      sliderMax: 300,
-      sliderStep: 5
-    },
-    { 
-      key: 'cooldownDuration', 
-      label: 'Cool Down', 
-      icon: <Fan className="w-5 h-5 text-blue-400" />,
-      color: 'bg-blue-900/30 border-blue-500/20 hover:bg-blue-800/30',
-      unit: 's',
-      showMinutes: true,
-      sliderMin: 0,
-      sliderMax: 300,
-      sliderStep: 5
-    },
-    {
-      key: 'transitionDelay',
-      label: 'Transition',
-      icon: <Clock className="w-5 h-5 text-purple-400" />,
-      color: 'bg-purple-900/30 border-purple-500/20 hover:bg-purple-800/30',
-      unit: 's',
-      showMinutes: false,
-      sliderMin: 0,
-      sliderMax: 10,
-      sliderStep: 1
-    }
-  ];
 
   // Function to format time for slider labels
 
@@ -538,7 +525,7 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
 
       {/* Settings Grid */}
       <div className="space-y-2">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="sync">
           {settingSections.map((section, index) => (
             <motion.div
               key={section.key}
@@ -565,7 +552,15 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
                         max={section.sliderMax}
                         step={section.sliderStep}
                         value={settings[section.key as keyof typeof settings] as number}
-                        onChange={(e) => handleSliderChange(section.key as keyof typeof settings, parseInt(e.target.value, 10))}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value, 10);
+                          if (section.key === 'rounds') {
+                            const roundsValue = Math.max(1, Math.min(30, value));
+                            updateSettings('rounds', roundsValue);
+                          } else {
+                            handleSliderChange(section.key as keyof typeof settings, value);
+                          }
+                        }}
                         className="w-full h-1 bg-dark-700 rounded-lg appearance-none cursor-pointer 
                           [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 
                           [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-amber-400 
@@ -617,7 +612,7 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
                           className="p-2 rounded-lg bg-dark-700 hover:bg-dark-600 transition-colors"
                           whileTap={{ scale: 0.95 }}
                           onClick={handleIncreaseRounds}
-                          disabled={settings.rounds >= 99}
+                          disabled={settings.rounds >= 30}
                         >
                           <Plus className="w-4 h-4" />
                         </motion.button>
