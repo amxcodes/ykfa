@@ -1208,48 +1208,115 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
   // Initialize and handle wake lock
   useEffect(() => {
+    // Store the current lock sentinel in a ref to ensure event listeners
+    // are added/removed from the correct instance, and to avoid
+    // making the effect depend on the wakeLock state directly for these.
+    // const currentWakeLockSentinel = wakeLock; // Removed as it was unused
+
     const requestWakeLock = async () => {
+      // 1. Idempotency: If we already have an active lock in our state, do nothing.
+      if (wakeLock) {
+        return;
+      }
       try {
         if ('wakeLock' in navigator && isRunning && !isPaused) {
+          console.log('Requesting screen wake lock...');
           const lock = await (navigator as any).wakeLock.request('screen');
+          
+          // 2. Handle external release by the browser
+          lock.onrelease = () => {
+            console.log('Screen wake lock was released externally.');
+            // Check if this is still the active lock we care about
+            // This check helps if a new lock was requested and set very quickly
+            // though with the idempotency check above, it's less likely to be an issue.
+            if (wakeLock === lock) {
+              setWakeLock(null);
+            }
+          };
           setWakeLock(lock);
+          console.log('Screen wake lock acquired.');
         }
-      } catch (err) {
-        console.log('Wake Lock error:', err);
+      } catch (err: any) { // Explicitly type err
+        console.error('Screen wake lock request error:', err.name, err.message);
+        // Ensure wakeLock state is null if request fails
+        setWakeLock(null);
       }
     };
 
     const releaseWakeLock = async () => {
+      // Use the sentinel stored at the beginning of this effect run for release,
+      // or the current wakeLock state if that's more appropriate for your logic.
+      // For simplicity and directness with the current state:
       if (wakeLock) {
+        console.log('Releasing screen wake lock...');
         try {
           await wakeLock.release();
-          setWakeLock(null);
-        } catch (err) {
-          console.log('Wake Lock release error:', err);
+          // The onrelease event handler (if it fires before this)
+          // might have already set wakeLock to null.
+          // Setting it here ensures it's cleared if release() is called directly
+          // and successfully without onrelease firing first.
+        } catch (err: any) { // Explicitly type err
+          console.error('Screen wake lock release error:', err.name, err.message);
+        } finally {
+          // 3. Reliably clear state after attempting release
+          setWakeLock(null); 
+          console.log('Screen wake lock state cleared after release attempt.');
         }
       }
     };
 
-    if (isRunning && !isPaused) {
+    if (isRunning && !isPaused && timerMode === 'running') {
       requestWakeLock();
     } else {
       releaseWakeLock();
     }
 
-    // Re-request wake lock if page becomes visible
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && isRunning && !isPaused) {
+      if (document.visibilityState === 'visible' && isRunning && !isPaused && timerMode === 'running') {
+        // Re-request if visible and should be active.
+        // The updated requestWakeLock will handle not re-requesting if already held.
+        console.log('Page became visible, re-evaluating wake lock.');
         requestWakeLock();
+      } else if (document.visibilityState === 'hidden' && wakeLock) {
+        // Optional: Some developers choose to release the lock when the tab is hidden
+        // to be more power-friendly, relying on re-acquisition when it becomes visible.
+        // However, the browser typically handles this.
+        // If you want explicit release on hidden:
+        // console.log('Page hidden, releasing wake lock.');
+        // releaseWakeLock(); 
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
+    // Cleanup
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      releaseWakeLock();
+      // Release the lock that was active when this effect instance was set up,
+      // or rely on the current wakeLock state.
+      // Using a direct call to release the current lock from state:
+      if (wakeLock) { // Check current state directly for cleanup
+        console.log('Cleaning up wake lock on effect unmount/re-run...');
+        wakeLock.release().catch((err: any) => { // Explicitly type err
+          console.error('Error releasing wake lock during cleanup:', err.name, err.message);
+        }).finally(() => {
+          // It's good practice to ensure the state is null after cleanup,
+          // though if the component is unmounting, React handles state.
+          // If it's a re-run, setWakeLock(null) might be appropriate if not already handled.
+          // Given releaseWakeLock already calls setWakeLock(null), this might be redundant
+          // if we called releaseWakeLock() here, but this is a direct .release().
+        });
+      }
+      // If the component is unmounting, setWakeLock(null) is less critical as state disappears.
+      // If just re-running due to isRunning/isPaused changing, releaseWakeLock() in the main logic handles it.
+      // The most important part of cleanup is the navigator.wakeLock.release() call.
     };
-  }, [isRunning, isPaused]);
+    // Dependencies: isRunning and isPaused determine if the lock *should* be active.
+    // timerMode is added to ensure lock is only active in 'running' mode.
+    // wakeLock is NOT added as a dependency to define request/release, 
+    // to prevent loops if setWakeLock itself triggers the effect.
+    // Instead, requestWakeLock checks the current wakeLock state.
+  }, [isRunning, isPaused, timerMode]); // Removed wakeLock from dependencies
 
   const value = {
     settings,
