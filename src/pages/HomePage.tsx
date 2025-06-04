@@ -1577,7 +1577,7 @@ const HomePage = () => {
     return () => {
       if (intervalId) {
         clearInterval(intervalId);
-        intervalId = null;
+        // intervalId = null; // Local var, not strictly needed to nullify
       }
       
       if (autoImageChangeInterval.current) {
@@ -1587,16 +1587,10 @@ const HomePage = () => {
       
       if (observer) {
         observer.disconnect();
-        observer = null;
+        // observer = null; // Local var, not strictly needed to nullify
       }
-      
-      // Clear any pending timeouts
-      imageTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
-      imageTimeoutsRef.current = [];
-      
-      // Reset all flags
-      imageTransitionInProgress.current = false;
-      isMounted.current = false;
+      // The problematic lines that interfered with changeImage's own state/timeout management
+      // have been removed from this cleanup function.
     };
   }, [changeImage]);
   
