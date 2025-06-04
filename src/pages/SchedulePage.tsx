@@ -42,21 +42,21 @@ const SchedulePage = () => {
         ]
       },
       {
-        title: "MMA - Batch B",
-        icon: <Users size={20} className="text-amber-400" />,
-        timeSlots: [
-          { title: "Monday", time: "08:30pm to 09:30pm", notes: "MMA" },
-          { title: "Wednesday", time: "08:30pm to 09:30pm", notes: "MMA" },
-          { title: "Thursday", time: "08:00pm to 09:30pm", notes: "MMA" }
-        ]
-      },
-      {
         title: "GYM - Batch A",
         icon: <Dumbbell size={20} className="text-amber-400" />,
         timeSlots: [
           { title: "Tuesday", time: "07:30pm to 08:30pm", notes: "Evening" },
           { title: "Friday", time: "07:30pm to 08:30pm", notes: "Evening" },
           { title: "Saturday", time: "07:30pm to 08:30pm", notes: "Evening" }
+        ]
+      },
+      {
+        title: "MMA - Batch B",
+        icon: <Users size={20} className="text-amber-400" />,
+        timeSlots: [
+          { title: "Monday", time: "08:30pm to 09:30pm", notes: "MMA" },
+          { title: "Wednesday", time: "08:30pm to 09:30pm", notes: "MMA" },
+          { title: "Thursday", time: "08:00pm to 09:30pm", notes: "MMA" }
         ]
       },
       {

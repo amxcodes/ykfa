@@ -2,6 +2,7 @@ import { createContext, useState, useContext, ReactNode, useCallback, useEffect,
 import { useTimer } from 'react-timer-hook';
 // import gsap from 'gsap'; - Removing GSAP
 import { AnimationController } from '../utils/AnimationController';
+import confetti from 'canvas-confetti';
 
 export interface TimerSettings {
   warmupDuration: number;
@@ -66,8 +67,8 @@ const SOUND_URLS = {
   // Round announcement sounds
   roundOne: './sounds/round one.mp3', // Round one announcement
   nextRound: './sounds/next round.mp3', // Next round announcement
-  lastRound: './sounds/next round.mp3', // Using next round sound for last round
-  finalRound: './sounds/next round.mp3', // Using next round sound for final round
+  lastRound: './sounds/LAST ROUND.mp3', // Using correct last round sound file name
+  finalRound: './sounds/final round.mp3', // Final round sound
   // Phase announcement sounds
   warmup: './sounds/warm up.mp3', // Warm up announcement
   cooldown: './sounds/cool down.mp3', // Cool down announcement
@@ -317,16 +318,33 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
   const playStartSound = useCallback(() => playSound(startSoundRef), [playSound]);
   const playStopSound = useCallback(() => playSound(stopSoundRef), [playSound]);
-  const playRoundChangeSound = useCallback(() => playSound(roundChangeSoundRef, true), [playSound]);
-  const playCompleteSound = useCallback(() => playSound(completeSoundRef), [playSound]);
+  const playRoundChangeSound = useCallback(() => playSound(roundChangeSoundRef), [playSound]);
+  const playCompleteSound = useCallback(() => {
+    try {
+      if (completeSoundRef.current && completeSoundRef.current.src) {
+        // Use a temporary audio element for reliable playback
+        const tempAudio = new Audio(completeSoundRef.current.src);
+        tempAudio.volume = settings.soundVolume;
+        const onEndedHandler = () => {
+          tempAudio.removeEventListener('ended', onEndedHandler);
+          tempAudio.src = '';
+        };
+        tempAudio.addEventListener('ended', onEndedHandler);
+        tempAudio.play().catch(() => {});
+      }
+    } catch (error) {
+      // Silently handle errors
+    }
+  }, [settings.soundVolume]);
   const playCountdownSound = useCallback(() => playSound(countdownSoundRef), [playSound]);
-  const playRoundOneSound = useCallback(() => playSound(roundOneSoundRef, true), [playSound]);
-  const playNextRoundSound = useCallback(() => playSound(nextRoundSoundRef, true), [playSound]);
-  const playLastRoundSound = useCallback(() => playSound(lastRoundSoundRef, true), [playSound]);
-  const playFinalRoundSound = useCallback(() => playSound(finalRoundSoundRef, true), [playSound]);
-  const playWarmupSound = useCallback(() => playSound(warmupSoundRef, true), [playSound]);
-  const playCooldownSound = useCallback(() => playSound(cooldownSoundRef, true), [playSound]);
-  const playBreakSound = useCallback(() => playSound(breakSoundRef, true), [playSound]);
+  const playRoundOneSound = useCallback(() => playSound(roundOneSoundRef), [playSound]);
+  const playNextRoundSound = useCallback(() => playSound(nextRoundSoundRef), [playSound]);
+  const playLastRoundSound = useCallback(() => playSound(lastRoundSoundRef), [playSound]);
+  const playFinalRoundSound = useCallback(() => playSound(finalRoundSoundRef), [playSound]);
+  const playWarmupSound = useCallback(() => playSound(warmupSoundRef), [playSound]);
+  const playCooldownSound = useCallback(() => playSound(cooldownSoundRef), [playSound]);
+  const playBreakSound = useCallback(() => playSound(breakSoundRef), [playSound]);
+  // Only mute the actual workout music
   const playWorkoutSound = useCallback(() => playSound(workoutSoundRef, true), [playSound]);
   
   // Toggle workout sound mute and control workout music volume
@@ -532,6 +550,45 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     return timeline;
   }, [currentPhase]);
 
+  const fireConfetti = useCallback(() => {
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { 
+      startVelocity: 30, 
+      spread: 360, 
+      ticks: 60, 
+      zIndex: 9999  // Increased z-index to appear above blur
+    };
+
+    const randomInRange = (min: number, max: number) => {
+      return Math.random() * (max - min) + min;
+    };
+
+    const interval: any = setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+
+      // Since they fire from the same position, randomly spread them out a bit
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.2, 0.8), y: randomInRange(0.2, 0.8) }
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.2, 0.8), y: randomInRange(0.2, 0.8) }
+      });
+    }, 250);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const handlePhaseComplete = useCallback(() => {
     setTransitionActive(true);
     isInPhaseTransition.current = true;
@@ -555,6 +612,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       setCurrentPhase('complete');
       setIsPaused(true);
       playCompleteSound(); // Play completion sound
+      fireConfetti(); // Fire confetti animation
       setTransitionActive(false);
       isInPhaseTransition.current = false;
       return;
@@ -567,11 +625,11 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         // First round starting after warmup
         playRoundOneSound();
       } else if (nextRound === settings.rounds) {
-        // Last round
-        playFinalRoundSound();
-      } else if (nextRound === settings.rounds - 1) {
-        // Second to last round
+        // Last round - use last round sound
         playLastRoundSound();
+      } else if (nextRound === settings.rounds - 1) {
+        // Second to last round - use next round sound
+        playNextRoundSound();
       } else {
         // Other rounds
         playNextRoundSound();

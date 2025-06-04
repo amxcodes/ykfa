@@ -40,11 +40,13 @@ interface PricingPlan {
 const ModernPricingCard = ({ 
   plan, 
   isKarateDummy = false, 
-  onSwitchToMonthly 
+  onSwitchToMonthly,
+  className = ''
 }: { 
   plan: PricingPlan, 
   isKarateDummy?: boolean,
-  onSwitchToMonthly?: () => void 
+  onSwitchToMonthly?: () => void,
+  className?: string
 }) => {
   const [animationKey, setAnimationKey] = useState(0);
   const [showOfferPrice, setShowOfferPrice] = useState(false);
@@ -93,7 +95,7 @@ const ModernPricingCard = ({
       className={`rounded-xl overflow-hidden ${
         plan.recommended ? 'border-2 border-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.15)]' : 
         'border border-white/10'
-      } h-full flex flex-col relative`}
+      } h-full flex flex-col relative ${className}`}
     >
       {/* Background Image - Half Height and Dimmed */}
       <div className="absolute inset-x-0 top-0 h-1/2 overflow-hidden z-0">
@@ -346,7 +348,12 @@ const MembershipPage = () => {
   const [selectedProgram] = useState<string>('all');
   const pricingCardsRef = useRef<HTMLDivElement>(null);
   const prevDurationRef = useRef(planDuration);
+  const recoveryServicesRef = useRef<HTMLDivElement>(null);
   
+  const scrollToRecoveryServices = () => {
+    recoveryServicesRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   // Auto-switch to monthly if KARATE is selected
   useEffect(() => {
     if (selectedProgram === 'KARATE') {
@@ -488,23 +495,6 @@ const MembershipPage = () => {
         cta: "Choose Plan"
       },
       {
-        id: 3,
-        name: "GROUP FITNESS",
-        price: 3000,
-        period: "month",
-        description: "High-energy group fitness sessions for improved strength and endurance.",
-        programType: "GROUP FITNESS",
-        image: "https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&fit=crop&w=800&q=80",
-        features: [
-          { name: "Group cardio sessions with coach", included: true },
-          { name: "Access to gym app", included: true },
-          { name: "2 days cardio and HIIT", included: true },
-          { name: "4 days strength training", included: true },
-          { name: "Basic fitness assessment", included: true }
-        ],
-        cta: "Choose Plan"
-      },
-      {
         id: 4,
         name: "KARATE",
         price: 1000,
@@ -581,25 +571,6 @@ const MembershipPage = () => {
         cta: "Choose Plan"
       },
       {
-        id: 3,
-        name: "GROUP FITNESS",
-        price: 7000,
-        originalPrice: 9000,
-        perMonthPrice: "₹2,333 per month",
-        period: "quarter",
-        description: "High-energy group fitness sessions for improved strength and endurance.",
-        programType: "GROUP FITNESS",
-        image: "https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&fit=crop&w=800&q=80",
-        features: [
-          { name: "Group cardio sessions with coach", included: true },
-          { name: "Access to gym app", included: true },
-          { name: "2 days cardio and HIIT", included: true },
-          { name: "4 days strength training", included: true },
-          { name: "Basic fitness assessment", included: true }
-        ],
-        cta: "Choose Plan"
-      },
-      {
         id: 5,
         name: "GYM ONLY",
         price: 7500,
@@ -661,25 +632,6 @@ const MembershipPage = () => {
         cta: "Choose Plan"
       },
       {
-        id: 3,
-        name: "GROUP FITNESS",
-        price: 12000,
-        originalPrice: 18000,
-        perMonthPrice: "₹2,000 per month",
-        period: "6mo",
-        description: "High-energy group fitness sessions for improved strength and endurance.",
-        programType: "GROUP FITNESS",
-        image: "https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&fit=crop&w=800&q=80",
-        features: [
-          { name: "Group cardio sessions with coach", included: true },
-          { name: "Access to gym app", included: true },
-          { name: "2 days cardio and HIIT", included: true },
-          { name: "4 days strength training", included: true },
-          { name: "Basic fitness assessment", included: true }
-        ],
-        cta: "Choose Plan"
-      },
-      {
         id: 5,
         name: "GYM ONLY",
         price: 12000,
@@ -737,25 +689,6 @@ const MembershipPage = () => {
           { name: "Strength and conditioning, HIIT and cardio sessions", included: true },
           { name: "Technical sessions", included: true },
           { name: "Sparring sessions", included: true }
-        ],
-        cta: "Choose Plan"
-      },
-      {
-        id: 3,
-        name: "GROUP FITNESS",
-        price: 18000,
-        originalPrice: 36000,
-        perMonthPrice: "₹1,500 per month",
-        period: "year",
-        description: "High-energy group fitness sessions for improved strength and endurance.",
-        programType: "GROUP FITNESS",
-        image: "https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&fit=crop&w=800&q=80",
-        features: [
-          { name: "Group cardio sessions with coach", included: true },
-          { name: "Access to gym app", included: true },
-          { name: "2 days cardio and HIIT", included: true },
-          { name: "4 days strength training", included: true },
-          { name: "Basic fitness assessment", included: true }
         ],
         cta: "Choose Plan"
       },
@@ -923,22 +856,24 @@ const MembershipPage = () => {
             </p>
             
             {/* Membership Duration - Redesigned */}
-            <div className="relative z-10 mb-6 mt-8">
-              <div className="relative max-w-lg mx-auto">
+            <div className="relative z-10 mb-6 mt-8 px-4 sm:px-0">
+              <div className="relative max-w-2xl mx-auto">
                 <div className="absolute inset-0 bg-dark-700 rounded-xl blur-md opacity-80"></div>
-                <div className="relative bg-gradient-to-r from-dark-800 via-dark-700 to-dark-800 p-2 rounded-xl border border-white/5 shadow-xl">
-                  <div className="flex flex-wrap justify-center items-center gap-2">
+                <div className="relative bg-gradient-to-r from-dark-800 via-dark-700 to-dark-800 p-2 rounded-xl border border-white/5 shadow-xl overflow-hidden">
+                  <div className="flex flex-wrap justify-center items-stretch gap-2">
                     {/* Monthly */}
-              <button 
-                      className={`flex-1 min-w-[90px] py-3 px-4 rounded-lg transition-all relative overflow-hidden ${
+                    <button 
+                      className={`flex-1 basis-full sm:basis-[calc(20%-8px)] min-h-[70px] sm:min-h-0 py-3 px-4 rounded-lg transition-all relative overflow-hidden ${
                         planDuration === 'monthly' 
                           ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-black font-semibold shadow-lg' 
                           : 'bg-dark-800/80 text-gray-300 hover:bg-dark-600'
                       }`}
-                onClick={() => setPlanDuration('monthly')}
-              >
-                      <span className={`block text-base ${planDuration === 'monthly' ? 'text-black' : 'text-gray-200'}`}>Monthly</span>
-                      <span className={`block text-xs mt-1 ${planDuration === 'monthly' ? 'text-black/80' : 'text-gray-400'}`}>Regular Price</span>
+                      onClick={() => setPlanDuration('monthly')}
+                    >
+                      <div className="flex sm:flex-col items-center justify-between sm:justify-center h-full">
+                        <span className={`text-base ${planDuration === 'monthly' ? 'text-black' : 'text-gray-200'}`}>Monthly</span>
+                        <span className={`text-xs ${planDuration === 'monthly' ? 'text-black/80' : 'text-gray-400'}`}>Regular Price</span>
+                      </div>
                       {planDuration === 'monthly' && (
                         <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white/30"></span>
                       )}
@@ -946,7 +881,7 @@ const MembershipPage = () => {
                     
                     {/* Quarterly */}
                     <button 
-                      className={`flex-1 min-w-[90px] py-3 px-4 rounded-lg transition-all relative overflow-hidden ${
+                      className={`flex-1 basis-[calc(50%-4px)] sm:basis-[calc(20%-8px)] min-h-[70px] sm:min-h-0 py-3 px-4 rounded-lg transition-all relative overflow-hidden ${
                         planDuration === 'quarterly' 
                           ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-black font-semibold shadow-lg' 
                           : 'bg-dark-800/80 text-gray-300 hover:bg-dark-600'
@@ -955,8 +890,10 @@ const MembershipPage = () => {
                       disabled={selectedProgram === 'KARATE'}
                       title={selectedProgram === 'KARATE' ? 'KARATE is available monthly only' : ''}
                     >
-                      <span className={`block text-base ${planDuration === 'quarterly' ? 'text-black' : 'text-gray-200'}`}>Quarterly</span>
-                      <span className={`block text-xs mt-1 ${planDuration === 'quarterly' ? 'text-black/80' : 'text-gray-400'}`}>Save 28%</span>
+                      <div className="flex sm:flex-col items-center justify-between sm:justify-center h-full">
+                        <span className={`text-base ${planDuration === 'quarterly' ? 'text-black' : 'text-gray-200'}`}>Quarterly</span>
+                        <span className={`text-xs ${planDuration === 'quarterly' ? 'text-black/80' : 'text-gray-400'}`}>Save 28%</span>
+                      </div>
                       {planDuration === 'quarterly' && (
                         <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white/30"></span>
                       )}
@@ -969,7 +906,7 @@ const MembershipPage = () => {
                     
                     {/* Half-Yearly */}
                     <button 
-                      className={`flex-1 min-w-[95px] py-3 px-2 rounded-lg transition-all relative overflow-hidden ${
+                      className={`flex-1 basis-[calc(50%-4px)] sm:basis-[calc(20%-8px)] min-h-[70px] sm:min-h-0 py-3 px-4 rounded-lg transition-all relative overflow-hidden ${
                         planDuration === 'halfYearly' 
                           ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-black font-semibold shadow-lg' 
                           : 'bg-dark-800/80 text-gray-300 hover:bg-dark-600'
@@ -978,8 +915,10 @@ const MembershipPage = () => {
                       disabled={selectedProgram === 'KARATE'}
                       title={selectedProgram === 'KARATE' ? 'KARATE is available monthly only' : ''}
                     >
-                      <span className={`block text-base ${planDuration === 'halfYearly' ? 'text-black' : 'text-gray-200'}`}>Half Yearly</span>
-                      <span className={`block text-xs mt-1 ${planDuration === 'halfYearly' ? 'text-black/80' : 'text-green-400'}`}>Save 34%</span>
+                      <div className="flex sm:flex-col items-center justify-between sm:justify-center h-full">
+                        <span className={`text-base ${planDuration === 'halfYearly' ? 'text-black' : 'text-gray-200'}`}>Half Yearly</span>
+                        <span className={`text-xs ${planDuration === 'halfYearly' ? 'text-black/80' : 'text-green-400'}`}>Save 34%</span>
+                      </div>
                       {planDuration === 'halfYearly' && (
                         <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white/30"></span>
                       )}
@@ -988,21 +927,23 @@ const MembershipPage = () => {
                           <span className="text-xs text-gray-400">Not Available</span>
                         </div>
                       )}
-              </button>
+                    </button>
                     
                     {/* Annual */}
-              <button 
-                      className={`flex-1 min-w-[90px] py-3 px-4 rounded-lg transition-all relative overflow-hidden ${
+                    <button 
+                      className={`flex-1 basis-[calc(50%-4px)] sm:basis-[calc(20%-8px)] min-h-[70px] sm:min-h-0 py-3 px-4 rounded-lg transition-all relative overflow-hidden ${
                         planDuration === 'annual' 
                           ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-black font-semibold shadow-lg' 
                           : 'bg-dark-800/80 text-gray-300 hover:bg-dark-600'
                       }`}
-                onClick={() => setPlanDuration('annual')}
+                      onClick={() => setPlanDuration('annual')}
                       disabled={selectedProgram === 'KARATE'}
                       title={selectedProgram === 'KARATE' ? 'KARATE is available monthly only' : ''}
                     >
-                      <span className={`block text-base ${planDuration === 'annual' ? 'text-black' : 'text-gray-200'}`}>Annual</span>
-                      <span className={`block text-xs mt-1 ${planDuration === 'annual' ? 'text-black/80' : 'text-green-400'}`}>Save 50%</span>
+                      <div className="flex sm:flex-col items-center justify-between sm:justify-center h-full">
+                        <span className={`text-base ${planDuration === 'annual' ? 'text-black' : 'text-gray-200'}`}>Annual</span>
+                        <span className={`text-xs ${planDuration === 'annual' ? 'text-black/80' : 'text-green-400'}`}>Save 50%</span>
+                      </div>
                       {planDuration === 'annual' && (
                         <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white/30"></span>
                       )}
@@ -1011,11 +952,22 @@ const MembershipPage = () => {
                           <span className="text-xs text-gray-400">Not Available</span>
                         </div>
                       )}
-              </button>
+                    </button>
+
+                    {/* Steam/Ice Button */}
+                    <button 
+                      className="flex-1 basis-[calc(50%-4px)] sm:basis-[calc(20%-8px)] min-h-[70px] sm:min-h-0 py-3 px-4 rounded-lg transition-all relative overflow-hidden bg-gradient-to-r from-sky-500 to-blue-400 text-black font-semibold shadow-lg hover:from-sky-600 hover:to-blue-500"
+                      onClick={scrollToRecoveryServices}
+                    >
+                      <div className="flex sm:flex-col items-center justify-between sm:justify-center h-full">
+                        <span className="text-base">Steam/Ice</span>
+                        <span className="text-xs text-black/80">Recovery</span>
+                      </div>
+                    </button>
                   </div>
                   
                   {/* Best Value Indicator */}
-                  <div className="mt-3 text-center">
+                  <div className="mt-3 text-center px-2">
                     <span className={`text-xs ${planDuration === 'annual' ? 'text-amber-400' : 'text-gray-500'}`}>
                       {planDuration === 'annual' && "Best value: Save up to ₹17,000 with annual plan"}
                       {planDuration === 'halfYearly' && "Great value: Save up to ₹6,000 with half-yearly plan"}
@@ -1048,12 +1000,19 @@ const MembershipPage = () => {
               </div>
             )}
             
-            {/* GROUP FITNESS Card */}
+            {/* Coming Soon Card */}
             {(selectedProgram === 'all' || selectedProgram === 'GROUP FITNESS') && (
-              <div className="pricing-card">
-                <ModernPricingCard 
-                  plan={pricingPlans[planDuration].find(p => p.programType === 'GROUP FITNESS')!} 
-                />
+              <div className="pricing-card relative">
+                <div className="rounded-xl overflow-hidden border border-white/10 h-full flex flex-col bg-gradient-to-br from-dark-800 via-dark-900 to-amber-950/50">
+                  <div className="absolute inset-0 bg-gradient-to-t from-amber-500/5 to-transparent"></div>
+                  <div className="p-6 flex-grow flex flex-col items-center justify-center text-center relative">
+                    <div className="w-14 h-14 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 border border-amber-500/20">
+                      <HelpCircle className="w-7 h-7 text-amber-500/70" />
+                    </div>
+                    <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-400 mb-2">Coming Soon</h3>
+                    <p className="text-sm text-amber-200/60">New programs launching shortly</p>
+                  </div>
+                </div>
               </div>
             )}
             
@@ -1259,7 +1218,7 @@ const MembershipPage = () => {
       </section>
 
       {/* Recovery Services Section */}
-      <section className="section bg-dark-900 py-16">
+      <section ref={recoveryServicesRef} className="section bg-dark-900 py-16">
         <div className="container">
           <div className="text-center max-w-2xl mx-auto mb-12 animate-fade-up">
             <div className="inline-block mb-4 py-1 px-3 rounded-full bg-sky-400/20 border border-sky-400/30">
