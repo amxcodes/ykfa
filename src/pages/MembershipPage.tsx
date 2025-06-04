@@ -959,9 +959,9 @@ const MembershipPage = () => {
                       className="flex-1 basis-[calc(50%-4px)] sm:basis-[calc(20%-8px)] min-h-[70px] sm:min-h-0 py-3 px-4 rounded-lg transition-all relative overflow-hidden bg-gradient-to-r from-sky-500 to-blue-400 text-black font-semibold shadow-lg hover:from-sky-600 hover:to-blue-500"
                       onClick={scrollToRecoveryServices}
                     >
-                      <div className="flex sm:flex-col items-center justify-between sm:justify-center h-full">
-                        <span className="text-base">Steam/Ice</span>
-                        <span className="text-xs text-black/80">Recovery</span>
+                      <div className="flex sm:flex-col items-center justify-between sm:justify-center h-full gap-1 sm:gap-0">
+                        <span className="text-sm sm:text-base whitespace-nowrap">Steam/Ice</span>
+                        <span className="text-[10px] sm:text-xs text-black/80 whitespace-nowrap">Recovery</span>
                       </div>
                     </button>
                   </div>
@@ -1000,22 +1000,6 @@ const MembershipPage = () => {
               </div>
             )}
             
-            {/* Coming Soon Card */}
-            {(selectedProgram === 'all' || selectedProgram === 'GROUP FITNESS') && (
-              <div className="pricing-card relative">
-                <div className="rounded-xl overflow-hidden border border-white/10 h-full flex flex-col bg-gradient-to-br from-dark-800 via-dark-900 to-amber-950/50">
-                  <div className="absolute inset-0 bg-gradient-to-t from-amber-500/5 to-transparent"></div>
-                  <div className="p-6 flex-grow flex flex-col items-center justify-center text-center relative">
-                    <div className="w-14 h-14 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 border border-amber-500/20">
-                      <HelpCircle className="w-7 h-7 text-amber-500/70" />
-                    </div>
-                    <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-400 mb-2">Coming Soon</h3>
-                    <p className="text-sm text-amber-200/60">New programs launching shortly</p>
-                  </div>
-                </div>
-              </div>
-            )}
-            
             {/* KARATE Card (real or dummy based on duration) */}
             {(selectedProgram === 'all' || selectedProgram === 'KARATE') && (
               <div className="pricing-card">
@@ -1037,6 +1021,22 @@ const MembershipPage = () => {
                 <ModernPricingCard 
                   plan={pricingPlans[planDuration].find(p => p.programType === 'GYM ONLY')!} 
                 />
+              </div>
+            )}
+
+            {/* Coming Soon Card - Now at the end */}
+            {(selectedProgram === 'all' || selectedProgram === 'GROUP FITNESS') && (
+              <div className="pricing-card relative">
+                <div className="rounded-xl overflow-hidden border border-white/10 h-full flex flex-col bg-gradient-to-br from-dark-800 via-dark-900 to-amber-950/50">
+                  <div className="absolute inset-0 bg-gradient-to-t from-amber-500/5 to-transparent"></div>
+                  <div className="p-6 flex-grow flex flex-col items-center justify-center text-center relative">
+                    <div className="w-14 h-14 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 border border-amber-500/20">
+                      <HelpCircle className="w-7 h-7 text-amber-500/70" />
+                    </div>
+                    <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-400 mb-2">Coming Soon</h3>
+                    <p className="text-sm text-amber-200/60">New programs launching shortly</p>
+                  </div>
+                </div>
               </div>
             )}
           </div>

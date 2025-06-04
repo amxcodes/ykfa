@@ -239,7 +239,7 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     // Membership and pricing
     {
       keywords: ["membership", "pricing", "cost", "fee", "price", "package", "join", "subscription", "payment", "monthly", "quarterly", "half-yearly", "annual"],
-      response: "We offer various membership options including monthly, quarterly, half-yearly, and annual plans. Our monthly plans start at ₹1,000 for Karate, ₹2,500 for MMA-Only, Group Fitness, or Gym-Only, and ₹3,500 for our comprehensive MMA+GYM package. For quarterly, half-yearly, and annual plans, we offer significant discounts - save up to 28% on quarterly, 34% on half-yearly, and 50% on annual plans.",
+      response: "We offer flexible membership plans with monthly, quarterly, half-yearly, and annual options:\n\nMMA + GYM:\n- Monthly: ₹4,000\n- Quarterly: ₹9,000 (₹3,000/month)\n- Half-Yearly: ₹15,000 (₹2,500/month)\n- Annual: ₹24,000 (₹2,000/month)\n\nMMA ONLY:\n- Monthly: ₹3,000\n- Quarterly: ₹7,500 (₹2,500/month)\n- Half-Yearly: ₹12,000 (₹2,000/month)\n- Annual: ₹18,000 (₹1,500/month)\n\nGYM ONLY:\n- Monthly: ₹3,000\n- Quarterly: ₹7,500 (₹2,500/month)\n- Half-Yearly: ₹12,000 (₹2,000/month)\n- Annual: ₹20,000 (₹1,666/month)\n\nKARATE:\n- Monthly: ₹1,000\n\nWe also offer Personal Training packages starting at ₹8,000/month for GYM and ₹10,000/month for MMA + GYM.",
       actions: [
         { 
           label: "Membership Details", 
@@ -278,7 +278,7 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     // MMA specific
     {
       keywords: ["mma", "mixed martial arts", "boxing", "kickboxing", "grappling", "bjj", "judo", "wrestling"],
-      response: "Our MMA program combines various martial arts disciplines including Boxing, Kickboxing, Muay Thai, Wrestling, Judo, and Brazilian Jiu-Jitsu (BJJ). We offer both technical training and sparring sessions, along with strength and conditioning, HIIT and cardio sessions. Classes are available 3 times per week, with separate batches for beginners and advanced practitioners.",
+      response: "Our MMA program combines various martial arts disciplines including Boxing, Kickboxing, Muay Thai, Wrestling, Judo, and Brazilian Jiu-Jitsu (BJJ). We offer both technical training and sparring sessions, along with strength and conditioning, HIIT and cardio sessions. Classes are available 3 times per week.\n\nMMA ONLY membership pricing:\n- Monthly: ₹3,000\n- Quarterly: ₹7,500 (₹2,500/month)\n- Half-Yearly: ₹12,000 (₹2,000/month)\n- Annual: ₹18,000 (₹1,500/month)\n\nFor MMA + GYM access:\n- Monthly: ₹4,000\n- Quarterly: ₹9,000 (₹3,000/month)\n- Half-Yearly: ₹15,000 (₹2,500/month)\n- Annual: ₹24,000 (₹2,000/month)",
       actions: [
         { 
           label: "MMA Program", 
@@ -304,7 +304,7 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     // Gym specific
     {
       keywords: ["gym", "weights", "equipment", "machines", "workout", "fitness center", "weight training"],
-      response: "Our gym features modern equipment for both strength training and weight workouts. Members have access to free weights, machines, and dedicated workout areas. Gym-Only membership costs ₹2,500 per month, with quarterly, half-yearly, and annual plans offering significant savings.",
+      response: "Our gym features modern equipment for both strength training and cardio workouts. Members have access to free weights, machines, and dedicated workout areas.\n\nGYM ONLY membership pricing:\n- Monthly: ₹3,000\n- Quarterly: ₹7,500 (₹2,500/month)\n- Half-Yearly: ₹12,000 (₹2,000/month)\n- Annual: ₹20,000 (₹1,666/month)\n\nFor MMA + GYM access:\n- Monthly: ₹4,000\n- Quarterly: ₹9,000 (₹3,000/month)\n- Half-Yearly: ₹15,000 (₹2,500/month)\n- Annual: ₹24,000 (₹2,000/month)",
       actions: [
         { 
           label: "Gym Membership", 
@@ -330,7 +330,7 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     // Personal Training
     {
       keywords: ["personal training", "personal trainer", "one on one", "individual", "private session", "pt"],
-      response: "Our Personal Training program offers one-on-one coaching designed specifically for your goals, body type, and preferences. The premium service costs ₹8,000 per month and provides accelerated results with customized training plans.",
+      response: "We offer two types of Personal Training programs:\n\n1. GYM Personal Training (₹8,000/month):\n- One-on-one coaching\n- Customized workout plans\n- Nutrition guidance\n- Progress tracking\n\n2. MMA + GYM Personal Training (₹10,000/month):\n- All GYM Personal Training benefits\n- Personalized martial arts instruction\n- Technical skill development\n- Combat strategy coaching\n\nBoth programs are designed to provide accelerated results with expert guidance tailored to your goals.",
       actions: [
         { 
           label: "Personal Training", 
