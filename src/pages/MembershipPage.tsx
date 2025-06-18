@@ -353,7 +353,7 @@ const MembershipPage = () => {
   const scrollToRecoveryServices = () => {
     recoveryServicesRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
+  
   // Auto-switch to monthly if KARATE is selected
   useEffect(() => {
     if (selectedProgram === 'KARATE') {
@@ -862,14 +862,14 @@ const MembershipPage = () => {
                 <div className="relative bg-gradient-to-r from-dark-800 via-dark-700 to-dark-800 p-2 rounded-xl border border-white/5 shadow-xl overflow-hidden">
                   <div className="flex flex-wrap justify-center items-stretch gap-2">
                     {/* Monthly */}
-                    <button 
+              <button 
                       className={`flex-1 basis-full sm:basis-[calc(20%-8px)] min-h-[70px] sm:min-h-0 py-3 px-4 rounded-lg transition-all relative overflow-hidden ${
                         planDuration === 'monthly' 
                           ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-black font-semibold shadow-lg' 
                           : 'bg-dark-800/80 text-gray-300 hover:bg-dark-600'
                       }`}
-                      onClick={() => setPlanDuration('monthly')}
-                    >
+                onClick={() => setPlanDuration('monthly')}
+              >
                       <div className="flex sm:flex-col items-center justify-between sm:justify-center h-full">
                         <span className={`text-base ${planDuration === 'monthly' ? 'text-black' : 'text-gray-200'}`}>Monthly</span>
                         <span className={`text-xs ${planDuration === 'monthly' ? 'text-black/80' : 'text-gray-400'}`}>Regular Price</span>
@@ -927,16 +927,16 @@ const MembershipPage = () => {
                           <span className="text-xs text-gray-400">Not Available</span>
                         </div>
                       )}
-                    </button>
+              </button>
                     
                     {/* Annual */}
-                    <button 
+              <button 
                       className={`flex-1 basis-[calc(50%-4px)] sm:basis-[calc(20%-8px)] min-h-[70px] sm:min-h-0 py-3 px-4 rounded-lg transition-all relative overflow-hidden ${
                         planDuration === 'annual' 
                           ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-black font-semibold shadow-lg' 
                           : 'bg-dark-800/80 text-gray-300 hover:bg-dark-600'
                       }`}
-                      onClick={() => setPlanDuration('annual')}
+                onClick={() => setPlanDuration('annual')}
                       disabled={selectedProgram === 'KARATE'}
                       title={selectedProgram === 'KARATE' ? 'KARATE is available monthly only' : ''}
                     >
@@ -952,7 +952,7 @@ const MembershipPage = () => {
                           <span className="text-xs text-gray-400">Not Available</span>
                         </div>
                       )}
-                    </button>
+              </button>
 
                     {/* Steam/Ice Button */}
                     <button 
