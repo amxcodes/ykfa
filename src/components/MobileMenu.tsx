@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, ReactNode } from 'react';
 import ReactDOM from 'react-dom';
 import { Home, Dumbbell, CreditCard, Phone, ShoppingCart, Calendar, BookOpen } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+// import { motion, AnimatePresence } from 'framer-motion'; // Replaced with CSS animations
 
 // Google Play Store SVG icon component
 const PlayStoreIcon = () => (
@@ -21,9 +21,11 @@ const AppleStoreIcon = () => (
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  currentPath?: string;
+  children?: ReactNode;
 }
 
-const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
+const MobileMenu = ({ isOpen, onClose, currentPath = '/', children }: MobileMenuProps) => {
   // Use ref for screen size to avoid unnecessary re-renders
   const menuRef = useRef<HTMLDivElement>(null);
   const [screenSize, setScreenSize] = useState({
@@ -184,7 +186,7 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
 
   // Use portal to render outside the component hierarchy
   return ReactDOM.createPortal(
-    <AnimatePresence mode="sync">
+    <>
       {isOpen && (
         <div 
           key="mobile-menu-container"
@@ -196,37 +198,29 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
           }}
         >
         {/* Backdrop with blur */}
-        <motion.div
-          className="absolute inset-0 bg-black/80 backdrop-blur-xl"
+        <div
+          className="absolute inset-0 bg-black/90 animate-fade-in"
           onClick={onClose}
-          variants={backdropVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
           style={{ willChange: 'opacity' }}
         />
         
         {/* Menu container */}
-        <motion.div
+        <div
           ref={menuRef}
-          className="relative z-10"
+          className="relative z-10 animate-mobile-menu-in"
           style={{
             width: styles.width,
             willChange: 'transform, opacity',
             transform: 'translateZ(0)',
           }}
-          variants={menuVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
         >
           <div 
-            className="backdrop-blur-xl bg-black/70 border border-white/10 overflow-hidden"
+            className="glassmorphic"
             style={{ borderRadius: styles.borderRadius, transform: 'translateZ(0)' }}
           >
-            {/* Decorative elements - reduced blur size for better performance */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/20 rounded-full blur-xl opacity-60 pointer-events-none"></div>
-            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/20 rounded-full blur-xl opacity-60 pointer-events-none"></div>
+            {/* Simplified decorative elements - no blur */}
+            <div className="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/10 rounded-full opacity-40 pointer-events-none"></div>
+            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/10 rounded-full opacity-40 pointer-events-none"></div>
             
             {/* Header with logo */}
             <div className="p-3 border-b border-white/10">
@@ -257,76 +251,61 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               </div>
             </div>
             
-            {/* Navigation - simplified animation strategy */}
-            <div className="p-2">
-              <div className="space-y-1">
-                {navigationItems.map((item, index) => (
-                  <div
-                    key={item.to}
-                    style={{ 
-                      opacity: 0, 
-                      transform: 'translateX(-20px)', 
-                      animation: `navItemFadeIn 0.3s ease forwards ${index * 0.05}s`
-                    }}
-                  >
+            {/* Navigation Links */}
+            <nav className="p-2">
+              <ul className="space-y-1">
+                {navigationItems.map((item) => {
+                  const isActive = currentPath === item.to;
+                  const Icon = item.icon;
+                  
+                  return (
+                    <li key={item.to}>
                     <Link
                       to={item.to}
-                      className="flex items-center w-full gap-2 p-2 text-xs transition-all text-gray-200 hover:bg-white/10 rounded-lg group mb-1 border border-transparent hover:border-white/10 relative overflow-hidden"
-                      onClick={onClose}
-                      style={{ transform: 'translateZ(0)' }}
-                    >
-                      <div className="h-6 w-6 flex-shrink-0 rounded-full bg-black/70 backdrop-blur-sm flex items-center justify-center border border-white/10 relative z-10">
-                        <item.icon size={12} className="text-amber-400" />
-                      </div>
-                      <div className="flex-1 min-w-0 whitespace-nowrap overflow-hidden text-ellipsis">
-                        <p className="text-white group-hover:text-amber-300 font-medium transition-colors whitespace-nowrap">{item.label}</p>
-                      </div>
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            </div>
+                        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+                          isActive
+                            ? 'bg-amber-500/20 text-amber-400'
+                            : 'text-gray-300 hover:bg-white/5'
+                        }`}
+                        onClick={onClose}
+                      >
+                        <Icon className={`w-4 h-4 ${isActive ? 'text-amber-400' : 'text-gray-400'}`} />
+                        <span>{item.label}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
             
-            {/* App Store Links */}
-            <div className="p-3 border-t border-white/10 space-y-2">
-              <motion.a
+            {/* App download buttons */}
+            <div className="px-4 py-3 border-t border-white/10">
+              <div className="flex gap-2">
+                <a
                 href="https://play.google.com/store/apps/details?id=com.ydl.yaseensykfawarriors&pcampaignid=web_share"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center w-full gap-2 bg-gradient-to-br from-amber-400 to-amber-500 text-black px-3 py-2 rounded-lg hover:shadow-lg transition-all border border-amber-300/30 font-medium text-xs"
+                  className="flex-1 flex items-center justify-center gap-2 bg-black/30 hover:bg-black/50 text-white py-2 rounded-lg border border-white/10 transition-colors"
                 onClick={onClose}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                style={{ 
-                  willChange: 'transform',
-                  transform: 'translateZ(0)'
-                }}
               >
                 <PlayStoreIcon />
-                <span className="whitespace-nowrap">Download on Google Play</span>
-              </motion.a>
-
-              <motion.a
-                href="https://apps.apple.com/in/app/yaseens-ykfa-warriors/id6742874298"
-                target="_blank"
-                rel="noopener noreferrer" 
-                className="flex items-center justify-center w-full gap-2 bg-white/10 backdrop-blur-md text-white px-3 py-2 rounded-lg hover:bg-white/15 transition-all border border-white/10 font-medium text-xs"
+                  <span className="text-xs">Google Play</span>
+                </a>
+                <a
+                  href="#"
+                  className="flex-1 flex items-center justify-center gap-2 bg-black/30 hover:bg-black/50 text-white py-2 rounded-lg border border-white/10 transition-colors"
                 onClick={onClose}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                style={{ 
-                  willChange: 'transform',
-                  transform: 'translateZ(0)'
-                }}
               >
                 <AppleStoreIcon />
-                <span className="whitespace-nowrap">Download on App Store</span>
-              </motion.a>
-              
-              {/* App store links section ends here */}
+                  <span className="text-xs">App Store</span>
+                </a>
+              </div>
             </div>
+            
+            {/* Render children if provided */}
+            {children}
           </div>
-        </motion.div>
+        </div>
       </div>
       )}
       
@@ -343,7 +322,7 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
           }
         }
       `}</style>
-    </AnimatePresence>,
+    </>,
     document.body
   );
 };

@@ -20,7 +20,7 @@ export const forceGlobalCleanup = () => {
     try {
       cleanup();
     } catch (e) {
-      console.error('Error in cleanup function:', e);
+      // Handle cleanup errors silently
     }
   });
   
@@ -28,20 +28,21 @@ export const forceGlobalCleanup = () => {
   cleanupRegistry.clear();
 };
 
+// DISABLED global cleanup to prevent memory leaks
 // Setup idle cleanup
-if (typeof window !== 'undefined') {
-  // Run cleanup when page becomes hidden (user switched tabs, etc.)
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
-      forceGlobalCleanup();
-    }
-  });
-  
-  // Also run cleanup on low memory warning
-  if ('onmemorywarning' in window) {
-    (window as any).addEventListener('memorywarning', forceGlobalCleanup);
-  }
-}
+// if (typeof window !== 'undefined') {
+//   // Run cleanup when page becomes hidden (user switched tabs, etc.)
+//   document.addEventListener('visibilitychange', () => {
+//     if (document.visibilityState === 'hidden') {
+//       forceGlobalCleanup();
+//     }
+//   });
+//   
+//   // Also run cleanup on low memory warning
+//   if ('onmemorywarning' in window) {
+//     (window as any).addEventListener('memorywarning', forceGlobalCleanup);
+//   }
+// }
 
 /**
  * Register a cleanup function to be called during the next garbage collection opportunity
@@ -85,16 +86,10 @@ export function useMemoryOptimized(
   cleanupRef.current = cleanupFn;
   
   useEffect(() => {
-    // Register cleanup with global registry
-    const unregister = registerCleanup(cleanupRef.current);
-    
     // Return cleanup function for React to call on unmount
     return () => {
       // Call cleanup directly
       cleanupRef.current();
-      
-      // Unregister from global registry
-      unregister();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
@@ -242,7 +237,15 @@ export function useOptimizedObserver<T extends IntersectionObserver | ResizeObse
   const observerRef = useRef<T | null>(null);
   
   useEffect(() => {
-    // Create observer
+    // Clean up previous observer
+    if (observerRef.current) {
+      if ('disconnect' in observerRef.current && typeof observerRef.current.disconnect === 'function') {
+        observerRef.current.disconnect();
+      }
+      observerRef.current = null;
+    }
+    
+    // Create new observer
     observerRef.current = createObserver();
     
     // Cleanup function

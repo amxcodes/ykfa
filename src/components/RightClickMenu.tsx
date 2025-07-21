@@ -3,7 +3,6 @@ import { MessageCircle, Bot, Calculator, X } from 'lucide-react';
 import { WidgetContext } from '../App';
 import { useContextMenu } from '../hooks/useContextMenu';
 import { optimizedAnimation } from '../utils/performanceUtils';
-import { startMemoryMonitoring, stopMemoryMonitoring } from '../utils/memoryProfiler';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const STABLE_EXCLUDE_ELEMENTS = ['INPUT', 'TEXTAREA', 'SELECT'];
@@ -16,16 +15,17 @@ const RightClickMenu: React.FC = memo(() => {
   const location = useLocation();
   const navigate = useNavigate();
   
+  // DISABLED memory monitoring to prevent memory leaks
   // Initialize memory profiler
-  useEffect(() => {
-    // Start memory monitoring with custom parameters
-    startMemoryMonitoring(10000, 50, 0.7); // Check every 10s, keep 50 entries, warn at 70% usage
-    
-    // Stop monitoring when component unmounts
-    return () => {
-      stopMemoryMonitoring();
-    };
-  }, []);
+  // useEffect(() => {
+  //   // Start memory monitoring with custom parameters
+  //   startMemoryMonitoring(10000, 50, 0.7); // Check every 10s, keep 50 entries, warn at 70% usage
+  //   
+  //   // Stop monitoring when component unmounts
+  //   return () => {
+  //     stopMemoryMonitoring();
+  //   };
+  // }, []);
   
   // Memoized menu options to prevent recreating on each render
   const menuOptions = useMemo(() => [
@@ -138,7 +138,7 @@ const RightClickMenu: React.FC = memo(() => {
   return (
     <div
       ref={menuRef}
-      className="fixed z-[1000] w-56 rounded-xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-150"
+      className="fixed z-[1000] w-56 overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-150"
       style={{
         top: position.y,
         left: position.x,
@@ -150,9 +150,9 @@ const RightClickMenu: React.FC = memo(() => {
       {/* Enhanced glassmorphic container */}
       <div className="glassmorphic-menu relative">
         {/* Decorative elements for glassmorphic effect with improved performance */}
-        <div className="decorative-element absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 rounded-full blur-2xl opacity-60 pointer-events-none"></div>
-        <div className="decorative-element absolute -bottom-20 -left-20 w-40 h-40 bg-amber-500/20 rounded-full blur-2xl opacity-60 pointer-events-none"></div>
-        <div className="decorative-element absolute top-10 left-10 w-20 h-20 bg-purple-500/10 rounded-full blur-xl opacity-40 pointer-events-none"></div>
+        <div className="decorative-element absolute -top-20 -right-20 w-40 h-40 bg-blue-500/10 rounded-full opacity-60 pointer-events-none"></div>
+        <div className="decorative-element absolute -bottom-20 -left-20 w-40 h-40 bg-amber-500/10 rounded-full opacity-60 pointer-events-none"></div>
+        <div className="decorative-element absolute top-10 left-10 w-20 h-20 bg-purple-500/5 rounded-full opacity-40 pointer-events-none"></div>
         
         {/* Menu header */}
         <div className="px-3 py-2 border-b border-white/10">

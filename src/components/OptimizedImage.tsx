@@ -1,14 +1,16 @@
-import React, { useState, useEffect, useRef, ImgHTMLAttributes } from 'react';
+import React, { useState, useEffect, useRef, ImgHTMLAttributes, useContext } from 'react';
 // Removed import: import { optimizeImage } from '../utils/memoryOptimizer';
 import { useMemoryOptimized } from '../hooks/useMemoryOptimized';
+import { WidgetContext } from '../App';
 
 // Inline implementation of the optimizeImage function
 /**
  * Optimize an image by reducing its quality and dimensions when appropriate
  * @param imgElement Image element to optimize
  * @param maxWidth Maximum width to scale to (default: 1200px)
+ * @param quality JPEG quality (0-1), lower in performance mode
  */
-const optimizeImage = (imgElement: HTMLImageElement, maxWidth = 1200): void => {
+const optimizeImage = (imgElement: HTMLImageElement, maxWidth = 1200, quality = 0.7): void => {
   // Only optimize if image is larger than maxWidth
   if (imgElement.naturalWidth > maxWidth) {
     try {
@@ -26,7 +28,7 @@ const optimizeImage = (imgElement: HTMLImageElement, maxWidth = 1200): void => {
         ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
         
         // Replace src with optimized version
-        const optimizedSrc = canvas.toDataURL('image/jpeg', 0.7);
+        const optimizedSrc = canvas.toDataURL('image/jpeg', quality);
         imgElement.src = optimizedSrc;
       }
       
@@ -36,8 +38,7 @@ const optimizeImage = (imgElement: HTMLImageElement, maxWidth = 1200): void => {
         canvas.height = 0;
       }, 100);
     } catch (e) {
-      // Silently fail if optimization fails
-      console.warn('Image optimization failed:', e);
+  
     }
   }
 };
@@ -46,9 +47,9 @@ const optimizeImage = (imgElement: HTMLImageElement, maxWidth = 1200): void => {
 interface OptimizedImageProps extends ImgHTMLAttributes<HTMLImageElement> {
   lowResSrc?: string;  // Optional low-resolution placeholder
   lazyLoad?: boolean;  // Whether to lazy load the image
-  threshold?: number;  // Intersection threshold for lazy loading
   optimizeWidth?: number; // Width to optimize the image to
   blurUp?: boolean;    // Whether to use blur-up technique
+  forceLowQuality?: boolean; // Force low quality regardless of performance mode
 }
 
 /**
@@ -60,6 +61,7 @@ interface OptimizedImageProps extends ImgHTMLAttributes<HTMLImageElement> {
  * - Optional blur-up effect
  * - Proper cleanup on unmount
  * - Memory-efficient loading
+ * - Respects performance mode settings
  */
 const OptimizedImage: React.FC<OptimizedImageProps> = ({
   src,
@@ -71,12 +73,21 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   alt = '',
   className = '',
   style = {},
+  forceLowQuality = false,
   ...props
 }) => {
   const [loaded, setLoaded] = useState(false);
   const [currentSrc, setCurrentSrc] = useState(lowResSrc || '');
   const imgRef = useRef<HTMLImageElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  
+  // Get performance mode from context
+  const { performanceMode } = useContext(WidgetContext);
+  
+  // Adjust optimization settings based on performance mode
+  const effectiveOptimizeWidth = performanceMode ? Math.min(optimizeWidth, 800) : optimizeWidth;
+  const effectiveBlurUp = performanceMode ? false : blurUp;
+  const imageQuality = (performanceMode || forceLowQuality) ? 0.5 : 0.7;
 
   // Clean up any resources when component unmounts
   useMemoryOptimized(() => {
@@ -132,9 +143,9 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   // Optimize the image after it loads
   useEffect(() => {
     if (loaded && imgRef.current) {
-      optimizeImage(imgRef.current, optimizeWidth);
+      optimizeImage(imgRef.current, effectiveOptimizeWidth, imageQuality);
     }
-  }, [loaded, optimizeWidth]);
+  }, [loaded, effectiveOptimizeWidth, imageQuality]);
 
   // Load the full image
   const loadImage = () => {
@@ -152,7 +163,6 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     };
     
     img.onerror = () => {
-      console.error('Failed to load image:', src);
       // Keep low-res version if available
       setLoaded(true);
       
@@ -161,14 +171,19 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       img.onerror = null;
     };
     
+    // In performance mode, add query params to request smaller images if supported by the server
+    if (performanceMode && src.includes('?') === false && !src.startsWith('data:')) {
+      img.src = `${src}?w=${effectiveOptimizeWidth}&q=50`;
+    } else {
     img.src = src;
+    }
   };
 
   // Apply blur-up effect CSS
   const imageStyle: React.CSSProperties = {
     ...style,
     transition: 'filter 0.5s ease-out',
-    filter: loaded ? 'blur(0)' : blurUp ? 'blur(10px)' : 'none',
+    filter: loaded ? 'blur(0)' : effectiveBlurUp ? 'blur(10px)' : 'none',
   };
 
   return (
@@ -183,7 +198,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       {...props}
       onLoad={() => {
         if (imgRef.current) {
-          optimizeImage(imgRef.current, optimizeWidth);
+          optimizeImage(imgRef.current, effectiveOptimizeWidth, imageQuality);
         }
         setLoaded(true);
         props.onLoad?.call(null);

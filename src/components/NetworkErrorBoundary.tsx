@@ -77,19 +77,13 @@ class NetworkErrorBoundary extends Component<Props, State> {
   /**
    * Log error information for debugging
    */
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error to console (could be replaced with external error reporting service)
-    console.error(
-      '🚨 NetworkErrorBoundary caught an error:',
-      {
-        error,
-        type: typeof error,
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-        componentStack: errorInfo.componentStack
-      }
-    );
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    // Handle errors silently
+    this.setState({
+      hasError: true,
+      error: error,
+      errorInfo: errorInfo
+    });
   }
 
   /**

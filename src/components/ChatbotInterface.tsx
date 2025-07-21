@@ -36,6 +36,9 @@ interface ChatbotInterfaceProps {
   onClose: () => void;
 }
 
+// Add a global message ID counter
+let globalMessageId = 1;
+
 // Memoize individual message component to prevent unnecessary re-renders
 const ChatMessage = memo(({ message }: { message: Message }) => {
   const navigate = useNavigate();
@@ -239,7 +242,7 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     // Membership and pricing
     {
       keywords: ["membership", "pricing", "cost", "fee", "price", "package", "join", "subscription", "payment", "monthly", "quarterly", "half-yearly", "annual"],
-      response: "We offer flexible membership plans with monthly, quarterly, half-yearly, and annual options:\n\nMMA + GYM:\n- Monthly: ₹4,000\n- Quarterly: ₹9,000 (₹3,000/month)\n- Half-Yearly: ₹15,000 (₹2,500/month)\n- Annual: ₹24,000 (₹2,000/month)\n\nMMA ONLY:\n- Monthly: ₹3,000\n- Quarterly: ₹7,500 (₹2,500/month)\n- Half-Yearly: ₹12,000 (₹2,000/month)\n- Annual: ₹18,000 (₹1,500/month)\n\nGYM ONLY:\n- Monthly: ₹3,000\n- Quarterly: ₹7,500 (₹2,500/month)\n- Half-Yearly: ₹12,000 (₹2,000/month)\n- Annual: ₹20,000 (₹1,666/month)\n\nKARATE:\n- Monthly: ₹1,000\n\nWe also offer Personal Training packages starting at ₹8,000/month for GYM and ₹10,000/month for MMA + GYM.",
+      response: "We offer flexible membership plans with monthly, quarterly, half-yearly, and annual options:\n\nMMA + GYM:\n- Monthly: ₹4,000\n- Quarterly: ₹9,000 (₹3,000/month)\n- Half-Yearly: ₹15,000 (₹2,500/month)\n- Annual: ₹24,000 (₹2,000/month)\n\nMMA ONLY:\n- Monthly: ₹3,000\n- Quarterly: ₹7,500 (₹2,500/month)\n- Half-Yearly: ₹12,000 (₹2,000/month)\n- Annual: ₹18,000 (₹1,500/month)\n\nGYM FIT FUSION:\n- Monthly: ₹3,000\n- Quarterly: ₹7,500 (₹2,500/month)\n- Half-Yearly: ₹12,000 (₹2,000/month)\n- Annual: ₹20,000 (₹1,666/month)\n\nKARATE:\n- Monthly: ₹1,000\n\nWe also offer Personal Training packages starting at ₹8,000/month for GYM and ₹10,000/month for MMA + GYM.",
       actions: [
         { 
           label: "Membership Details", 
@@ -304,7 +307,7 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     // Gym specific
     {
       keywords: ["gym", "weights", "equipment", "machines", "workout", "fitness center", "weight training"],
-      response: "Our gym features modern equipment for both strength training and cardio workouts. Members have access to free weights, machines, and dedicated workout areas.\n\nGYM ONLY membership pricing:\n- Monthly: ₹3,000\n- Quarterly: ₹7,500 (₹2,500/month)\n- Half-Yearly: ₹12,000 (₹2,000/month)\n- Annual: ₹20,000 (₹1,666/month)\n\nFor MMA + GYM access:\n- Monthly: ₹4,000\n- Quarterly: ₹9,000 (₹3,000/month)\n- Half-Yearly: ₹15,000 (₹2,500/month)\n- Annual: ₹24,000 (₹2,000/month)",
+      response: "Our gym features modern equipment for both strength training and cardio workouts. Members have access to free weights, machines, and dedicated workout areas.\n\nGYM FIT FUSION membership pricing:\n- Monthly: ₹3,000\n- Quarterly: ₹7,500 (₹2,500/month)\n- Half-Yearly: ₹12,000 (₹2,000/month)\n- Annual: ₹20,000 (₹1,666/month)\n\nFor MMA + GYM access:\n- Monthly: ₹4,000\n- Quarterly: ₹9,000 (₹3,000/month)\n- Half-Yearly: ₹15,000 (₹2,500/month)\n- Annual: ₹24,000 (₹2,000/month)",
       actions: [
         { 
           label: "Gym Membership", 
@@ -565,84 +568,60 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     e.preventDefault();
     if (!inputMessage.trim()) return;
 
-    // Add user message
+    // Add user message with unique ID
     const userMessage: Message = {
-      id: messages.length + 1,
+      id: globalMessageId++,
       text: inputMessage,
       isBot: false,
       timestamp: new Date()
     };
-
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
-    
-    // Hide prompts after first user message
     setShowPrompts(false);
-    
-    // Set typing indicator
     setIsTyping(true);
-
-    // Clear any existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-
     // Get bot response after a delay to simulate typing
     timeoutRef.current = setTimeout(() => {
-      // Prevent state updates if component unmounted
       if (!isMountedRef.current) return;
-      
       const response = getBotResponse(userMessage.text);
-      
       const botMessage: Message = {
-        id: messages.length + 2,
+        id: globalMessageId++,
         text: response.text,
         isBot: true,
         timestamp: new Date(),
         actions: response.actions
       };
-      
       setMessages(prev => [...prev, botMessage]);
       setIsTyping(false);
       timeoutRef.current = null;
-    }, Math.min(1000, userMessage.text.length * 50)); // Typing delay based on response length
+    }, Math.min(1000, userMessage.text.length * 50));
   };
 
   // Handle quick prompt selection
   const handleQuickPrompt = (prompt: QuickPrompt) => {
-    // Add user message
     const userMessage: Message = {
-      id: messages.length + 1,
+      id: globalMessageId++,
       text: prompt.value,
       isBot: false,
       timestamp: new Date()
     };
-
     setMessages(prev => [...prev, userMessage]);
-    
-    // Hide prompts after selection
     setShowPrompts(false);
-    
-    // Set typing indicator
     setIsTyping(true);
-
-    // Clear any existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-
-    // Get bot response after a delay to simulate typing
     timeoutRef.current = setTimeout(() => {
       const response = getBotResponse(prompt.value);
-      
       const botMessage: Message = {
-        id: messages.length + 2,
+        id: globalMessageId++,
         text: response.text,
         isBot: true,
         timestamp: new Date(),
         actions: response.actions
       };
-      
       setMessages(prev => [...prev, botMessage]);
       setIsTyping(false);
       timeoutRef.current = null;

@@ -1,11 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, ReactNode } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import Loader from './Loader';
 
+// Add children prop to support both Outlet and direct children
+interface LayoutProps {
+  children?: ReactNode;
+}
+
 // Simplified Layout component - removed all network monitoring code
-const Layout = () => {
+const Layout = ({ children }: LayoutProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [loadingComplete, setLoadingComplete] = useState(false);
   const location = useLocation();
@@ -92,6 +97,7 @@ const Layout = () => {
 
   return (
     <>
+      {/* Re-enabled now that initialization error is fixed */}
       {/* Show loader until critical resources are loaded */}
       {!loadingComplete && <Loader loadingComplete={loadingComplete} />}
       
@@ -99,7 +105,7 @@ const Layout = () => {
       <div className="flex flex-col min-h-screen bg-dark-950 text-white">
         <Navbar isScrolled={isScrolled} />
         <main className="flex-grow">
-          <Outlet />
+          {children || <Outlet />}
         </main>
         <Footer />
       </div>

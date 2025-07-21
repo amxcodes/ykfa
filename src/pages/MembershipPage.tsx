@@ -50,6 +50,8 @@ const ModernPricingCard = ({
 }) => {
   const [animationKey, setAnimationKey] = useState(0);
   const [showOfferPrice, setShowOfferPrice] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Animation effect for price switching with continuous strikethrough
   useEffect(() => {
@@ -61,20 +63,27 @@ const ModernPricingCard = ({
     }, 1500);
     
     // Set up cycling animation
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       // Switch back to original price with fresh animation
       setShowOfferPrice(false);
       setAnimationKey(prev => prev + 1);
       
       // Show offer price after strike animation completes
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         setShowOfferPrice(true);
       }, 1500);
     }, 3000);
     
     return () => {
       clearTimeout(initialTimeout);
-      clearInterval(interval);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
     };
   }, [plan.originalPrice]);
   
@@ -232,25 +241,39 @@ const ModernPricingCard = ({
 const RecoveryServiceCard = ({ service }: { service: RecoveryService }) => {
   const [animationKey, setAnimationKey] = useState(0);
   const [showOfferPrice, setShowOfferPrice] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   useEffect(() => {
     if (!service.originalPrice) return;
     
-    const initialTimeout = setTimeout(() => {
+    initialTimeoutRef.current = setTimeout(() => {
       setShowOfferPrice(true);
     }, 1500);
     
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       setShowOfferPrice(false);
       setAnimationKey(prev => prev + 1);
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         setShowOfferPrice(true);
       }, 1500);
     }, 3000);
     
     return () => {
-      clearTimeout(initialTimeout);
-      clearInterval(interval);
+      // Clear all timeouts and intervals
+      if (initialTimeoutRef.current) {
+        clearTimeout(initialTimeoutRef.current);
+        initialTimeoutRef.current = null;
+      }
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
     };
   }, [service.originalPrice]);
 
@@ -375,13 +398,17 @@ const MembershipPage = () => {
       threshold: 0.1
     };
     
+    const timeoutRefs: ReturnType<typeof setTimeout>[] = [];
+    
     const cardObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry, index) => {
         if (entry.isIntersecting) {
           // Add visible class with staggered delay based on index
-          setTimeout(() => {
+          const timeoutId = setTimeout(() => {
             entry.target.classList.add('visible');
           }, index * 100); // 100ms stagger
+          
+          timeoutRefs.push(timeoutId);
           
           // Unobserve once animated
           cardObserver.unobserve(entry.target);
@@ -395,9 +422,10 @@ const MembershipPage = () => {
       cardObserver.observe(card);
     });
     
-    // Clean up observer
+    // Clean up observer and timeouts
     return () => {
       cardObserver.disconnect();
+      timeoutRefs.forEach(clearTimeout);
     };
   }, []);
   
@@ -405,6 +433,7 @@ const MembershipPage = () => {
   useEffect(() => {
     if (pricingCardsRef.current && prevDurationRef.current !== planDuration) {
       const cards = pricingCardsRef.current.querySelectorAll('.pricing-card');
+      const timeoutRefs: ReturnType<typeof setTimeout>[] = [];
       
       // Apply animations to each card with staggered delays
       cards.forEach((card, index) => {
@@ -420,19 +449,28 @@ const MembershipPage = () => {
         }
         
         // Start animation after a staggered delay
-        setTimeout(() => {
+        const timeoutId1 = setTimeout(() => {
           card.classList.remove('duration-change-enter');
           card.classList.add('duration-change-enter-active');
           
           // Clean up animation classes after animation completes
-          setTimeout(() => {
+          const timeoutId2 = setTimeout(() => {
             card.classList.remove('duration-change-enter-active');
             card.classList.add('visible');
           }, 700); // Match the transition duration
+          
+          timeoutRefs.push(timeoutId2);
         }, index * 120); // Increase stagger delay for more visual separation
+        
+        timeoutRefs.push(timeoutId1);
       });
       
       prevDurationRef.current = planDuration;
+      
+      // Clean up timeouts on unmount or dependency change
+      return () => {
+        timeoutRefs.forEach(clearTimeout);
+      };
     }
   }, [planDuration]);
   
@@ -513,11 +551,11 @@ const MembershipPage = () => {
       },
       {
         id: 5,
-        name: "GYM ONLY",
+        name: "GYM FIT FUSION",
         price: 3000,
         period: "month",
         description: "Unlimited access to our modern gym with top-tier equipment.",
-        programType: "GYM ONLY",
+        programType: "GYM FIT FUSION",
         image: "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
           { name: "Access to gym", included: true },
@@ -572,13 +610,13 @@ const MembershipPage = () => {
       },
       {
         id: 5,
-        name: "GYM ONLY",
+        name: "GYM FIT FUSION",
         price: 7500,
         originalPrice: 9000,
         perMonthPrice: "₹2,500 per month",
         period: "quarter",
         description: "Unlimited access to our modern gym with top-tier equipment.",
-        programType: "GYM ONLY",
+        programType: "GYM FIT FUSION",
         image: "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
           { name: "Access to gym", included: true },
@@ -633,13 +671,13 @@ const MembershipPage = () => {
       },
       {
         id: 5,
-        name: "GYM ONLY",
+        name: "GYM FIT FUSION",
         price: 12000,
         originalPrice: 18000,
         perMonthPrice: "₹2,000 per month",
         period: "6mo",
         description: "Unlimited access to our modern gym with top-tier equipment.",
-        programType: "GYM ONLY",
+        programType: "GYM FIT FUSION",
         image: "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
           { name: "Access to gym", included: true },
@@ -675,7 +713,7 @@ const MembershipPage = () => {
       {
         id: 2,
         name: "MMA ONLY",
-        price: 18000,
+        price: 20000,
         originalPrice: 36000,
         perMonthPrice: "₹1,500 per month",
         period: "year",
@@ -694,13 +732,13 @@ const MembershipPage = () => {
       },
       {
         id: 5,
-        name: "GYM ONLY",
+        name: "GYM FIT FUSION",
         price: 20000,
         originalPrice: 36000,
         perMonthPrice: "₹1,666 per month",
         period: "year",
         description: "Unlimited access to our modern gym with top-tier equipment.",
-        programType: "GYM ONLY",
+        programType: "GYM FIT FUSION",
         image: "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?auto=compress&fit=crop&w=800&q=80",
         features: [
           { name: "Access to gym", included: true },
@@ -732,8 +770,8 @@ const MembershipPage = () => {
       answer: "GROUP FITNESS includes group cardio sessions with a coach, access to gym app, 2 days of cardio and HIIT workouts, and 4 days of strength training."
     },
     {
-      question: "What's available with the GYM ONLY membership?",
-      answer: "GYM ONLY provides access to all gym facilities and the gym app with full range of equipment including free weights and machines, and a cardio section."
+      question: "What's available with the GYM FIT FUSION membership?",
+      answer: "GYM FIT FUSION provides access to all gym facilities and the gym app with full range of equipment including free weights and machines, and a cardio section."
     },
     {
       question: "What martial arts disciplines are taught in the MMA program?",
@@ -824,7 +862,7 @@ const MembershipPage = () => {
           <div 
             className="absolute inset-0 bg-center bg-cover opacity-40"
             style={{ 
-              backgroundImage: "url('https://images.pexels.com/photos/4164766/pexels-photo-4164766.jpeg?auto=compress&cs=tinysrgb&w=1920')" 
+              backgroundImage: "url('https://images.pexels.com/photos/4164766/pexels-photo-4164766.jpeg?auto=compress&cs=tinysrgb&w=800&q=70')"
             }}
           ></div>
           <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/70 to-black/70"></div>
@@ -1015,11 +1053,11 @@ const MembershipPage = () => {
               </div>
             )}
             
-            {/* GYM ONLY Card */}
-            {(selectedProgram === 'all' || selectedProgram === 'GYM ONLY') && (
+            {/* GYM FIT FUSION Card */}
+            {(selectedProgram === 'all' || selectedProgram === 'GYM FIT FUSION') && (
               <div className="pricing-card">
                 <ModernPricingCard 
-                  plan={pricingPlans[planDuration].find(p => p.programType === 'GYM ONLY')!} 
+                  plan={pricingPlans[planDuration].find(p => p.programType === 'GYM FIT FUSION')!} 
                 />
               </div>
             )}
@@ -1054,7 +1092,7 @@ const MembershipPage = () => {
             </div>
             
             <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
-              {/* GYM + CARDIO Personal Training */}
+              {/* GYM FIT FUSION Personal Training */}
               <div className="relative rounded-2xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] group transition-all duration-500 flex flex-col">
                 <div className="absolute inset-0 -z-10">
                   <img 
@@ -1074,7 +1112,7 @@ const MembershipPage = () => {
                       <span className="text-amber-400 text-sm font-medium uppercase tracking-wider">Elite Experience</span>
                     </div>
                     
-                  <h3 className="text-2xl md:text-3xl font-bold mb-4">GYM + CARDIO Training</h3>
+                  <h3 className="text-2xl md:text-3xl font-bold mb-4">GYM FIT FUSION Training</h3>
                     
                   <p className="text-gray-300 mb-8">
                     Personalized gym workouts and cardio sessions designed for your fitness goals.

@@ -127,7 +127,7 @@ const StorePage = () => {
           <div 
             className="absolute inset-0 bg-center bg-cover opacity-40"
             style={{ 
-              backgroundImage: "url('https://images.pexels.com/photos/4164761/pexels-photo-4164761.jpeg?auto=compress&cs=tinysrgb&w=1280&q=80')",
+              backgroundImage: "url('https://images.pexels.com/photos/4164761/pexels-photo-4164761.jpeg?auto=compress&cs=tinysrgb&w=800&q=70')",
               willChange: 'transform',
               transform: isVisible ? 'scale(1)' : 'scale(1.05)',
               transition: 'transform 1.5s ease-out'

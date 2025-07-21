@@ -2,7 +2,10 @@ import { createContext, useState, useContext, ReactNode, useCallback, useEffect,
 import { useTimer } from 'react-timer-hook';
 // import gsap from 'gsap'; - Removing GSAP
 import { AnimationController } from '../utils/AnimationController';
-import confetti from 'canvas-confetti';
+// import confetti from 'canvas-confetti'; // DISABLED to prevent memory leaks
+
+// Development check
+const isDev = process.env.NODE_ENV !== 'production';
 
 export interface TimerSettings {
   warmupDuration: number;
@@ -59,25 +62,20 @@ export const TimerContext = createContext<TimerContextProps | undefined>(undefin
 
 // Sound URLs from free online libraries
 const SOUND_URLS = {
-  start: './sounds/start.mp3', // Local start sound
-  stop: './sounds/stop.mp3',  // Local stop sound
-  round: './sounds/start.mp3', // Changed to avoid conflict with workout sound
-  complete: 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3', // Game experience level increased
-  countdown: 'https://assets.mixkit.co/active_storage/sfx/254/254-preview.mp3', // Mixkit Click Tone
-  // Round announcement sounds
-  roundOne: './sounds/round one.mp3', // Round one announcement
-  nextRound: './sounds/next round.mp3', // Next round announcement
-  lastRound: './sounds/LAST ROUND.mp3', // Using correct last round sound file name
-  finalRound: './sounds/final round.mp3', // Final round sound
-  // Phase announcement sounds
-  warmup: './sounds/warm up.mp3', // Warm up announcement
-  cooldown: './sounds/cool down.mp3', // Cool down announcement
-  // Break announcement sound
-  break: './sounds/start.mp3', // Break announcement
-  // Workout sound during rounds
-  workout: './sounds/workout.mp3', // Workout sound during rounds
-  // Ambient background sound
-  ambient: '' // Disabled ambient sound to reduce memory usage and avoid conflicts
+  start: './sounds/start.ogg',
+  stop: './sounds/stop.ogg',
+  round: './sounds/round.ogg',
+  complete: 'https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3',
+  countdown: 'https://assets.mixkit.co/active_storage/sfx/254/254-preview.mp3',
+  roundOne: './sounds/round one.ogg',
+  nextRound: './sounds/next round.ogg',
+  lastRound: './sounds/LAST ROUND.ogg',
+  finalRound: './sounds/final round.ogg',
+  warmup: './sounds/warm up.ogg',
+  cooldown: './sounds/cool down.ogg',
+  break: './sounds/start.ogg',
+  workout: './sounds/workout.ogg',
+  ambient: ''
 };
 
 // Add phase color constants for the background gradients
@@ -110,9 +108,10 @@ const PHASE_COLORS = {
 };
 
 export function TimerProvider({ children }: { children: ReactNode }) {
-  // Cache audio instances to avoid recreating them
-  const audioCache = useRef<Record<string, HTMLAudioElement>>({});
-  
+  // Optimized audio management with better memory cleanup
+  const audioRefs = useRef<{ [key: string]: HTMLAudioElement | null }>({});
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+
   const [settings, setSettings] = useState<TimerSettings>(defaultSettings);
   const [currentPhase, setCurrentPhase] = useState<TimerPhase>('warmup');
   const [currentRound, setCurrentRound] = useState(1);
@@ -166,8 +165,6 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   // Ambient sound for continuous play
   const ambientSoundRef = useRef<HTMLAudioElement | null>(null);
   
-  const [wakeLock, setWakeLock] = useState<any>(null);
-  
   // More efficient audio initialization
   useEffect(() => {
     // Helper function to create or get cached audio element
@@ -175,16 +172,18 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       if (!url) return new Audio(); // Empty audio for empty URLs
       
       // Return from cache if available
-      if (audioCache.current[url]) {
-        return audioCache.current[url];
+      if (audioRefs.current[url]) {
+        return audioRefs.current[url] || new Audio();
       }
       
       try {
         const audio = new Audio(url);
-        audioCache.current[url] = audio; // Cache for reuse
+        audio.preload = 'none'; // Don't preload to save memory
+        audio.volume = settings.soundVolume;
+        audioRefs.current[url] = audio; // Cache for reuse
         return audio;
       } catch (error) {
-        console.error(`Failed to create audio for ${url}:`, error);
+        // Handle audio creation errors silently
         return new Audio(); // Return empty audio on error
       }
     };
@@ -235,23 +234,25 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       }
       
     } catch (error) {
-      console.error('Error initializing audio elements:', error);
+      // Handle audio initialization errors silently
     }
     
     // Clean up function
     return () => {
       // Stop and nullify all audio elements
-      Object.values(audioCache.current).forEach(audio => {
+      Object.values(audioRefs.current).forEach(audio => {
         try {
-          audio.pause();
-          audio.src = '';
+          if (audio) {
+            audio.pause();
+            audio.src = '';
+          }
         } catch (e) {
           // Silently handle errors
         }
       });
       
       // Clear the cache to release memory
-      audioCache.current = {};
+      audioRefs.current = {};
       
       // Clear all timeouts
       clearAllTimeouts();
@@ -550,43 +551,62 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     return timeline;
   }, [currentPhase]);
 
+  // DISABLED confetti to prevent memory leaks
   const fireConfetti = useCallback(() => {
-    const duration = 3000;
-    const animationEnd = Date.now() + duration;
-    const defaults = { 
-      startVelocity: 30, 
-      spread: 360, 
-      ticks: 60, 
-      zIndex: 9999  // Increased z-index to appear above blur
-    };
-
-    const randomInRange = (min: number, max: number) => {
-      return Math.random() * (max - min) + min;
-    };
-
-    const interval: any = setInterval(() => {
-      const timeLeft = animationEnd - Date.now();
-
-      if (timeLeft <= 0) {
-        return clearInterval(interval);
-      }
-
-      const particleCount = 50 * (timeLeft / duration);
-
-      // Since they fire from the same position, randomly spread them out a bit
-      confetti({
-        ...defaults,
-        particleCount,
-        origin: { x: randomInRange(0.2, 0.8), y: randomInRange(0.2, 0.8) }
-      });
-      confetti({
-        ...defaults,
-        particleCount,
-        origin: { x: randomInRange(0.2, 0.8), y: randomInRange(0.2, 0.8) }
-      });
-    }, 250);
-
-    return () => clearInterval(interval);
+    // if (!isDev) return; // Only in development
+    // 
+    // const duration = 3000; // 3 seconds
+    // const animationEnd = Date.now() + duration;
+    // 
+    // const defaults = {
+    //   spread: 360,
+    //   ticks: 50,
+    //   gravity: 0,
+    //   decay: 0.94,
+    //   startVelocity: 30,
+    //   colors: ['#f59e0b', '#fbbf24', '#d97706', '#92400e']
+    // };
+    // 
+    // const randomInRange = (min: number, max: number) => {
+    //   return Math.random() * (max - min) + min;
+    // };
+    // 
+    // // Store interval ID for cleanup
+    // let confettiInterval: ReturnType<typeof setInterval> | null = null;
+    // 
+    // confettiInterval = setInterval(() => {
+    //   const timeLeft = animationEnd - Date.now();
+    // 
+    //   if (timeLeft <= 0) {
+    //   if (confettiInterval) {
+    //     clearInterval(confettiInterval);
+    //     confettiInterval = null;
+    //   }
+    //   return;
+    //   }
+    // 
+    //   const particleCount = 50 * (timeLeft / duration);
+    // 
+    //   // Since they fire from the same position, randomly spread them out a bit
+    //   confetti({
+    //     ...defaults,
+    //     particleCount,
+    //     origin: { x: randomInRange(0.2, 0.8), y: randomInRange(0.2, 0.8) }
+    //   });
+    //   confetti({
+    //     ...defaults,
+    //     particleCount,
+    //     origin: { x: randomInRange(0.2, 0.8), y: randomInRange(0.2, 0.8) }
+    //   });
+    // }, 250);
+    // 
+    // // Cleanup function to clear interval if component unmounts
+    // return () => {
+    //   if (confettiInterval) {
+    //     clearInterval(confettiInterval);
+    //     confettiInterval = null;
+    //   }
+    // };
   }, []);
 
   const handlePhaseComplete = useCallback(() => {
@@ -612,7 +632,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       setCurrentPhase('complete');
       setIsPaused(true);
       playCompleteSound(); // Play completion sound
-      fireConfetti(); // Fire confetti animation
+      // fireConfetti(); // DISABLED confetti to prevent memory leaks
       setTransitionActive(false);
       isInPhaseTransition.current = false;
       return;
@@ -714,9 +734,6 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         // Reset transition state
         setTransitionActive(false);
         isInPhaseTransition.current = false;
-        
-        // Log that we're skipping this phase
-        console.log(`Skipping phase ${nextPhase} with 0 duration`);
         
         // Immediately move to the next phase without any delay
         // This is more memory efficient than using setTimeout
@@ -824,15 +841,10 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     return () => {
       // Stop all audio playback
-      [
-        startSoundRef, stopSoundRef, roundChangeSoundRef, completeSoundRef,
-        countdownSoundRef, roundOneSoundRef, nextRoundSoundRef, lastRoundSoundRef,
-        finalRoundSoundRef, warmupSoundRef, cooldownSoundRef, breakSoundRef,
-        workoutSoundRef, ambientSoundRef
-      ].forEach(ref => {
-        if (ref.current) {
-          ref.current.pause();
-          ref.current.src = '';
+      Object.values(audioRefs.current).forEach(audio => {
+        if (audio) {
+          audio.pause();
+          audio.src = '';
         }
       });
       
@@ -1215,31 +1227,27 @@ export function TimerProvider({ children }: { children: ReactNode }) {
 
     const requestWakeLock = async () => {
       // 1. Idempotency: If we already have an active lock in our state, do nothing.
-      if (wakeLock) {
+      if (wakeLockRef.current) {
         return;
       }
       try {
         if ('wakeLock' in navigator && isRunning && !isPaused) {
-          console.log('Requesting screen wake lock...');
           const lock = await (navigator as any).wakeLock.request('screen');
           
           // 2. Handle external release by the browser
           lock.onrelease = () => {
-            console.log('Screen wake lock was released externally.');
             // Check if this is still the active lock we care about
             // This check helps if a new lock was requested and set very quickly
             // though with the idempotency check above, it's less likely to be an issue.
-            if (wakeLock === lock) {
-              setWakeLock(null);
+            if (wakeLockRef.current === lock) {
+              wakeLockRef.current = null;
             }
           };
-          setWakeLock(lock);
-          console.log('Screen wake lock acquired.');
+          wakeLockRef.current = lock;
         }
       } catch (err: any) { // Explicitly type err
-        console.error('Screen wake lock request error:', err.name, err.message);
         // Ensure wakeLock state is null if request fails
-        setWakeLock(null);
+        wakeLockRef.current = null;
       }
     };
 
@@ -1247,10 +1255,9 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       // Use the sentinel stored at the beginning of this effect run for release,
       // or the current wakeLock state if that's more appropriate for your logic.
       // For simplicity and directness with the current state:
-      if (wakeLock) {
-        console.log('Releasing screen wake lock...');
+      if (wakeLockRef.current) {
         try {
-          await wakeLock.release();
+          await wakeLockRef.current.release();
           // The onrelease event handler (if it fires before this)
           // might have already set wakeLock to null.
           // Setting it here ensures it's cleared if release() is called directly
@@ -1259,8 +1266,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
           console.error('Screen wake lock release error:', err.name, err.message);
         } finally {
           // 3. Reliably clear state after attempting release
-          setWakeLock(null); 
-          console.log('Screen wake lock state cleared after release attempt.');
+          wakeLockRef.current = null; 
         }
       }
     };
@@ -1275,9 +1281,8 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       if (document.visibilityState === 'visible' && isRunning && !isPaused && timerMode === 'running') {
         // Re-request if visible and should be active.
         // The updated requestWakeLock will handle not re-requesting if already held.
-        console.log('Page became visible, re-evaluating wake lock.');
         requestWakeLock();
-      } else if (document.visibilityState === 'hidden' && wakeLock) {
+      } else if (document.visibilityState === 'hidden' && wakeLockRef.current) {
         // Optional: Some developers choose to release the lock when the tab is hidden
         // to be more power-friendly, relying on re-acquisition when it becomes visible.
         // However, the browser typically handles this.
@@ -1295,9 +1300,8 @@ export function TimerProvider({ children }: { children: ReactNode }) {
       // Release the lock that was active when this effect instance was set up,
       // or rely on the current wakeLock state.
       // Using a direct call to release the current lock from state:
-      if (wakeLock) { // Check current state directly for cleanup
-        console.log('Cleaning up wake lock on effect unmount/re-run...');
-        wakeLock.release().catch((err: any) => { // Explicitly type err
+      if (wakeLockRef.current) { // Check current state directly for cleanup
+        wakeLockRef.current.release().catch((err: any) => { // Explicitly type err
           console.error('Error releasing wake lock during cleanup:', err.name, err.message);
         }).finally(() => {
           // It's good practice to ensure the state is null after cleanup,
@@ -1346,17 +1350,6 @@ export function TimerProvider({ children }: { children: ReactNode }) {
   // Wrap the timer provider with a div that has the background gradient
   return (
     <TimerContext.Provider value={value}>
-      <div className="gradient-container" style={{ 
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: -1,
-        background: backgroundGradient,
-        transition: 'background 0.8s ease'
-      }}>
-      </div>
       {children}
     </TimerContext.Provider>
   );

@@ -54,7 +54,7 @@ const getRandomFallbackImage = (): string => {
 const galleryImages: GalleryImage[] = [
   {
     id: 1,
-    src: "https://i.postimg.cc/jdRQXCw0/image1.jpg",
+    src: "/img/gallery-img3.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "Martial Arts Training",
     description: "Professional martial arts training and fitness programs",
@@ -65,7 +65,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 2,
-    src: "https://i.postimg.cc/cCvZyd6s/image2.jpg",
+    src: "/img/gallery-img4.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "Advanced Training",
     description: "Advanced martial arts techniques and training sessions",
@@ -124,7 +124,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 7,
-    src: "https://i.postimg.cc/3RJcSt0H/img-4.jpg",
+    src: "/img/gallery-img6.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "Training Session",
     description: "Intensive training session with expert instructors",
@@ -134,7 +134,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 8,
-    src: "https://i.postimg.cc/1tCYLDDV/img-3.jpg",
+    src: "/img/gallery-img9.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "Technique Practice",
     description: "Refining techniques through dedicated practice",
@@ -144,7 +144,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 9,
-    src: "https://i.postimg.cc/rpqnsfJt/img-22.jpg",
+    src: "/img/gallery-img11.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "Strength Training",
     description: "Building strength and endurance through specialized exercises",
@@ -154,7 +154,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 10,
-    src: "https://i.postimg.cc/wBFWmDf4/img-11.jpg",
+    src: "/img/gallery-img12.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "Group Training",
     description: "Collaborative training sessions for improved skills",
@@ -164,7 +164,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 11,
-    src: "https://i.postimg.cc/rsRg3387/img-6.jpg",
+    src: "/img/gallery-img13.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "Form Practice",
     description: "Mastering forms and stances for better performance",
@@ -174,7 +174,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 12,
-    src: "https://i.postimg.cc/NfYppN3C/img-9.jpg",
+    src: "/img/gallery-img17.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "Defense Techniques",
     description: "Learning effective self-defense strategies",
@@ -184,7 +184,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 13,
-    src: "https://i.postimg.cc/bNTLMx8y/img-20.jpg",
+    src: "/img/gallery-img19.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "Competition Training",
     description: "Preparing athletes for competitive events",
@@ -194,7 +194,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 14,
-    src: "https://i.postimg.cc/0yyZqz2p/img-19.jpg",
+    src: "/img/gallery-img20.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "Sparring Session",
     description: "Controlled sparring to develop fighting skills",
@@ -204,7 +204,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 15,
-    src: "https://i.postimg.cc/mrcwtK9k/img-21.jpg",
+    src: "/img/gallery-img21.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "Kickboxing Practice",
     description: "Perfecting kickboxing techniques and combinations",
@@ -214,7 +214,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 16,
-    src: "https://i.postimg.cc/PqBMZKb4/img-12.avif",
+    src: "/img/gallery-img22.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "Professional Training",
     description: "Elite training methodologies for martial artists",
@@ -224,7 +224,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 17,
-    src: "https://i.postimg.cc/SR5QN2bJ/img-13.avif",
+    src: "/img/gallery-img3.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "Physical Conditioning",
     description: "Building the optimal physical condition for martial arts",
@@ -234,7 +234,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 18,
-    src: "https://i.postimg.cc/15n57HD6/img17.avif",
+    src: "/img/gallery-img4.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "Advanced Combat",
     description: "Advanced combat techniques for experienced practitioners",
@@ -245,7 +245,7 @@ const galleryImages: GalleryImage[] = [
   // New images from user
   {
     id: 19,
-    src: "https://i.postimg.cc/Cxr6mHh9/IMG-9857.jpg",
+    src: "/img/about-img9857.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 1",
     description: "YKFA event photo 1",
@@ -255,7 +255,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 20,
-    src: "https://i.postimg.cc/JnVx2p9Y/IMG-9840.jpg",
+    src: "/img/about-img9840.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 2",
     description: "YKFA event photo 2",
@@ -265,7 +265,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 21,
-    src: "https://i.postimg.cc/P50QC6rf/IMG-9847.jpg",
+    src: "/img/about-img9847.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 3",
     description: "YKFA event photo 3",
@@ -275,7 +275,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 22,
-    src: "https://i.postimg.cc/dtx8fWCR/IMG-9853.jpg",
+    src: "/img/about-img9853.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 4",
     description: "YKFA event photo 4",
@@ -285,7 +285,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 23,
-    src: "https://i.postimg.cc/GpkGHd5z/IMG-9860.jpg",
+    src: "/img/about-img9860.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 5",
     description: "YKFA event photo 5",
@@ -295,7 +295,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 24,
-    src: "https://i.postimg.cc/SsHwxL2w/IMG-9826.jpg",
+    src: "/img/about-img9826.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 6",
     description: "YKFA event photo 6",
@@ -305,7 +305,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 25,
-    src: "https://i.postimg.cc/Fsy2hL9B/IMG-9828.jpg",
+    src: "/img/about-img9828.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 7",
     description: "YKFA event photo 7",
@@ -315,7 +315,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 26,
-    src: "https://i.postimg.cc/XYntqYq7/IMG-9845.jpg",
+    src: "/img/about-img9845.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 8",
     description: "YKFA event photo 8",
@@ -325,7 +325,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 27,
-    src: "https://i.postimg.cc/Wp7856SS/IMG-9836.jpg",
+    src: "/img/about-img9836.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 9",
     description: "YKFA event photo 9",
@@ -368,89 +368,93 @@ const ProgramsPage = () => {
 
   // Load images with optimized memory usage and progressive loading
   useEffect(() => {
+    // TEMPORARILY DISABLED to prevent memory spikes on initial load
     // Track if component is mounted to prevent state updates after unmount
-    let isMounted = true;
-    const imageElements: HTMLImageElement[] = [];
+    // let isMounted = true;
+    // const imageElements: HTMLImageElement[] = [];
     
-    // Use a batched approach to load images in smaller groups
-    const loadImagesInBatches = async () => {
-      const BATCH_SIZE = 5; // Process 5 images at a time to reduce memory pressure
-      const batches = [];
+    // // Use a batched approach to load images in smaller groups
+    // const loadImagesInBatches = async () => {
+    //   const BATCH_SIZE = 5; // Process 5 images at a time to reduce memory pressure
+    //   const batches = [];
       
-      // Split gallery images into batches
-      for (let i = 0; i < galleryImages.length; i += BATCH_SIZE) {
-        batches.push(galleryImages.slice(i, i + BATCH_SIZE));
-      }
+    //   // Split gallery images into batches
+    //   for (let i = 0; i < galleryImages.length; i += BATCH_SIZE) {
+    //     batches.push(galleryImages.slice(i, i + BATCH_SIZE));
+    //   }
       
-      try {
-        // Process each batch sequentially
-        for (const batch of batches) {
-          if (!isMounted) return; // Stop if component unmounted
+    //   try {
+    //     // Process each batch sequentially
+    //     for (const batch of batches) {
+    //       if (!isMounted) return; // Stop if component unmounted
           
-          await Promise.all(
-            batch.map((img) => {
-              return new Promise<void>((resolve) => {
-                // Use setTimeout to stagger image loading and reduce memory spikes
-                setTimeout(() => {
-                  if (!isMounted) {
-                    resolve();
-                    return;
-                  }
+    //       await Promise.all(
+    //         batch.map((img) => {
+    //           return new Promise<void>((resolve) => {
+    //             // Use setTimeout to stagger image loading and reduce memory spikes
+    //             setTimeout(() => {
+    //               if (!isMounted) {
+    //                 resolve();
+    //                 return;
+    //               }
                   
-                  const image = new Image();
-                  // Set image size explicitly to help browser allocate memory correctly
-                  image.width = 300; // Reasonable thumbnail size
-                  image.height = 200;
-                  imageElements.push(image);
+    //               const image = new Image();
+    //               // Set image size explicitly to help browser allocate memory correctly
+    //               image.width = 300; // Reasonable thumbnail size
+    //               image.height = 200;
+    //               imageElements.push(image);
                   
-                  // Add timeout to prevent hanging on slow connections
-                  const timeoutId = setTimeout(() => {
-                    if (isMounted) {
-                      image.src = img.fallbackSrc;
-                      resolve();
-                    }
-                  }, 5000); // 5 second timeout
+    //               // Add timeout to prevent hanging on slow connections
+    //               const timeoutId = setTimeout(() => {
+    //                 if (isMounted) {
+    //                   image.src = img.fallbackSrc;
+    //                   resolve();
+    //                 }
+    //               }, 5000); // 5 second timeout
                   
-                  image.onload = () => {
-                    clearTimeout(timeoutId);
-                    resolve();
-                  };
+    //               image.onload = () => {
+    //                 clearTimeout(timeoutId);
+    //                 resolve();
+    //               };
                   
-                  image.onerror = () => {
-                    clearTimeout(timeoutId);
-                    if (isMounted) image.src = img.fallbackSrc;
-                    resolve();
-                  };
+    //               image.onerror = () => {
+    //                 clearTimeout(timeoutId);
+    //                 if (isMounted) image.src = img.fallbackSrc;
+    //                 resolve();
+    //               };
                   
-                  // Add query params to request optimized images from server
-                  image.src = `${img.src}?w=300&q=75`;
-                }, 50); // Stagger loading by 50ms
-              });
-            })
-          );
-        }
+    //               // Add query params to request optimized images from server
+    //               image.src = `${img.src}?w=300&q=75`;
+    //             }, 50); // Stagger loading by 50ms
+    //           });
+    //         })
+    //       );
+    //     }
         
-        if (isMounted) setIsLoading(false);
-      } catch (error) {
-        console.error('Error loading images:', error);
-        if (isMounted) setIsLoading(false);
-      }
-    };
+    //     if (isMounted) setIsLoading(false);
+    //   } catch (error) {
+    //     console.error('Error loading images:', error);
+    //     if (isMounted) setIsLoading(false);
+    //   }
+    // };
 
-    loadImagesInBatches();
+    // loadImagesInBatches();
     
-    // Comprehensive cleanup function
-    return () => {
-      isMounted = false;
-      imageElements.forEach(img => {
-        // Clear all event handlers
-        img.onload = null;
-        img.onerror = null;
+    // // Comprehensive cleanup function
+    // return () => {
+    //   isMounted = false;
+    //   imageElements.forEach(img => {
+    //     // Clear all event handlers
+    //     img.onload = null;
+    //     img.onerror = null;
         
-        // Cancel any pending requests
-        img.src = '';
-      });
-    };
+    //     // Cancel any pending requests
+    //     img.src = '';
+    //   });
+    // };
+    
+    // Set loading to false immediately since we're not preloading
+    setIsLoading(false);
   }, []);
 
   // Track scroll position with refs to avoid re-renders
@@ -547,14 +551,26 @@ const ProgramsPage = () => {
   };
 
   // Handle sharing content
-  const handleShare = (e: React.MouseEvent, image: GalleryImage) => {
-    e.stopPropagation();
-    
-    const shareTitle = `YKFA - ${image.title}`;
-    const shareText = image.description;
-    const shareUrl = window.location.href.split('?')[0] + `?image=${image.id}`;
-    
-    shareContent(shareTitle, shareText, shareUrl);
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'YKFA Programs',
+          text: 'Check out the amazing programs at YKFA!',
+          url: window.location.href
+        });
+      } catch (error) {
+        // Handle share errors silently
+      }
+    } else {
+      // Fallback: copy URL to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        // You could show a toast notification here
+      } catch (err) {
+        // Handle clipboard errors silently
+      }
+    }
   };
 
   // Loading state
@@ -678,7 +694,7 @@ const ProgramsPage = () => {
                           <img
                             src={image.src}
                             alt={image.title}
-                            loading="eager"
+                            loading="lazy"
                             className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 relative z-10"
                             style={{ aspectRatio: image.aspectRatio }}
                             onError={(e) => {
@@ -700,7 +716,7 @@ const ProgramsPage = () => {
                         <img
                           src={image.src}
                           alt={image.title}
-                          loading="eager"
+                          loading="lazy"
                           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 relative z-10"
                           style={{ aspectRatio: image.aspectRatio }}
                           onError={(e) => {
@@ -867,7 +883,7 @@ const ProgramsPage = () => {
                       src={selectedImageData.src} 
                       alt={selectedImageData.title}
                         className="max-w-full max-h-[70vh] object-contain"
-                      loading="eager"
+                      loading="lazy"
                       onError={(e) => {
                         const imgElement = e.target as HTMLImageElement;
                         imgElement.src = selectedImageData.fallbackSrc;
@@ -930,7 +946,7 @@ const ProgramsPage = () => {
                       whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.97 }}
                         className="h-11 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-400 text-black rounded-lg font-medium text-sm"
-                        onClick={(e) => handleShare(e, selectedImageData)}
+                        onClick={(e) => handleShare()}
                       >
                         <Share2 className="w-4 h-4" />
                         <span>Share</span>
@@ -1014,7 +1030,7 @@ const ProgramsPage = () => {
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     className="h-11 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-400 text-black rounded-lg font-medium text-sm"
-                    onClick={(e) => handleShare(e, selectedImageData)}
+                    onClick={(e) => handleShare()}
                   >
                     <Share2 className="w-4 h-4" />
                     <span>Share</span>

@@ -97,25 +97,25 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
 
   return (
     <>
-      {/* Widget container - Removed the backdrop overlay that was causing the color bar */}
+      {/* Widget container - Memory efficient version */}
       <div 
         ref={widgetRef}
-        className="fixed z-[200] w-72 rounded-xl overflow-hidden widget-glass"
+        className="fixed z-[200] w-72 rounded-xl overflow-hidden"
         style={{ 
           top: `${position.top}px`, 
           right: `${position.right}px`,
           transform: isContentVisible 
-            ? 'translateY(0) perspective(600px) rotateX(0) scale(1)' 
-            : 'translateY(-20px) perspective(600px) rotateX(5deg) scale(0.98)',
+            ? 'translateY(0) scale(1)' 
+            : 'translateY(-20px) scale(0.98)',
           opacity: isContentVisible ? 1 : 0,
           boxShadow: isContentVisible 
             ? '0 8px 15px -5px rgba(0, 0, 0, 0.25), 0 0 5px rgba(255, 255, 255, 0.05)' 
             : '0 0 0 rgba(0, 0, 0, 0)',
-          transition: 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s ease, box-shadow 0.4s ease'
+          transition: 'transform 0.4s ease, opacity 0.3s ease, box-shadow 0.4s ease'
         }}
       >
-        {/* Widget inner with blur glass effect */}
-        <div className="relative bg-dark-850/95 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden h-full">
+        {/* Widget inner with solid background instead of blur */}
+        <div className="relative glassmorphic h-full">
           {/* Top light effect - reduced opacity */}
           <div 
             className="absolute inset-x-0 top-0 h-20 pointer-events-none transition-opacity duration-500 delay-300"
@@ -133,7 +133,7 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
               style={{
                 transform: isContentVisible ? 'translateY(0)' : 'translateY(-10px)',
                 opacity: isContentVisible ? 1 : 0,
-                transition: 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease',
+                transition: 'transform 0.5s ease, opacity 0.5s ease',
                 transitionDelay: '0.1s'
               }}
             >
@@ -156,7 +156,7 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
                     style={{
                       transform: isContentVisible ? 'translateY(0)' : 'translateY(-5px)',
                       opacity: isContentVisible ? 1 : 0,
-                      transition: 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.4s ease',
+                      transition: 'transform 0.4s ease, opacity 0.4s ease',
                       transitionDelay: '0.2s'
                     }}
                   >
@@ -174,7 +174,7 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
                   style={{
                     transform: isContentVisible ? 'translateY(0)' : 'translateY(-5px)',
                     opacity: isContentVisible ? 1 : 0,
-                    transition: 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.4s ease',
+                    transition: 'transform 0.4s ease, opacity 0.4s ease',
                     transitionDelay: '0.25s'
                   }}
                 >
@@ -189,7 +189,7 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
               style={{
                 transform: isContentVisible ? 'translateY(0)' : 'translateY(10px)',
                 opacity: isContentVisible ? 1 : 0,
-                transition: 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease',
+                transition: 'transform 0.5s ease, opacity 0.5s ease',
                 transitionDelay: '0.3s'
               }}
             >
@@ -204,7 +204,7 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
               style={{
                 transform: isContentVisible ? 'translateY(0)' : 'translateY(10px)',
                 opacity: isContentVisible ? 1 : 0,
-                transition: 'transform 0.5s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease',
+                transition: 'transform 0.5s ease, opacity 0.5s ease',
                 transitionDelay: '0.35s'
               }}
             >
@@ -253,14 +253,10 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
   );
 };
 
-// Add custom styles
+// Add custom styles - simplified for better performance
 const style = document.createElement('style');
 style.textContent = `
-  .widget-glass {
-    backdrop-filter: blur(10px);
-  }
-    
-  /* Button styles */
+  /* Button styles - simplified */
   .widget-button-container {
     position: relative;
     width: 100%;
@@ -301,64 +297,10 @@ style.textContent = `
     inset: 0;
     background: linear-gradient(45deg, #f59e0b, #fbbf24, #f59e0b);
     background-size: 200% 200%;
-    animation: widget-button-gradient 3s ease infinite;
     z-index: -1;
   }
-  
-  .widget-button-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    position: relative;
-    z-index: 2;
-  }
-  
-  .widget-button::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s;
-    z-index: 0;
-    pointer-events: none;
-  }
-  
-  .widget-button:hover::before {
-    opacity: 1;
-    animation: widget-button-shine 1.5s ease-out infinite;
-  }
-  
-  @keyframes widget-button-gradient {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
-  
-  @keyframes widget-button-shine {
-    0% {
-      transform: translate(-50%, -50%) scale(0);
-      opacity: 0.5;
-    }
-    50% {
-      opacity: 0.3;
-    }
-    100% {
-      transform: translate(-50%, -50%) scale(2);
-      opacity: 0;
-    }
-  }
 `;
+
 document.head.appendChild(style);
 
 export default AppStoreWidget; 

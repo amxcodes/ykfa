@@ -10,12 +10,12 @@ import { PROGRAM_SELECTED_EVENT } from '../components/Footer';
 
 // Moved static arrays outside components and optimized image dimensions
 const ABOUT_IMAGES_DATA = [
-  "https://i.postimg.cc/Cxr6mHh9/IMG-9857.jpg?auto=compress&w=800&q=75", 
-  "https://i.postimg.cc/JnVx2p9Y/IMG-9840.jpg?auto=compress&w=800&q=75", 
-  "https://i.postimg.cc/P50QC6rf/IMG-9847.jpg?auto=compress&w=800&q=75", 
-  "https://i.postimg.cc/dtx8fWCR/IMG-9853.jpg?auto=compress&w=800&q=75", 
-  "https://i.postimg.cc/GpkGHd5z/IMG-9860.jpg?auto=compress&w=800&q=75", 
-  "https://i.postimg.cc/5ytC7vNk/Screenshot-2025-05-07-010532.png?auto=compress&w=800&q=75"
+  "/img/about-img9857.webp", 
+  "/img/about-img9840.webp", 
+  "/img/about-img9847.webp", 
+  "/img/about-img9853.webp", 
+  "/img/about-img9860.webp", 
+  "/img/screenshot-2025-05-07.webp"
 ];
 
 const PROGRAMS_DATA = [
@@ -23,7 +23,7 @@ const PROGRAMS_DATA = [
     id: 1,
     title: "MMA + GYM",
     description: "Complete package with access to all MMA classes and gym facilities.",
-    image: "https://images.pexels.com/photos/6295763/pexels-photo-6295763.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+    image: "/img/membership-card1 mma + gym.webp",
     link: "/programs",
     category: "mma"
   },
@@ -31,31 +31,23 @@ const PROGRAMS_DATA = [
     id: 2,
     title: "MMA ONLY",
     description: "Access to all MMA classes including boxing, kickboxing etc",
-    image: "https://images.pexels.com/photos/4401810/pexels-photo-4401810.jpeg?auto=compress&cs=tinysrgb&w=800&q=80",
+    image: "/img/membership-hero mma only.webp",
     link: "/programs",
     category: "mma"
-  },
-  {
-    id: 3,
-    title: "GROUP FITNESS",
-    description: "High-energy group fitness sessions for improved strength and endurance.",
-    image: "https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&fit=crop&w=800&q=80",
-    link: "/programs",
-    category: "fitness"
   },
   {
     id: 4,
     title: "KARATE",
     description: "Traditional Karate training with belt progression system.",
-    image: "https://images.pexels.com/photos/4428290/pexels-photo-4428290.jpeg?auto=compress&cs=tinysrgb&w=800&q=80",
+    image: "/img/membership-card3 karate.webp",
     link: "/programs",
     category: "karate"
   },
   {
     id: 5,
-    title: "GYM ONLY",
+    title: "GYM FIT FUSION",
     description: "Unlimited access to our modern gym with top-tier equipment.",
-    image: "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?auto=compress&fit=crop&w=800&q=80",
+    image: "/img/membership-card4 gym.webp",
     link: "/programs",
     category: "fitness"
   }
@@ -170,7 +162,7 @@ const FloatingButtons = () => {
     <>
       {/* Initial Tooltip with enhanced animation */}
       <div 
-        className={`fixed bottom-24 sm:bottom-28 right-20 sm:right-28 z-50 bg-white/90 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-lg shadow-lg transition-all duration-500 max-w-[220px] sm:max-w-none
+        className={`fixed bottom-24 sm:bottom-28 right-20 sm:right-28 z-50 glassmorphic text-white px-4 py-2 transition-all duration-500 max-w-[220px] sm:max-w-none
           ${showInitialTooltip && !isExpanded 
             ? 'opacity-100 translate-y-0 scale-100' 
             : 'opacity-0 translate-y-4 scale-95 pointer-events-none'}`}
@@ -190,7 +182,7 @@ const FloatingButtons = () => {
             Calculate your BMI
           </li>
         </ul>
-        <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-l-[16px] border-l-white/90 border-b-8 border-b-transparent"></div>
+        <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-t-transparent border-l-[16px] border-l-black/80 border-b-8 border-b-transparent"></div>
       </div>
 
       <div className="fixed bottom-24 sm:bottom-28 right-4 sm:right-8 z-50 flex flex-col gap-4">
@@ -202,7 +194,7 @@ const FloatingButtons = () => {
           {/* BMI Calculator Widget */}
           <div className="relative group">
             <div 
-              className={`fixed bottom-8 sm:bottom-12 right-14 sm:right-16 bg-gradient-to-br from-dark-800/95 to-dark-900/95 backdrop-blur-xl rounded-2xl shadow-xl w-[calc(100vw-32px)] sm:w-72 max-w-[280px] overflow-hidden transition-all duration-500 ease-out border border-white/10
+              className={`fixed bottom-8 sm:bottom-12 right-14 sm:right-16 glassmorphic-dark w-[calc(100vw-32px)] sm:w-72 max-w-[280px] overflow-hidden transition-all duration-500 ease-out border border-white/10
                 ${showBMICalculator 
                   ? 'opacity-100 translate-y-0 scale-100 rotate-0' 
                   : 'opacity-0 translate-y-8 translate-x-8 scale-95 rotate-3 pointer-events-none'}`}
@@ -338,14 +330,14 @@ const FloatingButtons = () => {
             <div className="relative group">
               <button
                 onClick={() => toggleWidget('bmi')}
-                className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg hover:bg-white/20 transition-all group relative"
+                className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full glassmorphic group relative"
                 style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
               >
                 <Calculator className={`w-5 h-5 sm:w-6 sm:h-6 text-amber-400 group-hover:scale-110 transition-transform duration-300 ${showBMICalculator ? 'rotate-180' : 'rotate-0'}`} />
                 
                 {/* Floating label */}
                 <span 
-                  className={`absolute bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-lg text-white text-xs whitespace-nowrap transition-all duration-500 pointer-events-none border border-white/10 shadow-lg group-hover:bg-amber-400/20 group-hover:border-amber-400/30
+                  className={`absolute glassmorphic px-3 py-1.5 text-white text-xs whitespace-nowrap transition-all duration-500 pointer-events-none group-hover:bg-amber-400/20 group-hover:border-amber-400/30
                 right-full mr-3
                 ${isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}
                   style={{
@@ -409,14 +401,14 @@ const FloatingButtons = () => {
             {/* WhatsApp Button with pulse animation */}
             <button
               onClick={() => toggleWidget('whatsapp')}
-              className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg hover:bg-white/20 transition-all group relative"
+              className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full glassmorphic group relative"
               style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
             >
               <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 group-hover:scale-110 transition-transform duration-300" />
               
               {/* Floating label */}
               <span 
-                className={`absolute bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-lg text-white text-xs whitespace-nowrap transition-all duration-500 pointer-events-none border border-white/10 shadow-lg group-hover:bg-green-400/20 group-hover:border-green-400/30
+                className={`absolute glassmorphic px-3 py-1.5 text-white text-xs whitespace-nowrap transition-all duration-500 pointer-events-none group-hover:bg-green-400/20 group-hover:border-green-400/30
                 right-full mr-3
                 ${isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}
                 style={{
@@ -433,14 +425,14 @@ const FloatingButtons = () => {
           {/* Chatbot Button with pulse animation */}
           <button
             onClick={() => toggleWidget('chatbot')}
-            className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 shadow-lg hover:bg-white/20 transition-all group relative"
+            className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full glassmorphic group relative"
             style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
           >
             <Bot className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 group-hover:scale-110 transition-transform duration-300" />
             
             {/* Floating label */}
             <span 
-              className={`absolute bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-lg text-white text-xs whitespace-nowrap transition-all duration-500 pointer-events-none border border-white/10 shadow-lg group-hover:bg-blue-400/20 group-hover:border-blue-400/30
+              className={`absolute glassmorphic px-3 py-1.5 text-white text-xs whitespace-nowrap transition-all duration-500 pointer-events-none group-hover:bg-blue-400/20 group-hover:border-blue-400/30
               right-full mr-3
               ${isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-2'}`}
               style={{
@@ -467,10 +459,10 @@ const FloatingButtons = () => {
               setShowBMICalculator(false);
             }
           }}
-          className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full bg-gradient-to-br from-amber-500/20 to-amber-600/20 backdrop-blur-md border border-amber-400/30 shadow-lg hover:from-amber-500/40 hover:to-amber-600/40 transition-all group relative overflow-hidden"
+          className="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-full glassmorphic group relative overflow-hidden"
           style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.2)' }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-amber-600/10 group-hover:scale-150 transition-transform duration-700 ease-out" />
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-amber-600/20 group-hover:scale-150 transition-transform duration-700 ease-out" />
           <div className="relative w-5 h-5 sm:w-6 sm:h-6">
             <div className={`absolute inset-0 transition-all duration-500 ${isExpanded ? 'rotate-180 scale-110' : 'rotate-0'}`}>
               <svg
@@ -513,27 +505,29 @@ const ProgramDetailsModal = ({
   // Use a single animation state with a unified type
   const [modalState, setModalState] = useState<'closed' | 'opening' | 'open' | 'closing'>(isOpen ? 'opening' : 'closed');
   
-  // Handle open/close animation states
+  // Modal state management
   useEffect(() => {
-    console.log("Modal isOpen changed:", isOpen, "Current state:", modalState);
-    
-    if (isOpen) {
+    if (isOpen && modalState === 'closed') {
       setModalState('opening');
-      setTimeout(() => {
-        console.log("Setting modal to open state");
-        setModalState('open');
-      }, 10);
-    } else {
-      if (modalState === 'open' || modalState === 'opening') {
-        setModalState('closing');
-        console.log("Setting modal to closing state");
-        setTimeout(() => {
-          console.log("Setting modal to closed state");
-          setModalState('closed');
-        }, 300);
-      }
+    } else if (!isOpen && modalState === 'open') {
+      setModalState('closing');
     }
-  }, [isOpen]);
+  }, [isOpen, modalState]);
+  
+  // Handle modal state transitions
+  useEffect(() => {
+    if (modalState === 'opening') {
+      const timer = setTimeout(() => {
+        setModalState('open');
+      }, 100);
+      return () => clearTimeout(timer);
+    } else if (modalState === 'closing') {
+      const timer = setTimeout(() => {
+        setModalState('closed');
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [modalState]);
   
   // Add proper ESC key handler cleanup
   useEffect(() => {
@@ -630,7 +624,7 @@ const ProgramDetailsModal = ({
       <div className="absolute inset-0 z-0" onClick={onClose}></div>
       <div 
         ref={contentRef}
-        className={`relative w-full max-w-sm bg-gradient-to-b from-dark-800/95 to-dark-900/95 backdrop-blur-lg border border-white/10 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl z-20 transition-all duration-300 ease-in-out ${
+        className={`relative w-full max-w-sm glassmorphic-dark overflow-hidden shadow-2xl z-20 transition-all duration-300 ease-in-out ${
           modalState === 'opening' ? 'opacity-0 translate-y-8 scale-95' : 
           modalState === 'open' ? 'opacity-100 translate-y-0 scale-100' : 
           modalState === 'closing' ? 'opacity-0 translate-y-8 scale-95' : 
@@ -645,7 +639,7 @@ const ProgramDetailsModal = ({
         <button 
           type="button" 
           onClick={onClose} 
-          className="absolute top-3 right-3 p-1.5 rounded-full bg-black/30 hover:bg-black/50 border border-white/10 hover:border-white/20 transition-all z-20 group"
+          className="absolute top-3 right-3 p-1.5 rounded-full glassmorphic group"
         >
           <X size={14} className="text-white/70 group-hover:text-white transition-colors" />
         </button>
@@ -791,8 +785,6 @@ const AboutDetailsModal = ({
   
   // Handle open/close with CSS transitions
   useEffect(() => {
-    console.log("About modal isOpen changed:", isOpen);
-    
     // Handle body scroll
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -850,7 +842,7 @@ const AboutDetailsModal = ({
       
       <div 
         ref={contentRef}
-        className={`relative w-full bg-dark-800/30 backdrop-blur-xl border border-white/20 rounded-xl overflow-hidden shadow-2xl z-10 transition-all duration-600 ${
+        className={`relative w-full glassmorphic-dark overflow-hidden shadow-2xl z-10 transition-all duration-600 ${
           animationState === 'opening' ? 'opacity-0 translate-y-8 scale-95' : 
           animationState === 'open' ? 'opacity-100 translate-y-0 scale-100' : 
           animationState === 'closing' ? 'opacity-0 -translate-y-8 scale-95' : 
@@ -875,10 +867,10 @@ const AboutDetailsModal = ({
         <button 
           type="button"
           onClick={onClose}
-          className="absolute top-2 right-2 z-20 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full bg-dark-800/50 backdrop-blur-md hover:bg-dark-700/50 text-white border border-white/20 shadow-lg transition-all duration-300 group"
+          className="absolute top-2 right-2 z-20 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center rounded-full glassmorphic group"
           aria-label="Close modal"
         >
-          <X size={14} className="text-amber-400 group-hover:scale-110 transition-transform" />
+          <X size={14} className="text-white group-hover:scale-110 transition-transform" />
         </button>
         
         <div className="relative h-24 overflow-hidden"> 
@@ -887,7 +879,7 @@ const AboutDetailsModal = ({
             src="https://i.postimg.cc/P50QC6rf/IMG-9847.jpg" 
             alt="YKFA Training" 
             className="w-full h-full object-cover scale-110 hover:scale-105 transition-transform duration-[2s]"
-            loading="eager"
+            loading="lazy"
           />
           
           {!isMobile.current && (
@@ -905,23 +897,23 @@ const AboutDetailsModal = ({
           </div>
           </div>
         
-        <div className="p-2.5 max-h-[calc(80vh-96px)] overflow-y-auto scrollbar-hide bg-dark-800/20 backdrop-blur-sm"> 
+        <div className="p-2.5 max-h-[calc(80vh-96px)] overflow-y-auto scrollbar-hide glassmorphic"> 
           <div className="space-y-2.5"> 
-            <div className="bg-white/5 backdrop-blur-sm rounded-lg p-2.5 border border-white/10 shadow-inner"> 
+            <div className="glassmorphic p-2.5"> 
               <h3 className="text-xs font-semibold text-amber-400 mb-1">Our Mission</h3>
               <p className="text-gray-300 text-xs leading-relaxed">
                 At YKFA, we empower individuals through martial arts and fitness training, developing physical strength, mental discipline, and self-confidence.
               </p>
             </div>
             
-            <div className="bg-white/5 backdrop-blur-sm rounded-lg p-2.5 border border-white/10 shadow-inner">
+            <div className="glassmorphic p-2.5">
               <h3 className="text-xs font-semibold text-amber-400 mb-1">About Master Yaseen</h3>
               <p className="text-gray-300 text-xs leading-relaxed">
                 Master Yaseen brings over 20 years of martial arts experience, dedicated to mastering and teaching various disciplines with emphasis on technical precision and character development.
               </p>
             </div>
             
-            <div className="bg-white/5 backdrop-blur-sm rounded-lg p-2.5 border border-white/10 shadow-inner">
+            <div className="glassmorphic p-2.5">
               <h3 className="text-xs font-semibold text-amber-400 mb-1">Training Programs</h3>
               <ul className="space-y-1">
                 <li className="flex items-start gap-1">
@@ -943,13 +935,13 @@ const AboutDetailsModal = ({
           <div className="mt-3 pt-2.5 border-t border-white/10 flex flex-wrap gap-2 justify-center"> 
             <Link
               to="/about-us"
-              className="px-2.5 py-1 rounded-md bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-black font-medium text-xs transition-all duration-300 transform hover:scale-105 shadow-lg shadow-amber-500/20"
+              className="px-2.5 py-1 rounded-md glassmorphic text-white font-medium text-xs transition-all duration-300 transform hover:scale-105 shadow-lg shadow-amber-500/20"
             >
               Know More
             </Link>
             <Link
               to="/contact"
-              className="px-2.5 py-1 rounded-md bg-white/5 hover:bg-white/10 text-white font-medium text-xs border border-white/10 hover:border-white/20 transition-all duration-300 transform hover:scale-105 shadow-lg backdrop-blur-sm"
+              className="px-2.5 py-1 rounded-md glassmorphic text-white font-medium text-xs border border-white/10 hover:border-white/20 transition-all duration-300 transform hover:scale-105 shadow-lg backdrop-blur-sm"
             >
               Contact Us
             </Link>
@@ -985,6 +977,9 @@ const ProgramCard = ({
   const descRef = useRef<HTMLParagraphElement>(null);
   const isMounted = useRef(true);
 
+  // Check if this is the "Coming Soon" card
+  const isComingSoon = title === "COMING SOON";
+
   useEffect(() => {
     isMounted.current = true;
     return () => {
@@ -1019,7 +1014,6 @@ const ProgramCard = ({
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           if (isMounted.current) { // Ensure component is still mounted
-            console.log(`ProgramCard ${index} (${title}): Intersecting, setting isVisible to true`);
             setIsVisible(true); // Set state to trigger animation effect
           }
           // Important: Unobserve the target element after it has intersected and isVisible is set.
@@ -1051,15 +1045,13 @@ const ProgramCard = ({
   useEffect(() => {
     // Only run animations if isVisible is true and component is mounted
     if (isVisible && isMounted.current) {
-      console.log(`ProgramCard ${index} (${title}): isVisible is true, applying animations.`);
       const timeouts: NodeJS.Timeout[] = [];
 
-      // Animate image
-          if (imageRef.current) {
+      // Animate image (only if not coming soon)
+      if (!isComingSoon && imageRef.current) {
         const timeoutId = setTimeout(() => {
                 if (isMounted.current && imageRef.current) {
                   imageRef.current.classList.add('visible');
-            console.log(`ProgramCard ${index} (${title}): imageRef classList.add 'visible'`);
                 }
         }, index * 100 + 150); // Stagger appearance based on card index + base delay
         timeouts.push(timeoutId);
@@ -1070,18 +1062,16 @@ const ProgramCard = ({
         const timeoutId = setTimeout(() => {
                 if (isMounted.current && titleRef.current) {
                   titleRef.current.classList.add('visible');
-            console.log(`ProgramCard ${index} (${title}): titleRef classList.add 'visible'`);
                 }
         }, index * 100 + 300); // Stagger appearance
         timeouts.push(timeoutId);
           }
 
-      // Animate description
-          if (descRef.current) {
+      // Animate description (only if not coming soon)
+      if (!isComingSoon && descRef.current) {
         const timeoutId = setTimeout(() => {
                 if (isMounted.current && descRef.current) {
                   descRef.current.classList.add('visible');
-            console.log(`ProgramCard ${index} (${title}): descRef classList.add 'visible'`);
                 }
         }, index * 100 + 450); // Stagger appearance
         timeouts.push(timeoutId);
@@ -1092,19 +1082,19 @@ const ProgramCard = ({
         timeouts.forEach(clearTimeout);
       };
       }
-  }, [isVisible, index, title]); // This effect runs when isVisible changes (or index/title, less likely)
+  }, [isVisible, index, title, isComingSoon]); // This effect runs when isVisible changes (or index/title, less likely)
 
   return (
     <div 
       ref={cardRef}
-      className={`card-container ${isVisible ? 'visible' : ''} group`}
+      className={`card-container ${isVisible ? 'visible' : ''} group flex flex-col justify-between h-[24rem]`}
       style={{
         minWidth: compact ? 0 : undefined,
         maxWidth: compact ? '100%' : undefined
       }}
     >
       <div 
-        className={`card relative overflow-hidden backdrop-blur-md bg-white/5 border border-white/10
+        className={`card relative overflow-hidden glassmorphic
         ${compact ? 'p-2' : 'p-2 md:p-4'}
         group-hover:border-amber-500/30 group-hover:bg-white/10 shadow-lg
         transition-all duration-500 ease-out cursor-pointer
@@ -1121,50 +1111,76 @@ const ProgramCard = ({
         {/* Top reflection highlight */}
         <div className="absolute top-0 left-5 right-5 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-50"></div>
         
-        <div className={`overflow-hidden rounded-xl mb-3 relative ${compact ? 'h-52 sm:h-48 md:h-36' : 'h-64 md:h-64'} group-hover:shadow-[0_0_15px_rgba(251,191,36,0.15)] transition-all duration-500`}> 
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10 transition-opacity duration-500 group-hover:opacity-70"></div>
-          <img 
-            ref={imageRef}
-            src={image} 
-            alt={title} 
-            className="w-full h-full object-cover object-center program-card-image group-hover:scale-105"
-            loading="lazy"
-          />
-          <div className="absolute bottom-0 left-0 right-0 p-2 z-20 overflow-hidden">
-            <button 
-              onClick={(e: React.MouseEvent) => {
-                e.stopPropagation();
-                console.log('🔥 Learn more button clicked for:', program.title, program);
-                onDetailsClick(program);
-              }}
-              className="inline-flex items-center text-black bg-gradient-to-r from-amber-400/90 to-amber-500/90 hover:from-amber-400 hover:to-amber-500 px-2 py-1 rounded-lg transition-all text-xs shadow-sm hover:shadow-md backdrop-blur-sm cursor-pointer z-30 transform translate-y-[150%] group-hover:translate-y-0 transition-transform duration-300 ease-out"
-              aria-label={`Learn more about ${title}`}
-              type="button"
-            >
-              Learn more <ArrowRight className="ml-1 w-3 h-3" />
-            </button>
-          </div>
-        </div>
-        <div className="p-0 mb-2">
-          <h3 
-            ref={titleRef}
-            className="font-bold mb-1 program-card-title group-hover:text-amber-400 transition-colors duration-300"
-            style={{
-              fontSize: compact ? (isMobile ? '0.875rem' : '1rem') : (isMobile ? '1rem' : '1.25rem')
-            }}
-          >
-            {title}
-          </h3>
-          <p 
-            ref={descRef}
-            className="text-gray-400 mb-2 line-clamp-3 program-card-desc group-hover:text-gray-300 transition-colors duration-300"
-            style={{
-              fontSize: compact ? '0.75rem' : (isMobile ? '0.75rem' : '0.875rem')
-            }}
-          >
-            {description}
-          </p>
-        </div>
+        {isComingSoon ? (
+          // Coming Soon Card Design
+          <>
+            {/* Placeholder image area (same as image cards) */}
+            <div className={`overflow-hidden rounded-xl mb-3 relative ${compact ? 'h-52 sm:h-48 md:h-36' : 'h-64 md:h-64'} bg-gradient-to-br from-gray-800/50 to-gray-900/50`} />
+            {/* Text area below, matching other cards' structure */}
+            <div className="p-0 mb-2 flex flex-col items-center justify-start min-h-[5.5rem] mt-2">
+              <div className="text-amber-400/60 text-4xl sm:text-5xl md:text-6xl mb-2">⏳</div>
+              <h3 
+                ref={titleRef}
+                className="font-bold text-white/80 program-card-title text-center"
+                style={{
+                  fontSize: compact ? (isMobile ? '0.875rem' : '1rem') : (isMobile ? '1rem' : '1.25rem')
+                }}
+              >
+                {title}
+              </h3>
+              <p className="text-gray-400 mb-2 line-clamp-3 program-card-desc group-hover:text-gray-300 transition-colors duration-300 invisible" style={{ fontSize: compact ? '0.75rem' : (isMobile ? '0.75rem' : '0.875rem') }}>
+                More details coming soon.
+              </p>
+            </div>
+          </>
+        ) : (
+          // Regular Card Design
+          <>
+            <div className={`overflow-hidden rounded-xl mb-3 relative ${compact ? 'h-52 sm:h-48 md:h-36' : 'h-64 md:h-64'} group-hover:shadow-[0_0_15px_rgba(251,191,36,0.15)] transition-all duration-500`}> 
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent z-10 transition-opacity duration-500 group-hover:opacity-70"></div>
+              <img 
+                ref={imageRef}
+                src={image} 
+                alt={title} 
+                className="w-full h-full object-cover object-center program-card-image group-hover:scale-105"
+                loading="lazy"
+              />
+              <div className="absolute bottom-0 left-0 right-0 p-2 z-20 overflow-hidden">
+                <button 
+                  onClick={(e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    onDetailsClick(program);
+                  }}
+                  className="inline-flex items-center text-white glassmorphic px-2 py-1 rounded-lg transition-all text-xs shadow-sm hover:shadow-md cursor-pointer z-30 transform translate-y-[150%] group-hover:translate-y-0 transition-transform duration-300 ease-out"
+                  aria-label={`Learn more about ${title}`}
+                  type="button"
+                >
+                  Learn more <ArrowRight className="ml-1 w-3 h-3" />
+                </button>
+              </div>
+            </div>
+            <div className="p-0 mb-2 flex-1 flex flex-col">
+              <h3 
+                ref={titleRef}
+                className="font-bold mb-1 program-card-title group-hover:text-amber-400 transition-colors duration-300"
+                style={{
+                  fontSize: compact ? (isMobile ? '0.875rem' : '1rem') : (isMobile ? '1rem' : '1.25rem')
+                }}
+              >
+                {title}
+              </h3>
+              <p 
+                ref={descRef}
+                className="text-gray-400 mb-2 line-clamp-3 program-card-desc group-hover:text-gray-300 transition-colors duration-300"
+                style={{
+                  fontSize: compact ? '0.75rem' : (isMobile ? '0.75rem' : '0.875rem')
+                }}
+              >
+                {description}
+              </p>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -1190,6 +1206,100 @@ const HomePage = () => {
   const [forceComplete, setForceComplete] = useState(false);
   const isMounted = useRef(true); // Mounted ref for HomePage
 
+  // Add state for about modal
+  const [showAboutModal, setShowAboutModal] = useState(false);
+
+  // Throttle function for performance optimization - memoized to prevent memory leaks
+  const throttle = useCallback((func: Function, limit: number) => {
+    let inThrottle: boolean = false;
+    let lastFunc: ReturnType<typeof setTimeout> | null = null;
+    let lastRan: number = 0;
+    
+    return function(this: any, ...args: any[]) {
+      if (!inThrottle) {
+        func.apply(this, args);
+        lastRan = Date.now();
+        inThrottle = true;
+        
+        const timeoutId = setTimeout(() => {
+          inThrottle = false;
+        }, limit);
+        
+        // Store timeout for cleanup
+        if (timeoutId) {
+          imageTimeoutsRef.current.push(timeoutId);
+        }
+      } else {
+        if (lastFunc) {
+          clearTimeout(lastFunc);
+          // Remove from cleanup array
+          const index = imageTimeoutsRef.current.indexOf(lastFunc);
+          if (index > -1) {
+            imageTimeoutsRef.current.splice(index, 1);
+          }
+        }
+        
+        lastFunc = setTimeout(() => {
+          if ((Date.now() - lastRan) >= limit) {
+            func.apply(this, args);
+            lastRan = Date.now();
+          }
+        }, limit - (Date.now() - lastRan));
+        
+        // Store timeout for cleanup
+        if (lastFunc) {
+          imageTimeoutsRef.current.push(lastFunc);
+        }
+      }
+    };
+  }, []);
+
+  // Memoized throttle instances to prevent recreation
+  const throttledScrollHandler = useCallback(
+    throttle(() => {
+      if (!isMounted.current) return;
+      
+      // Only run scroll effects if component is still mounted
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+      
+      // Optimize scroll effects to reduce memory pressure
+      if (aboutImageRef.current) {
+        const rect = aboutImageRef.current.getBoundingClientRect();
+        const isVisible = rect.top < windowHeight && rect.bottom > 0;
+        
+        if (isVisible) {
+          // Only apply effects when visible
+          const progress = Math.max(0, Math.min(1, (windowHeight - rect.top) / (windowHeight + rect.height)));
+          aboutImageRef.current.style.transform = `translateY(${progress * 20}px)`;
+        }
+      }
+    }, 16),
+    []
+  );
+
+  const throttledMouseMoveHandler = useCallback(
+    throttle((e: MouseEvent) => {
+      if (imageTransitionInProgress.current || !aboutImageRef.current) return;
+      
+      const container = aboutImageRef.current;
+      const currentImage = container.querySelector('.current-image');
+      
+      if (!currentImage || !(currentImage instanceof HTMLElement)) return;
+      
+      // Calculate mouse position relative to container center
+      const rect = container.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const moveX = (e.clientX - centerX) / 40; // Further reduce movement for better performance
+      const moveY = (e.clientY - centerY) / 40;
+      
+      // Apply subtle transform
+      currentImage.style.transform = `translate(${moveX}px, ${moveY}px)`;
+    }, 16),
+    []
+  );
+
   // Centralized isMounted effect for HomePage
   useEffect(() => {
     isMounted.current = true;
@@ -1214,13 +1324,9 @@ const HomePage = () => {
   
   // Handle opening modal with program details
   const handleProgramDetailsClick = (program: any) => {
-    console.log('🔍 Opening modal for program:', program.title);
-    console.log('🔍 Program object:', program);
-    
     // Set directly without delay
     setSelectedProgram(program);
     setIsModalOpen(true);
-    console.log('🔍 Modal state updated:', { isModalOpen: true, program: program.title });
   };
   
   // Handle closing modal
@@ -1239,7 +1345,6 @@ const HomePage = () => {
     if (isRefresh) {
       // Clear any stored program on refresh to prevent auto-opening
       localStorage.removeItem('selectedProgram');
-      console.log("Page was refreshed, not opening modal");
       return;
     }
     
@@ -1265,8 +1370,6 @@ const HomePage = () => {
         matchingProgram = PROGRAMS_DATA.find(p => p.title === programTitle);
       }
       
-      console.log("Found matching program:", matchingProgram);
-      
       if (matchingProgram) {
         // Open the modal with this program
         setSelectedProgram(matchingProgram);
@@ -1282,7 +1385,6 @@ const HomePage = () => {
   useEffect(() => {
     const handleProgramSelected = (event: CustomEvent) => {
       const { programName } = event.detail;
-      console.log("Received program selected event:", programName);
       
       // Find the program by title or create a synthetic one if needed for "PERSONAL TRAINING"
       let matchingProgram;
@@ -1309,10 +1411,8 @@ const HomePage = () => {
       }
     };
     
-    // Add event listener
     window.addEventListener(PROGRAM_SELECTED_EVENT, handleProgramSelected as EventListener);
     
-    // Clean up
     return () => {
       window.removeEventListener(PROGRAM_SELECTED_EVENT, handleProgramSelected as EventListener);
     };
@@ -1321,11 +1421,10 @@ const HomePage = () => {
   // Check if device is mobile
   useEffect(() => {
     const checkMobile = () => {
-      isMobileDevice.current = 
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-        window.innerWidth <= 768;
+      if (isMounted.current) {
+      isMobileDevice.current = window.innerWidth <= 768;
+      }
     };
-    
     checkMobile();
     window.addEventListener('resize', checkMobile, { passive: true });
     
@@ -1334,114 +1433,62 @@ const HomePage = () => {
     };
   }, []);
 
-  // Optimized image change function with memory usage improvements
+  // Optimized image transition function with better memory management
   const changeImage = useCallback((direction: 'next' | 'prev') => {
-    if (imageTransitionInProgress.current) return;
-    
-    // Clear any existing timeouts
-    imageTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
-    imageTimeoutsRef.current = [];
+    if (imageTransitionInProgress.current || !isMounted.current) return;
     
     imageTransitionInProgress.current = true;
-    if (isMounted.current) {
-      setImageTransitioning(true);
-      setTransitionDirection(direction);
-    }
+    setImageTransitioning(true);
+    setTransitionDirection(direction);
     
-    const container = aboutImageRef.current;
-    if (container) {
-      // Add will-change to optimize browser rendering
-      const images = container.querySelectorAll('.image-stack img');
-      images.forEach(img => {
-        if (img instanceof HTMLElement) {
-          img.style.willChange = 'transform, opacity';
-        }
-      });
+    // Use a simple timeout instead of requestAnimationFrame to prevent memory leaks
+    setTimeout(() => {
+      if (!isMounted.current) return;
       
-      container.classList.add('transitioning');
-      container.classList.add(`transitioning-${direction}`);
-      
-      const targetImageIndex = direction === 'next' 
+      const newIndex = direction === 'next' 
         ? (aboutImageIndex + 1) % ABOUT_IMAGES_DATA.length
         : (aboutImageIndex - 1 + ABOUT_IMAGES_DATA.length) % ABOUT_IMAGES_DATA.length;
       
-      // Use a more memory-efficient approach to handle the transition
-      const continueTransition = () => {
-        // Track this animation frame for cleanup
-        const animFrameId = requestAnimationFrame(() => {
-          if (!isMounted.current) return; // Safety check
-        
-          if (isMounted.current) {
-            if (direction === 'next') {
-              setAboutImageIndex(prevIndex => (prevIndex + 1) % ABOUT_IMAGES_DATA.length);
-            } else {
-              setAboutImageIndex(prevIndex => (prevIndex - 1 + ABOUT_IMAGES_DATA.length) % ABOUT_IMAGES_DATA.length);
-            }
-          }
-          
-          const timeout = setTimeout(() => {
-            if (!container || !isMounted.current) return; // Safety check
-            
-            container.classList.remove('transitioning');
-            container.classList.remove(`transitioning-${direction}`);
-            
-            // Reset will-change to free up resources
-            images.forEach(img => {
-              if (img instanceof HTMLElement) {
-                img.style.willChange = 'auto';
-              }
-            });
-            
-            imageTransitionInProgress.current = false;
-            if (isMounted.current) {
-              setImageTransitioning(false);
-              setTransitionDirection(null);
-            }
-          }, 800);
-          
-          imageTimeoutsRef.current.push(timeout);
-        });
-        
-        // Return the animation frame ID for cleanup
-        return animFrameId;
-      };
+      setAboutImageIndex(newIndex);
       
-      // Check if target image is accessible without creating new Image objects
-      let animFrameId: number | null = null;
-      
-      // Instead of creating new Image objects, just proceed with transition
-      // after a small delay to allow browser to optimize
-      const transitionTimeout = setTimeout(() => {
-        animFrameId = continueTransition();
-      }, 50);
-      
-      imageTimeoutsRef.current.push(transitionTimeout);
-      
-      // Return a cleanup function
-      return () => {
-        if (animFrameId !== null) {
-          cancelAnimationFrame(animFrameId);
-        }
-        
-        // Clean up any created timeouts
-        clearTimeout(transitionTimeout);
-        
-        // Reset transition flags in case of early abort
-        imageTransitionInProgress.current = false;
+      // Use a shorter timeout for better responsiveness
+      const timeout = setTimeout(() => {
         if (isMounted.current) {
           setImageTransitioning(false);
           setTransitionDirection(null);
+          imageTransitionInProgress.current = false;
         }
-      };
-    }
+      }, 300);
+      
+      // Store timeout for cleanup
+      imageTimeoutsRef.current.push(timeout);
+    }, 50);
   }, [aboutImageIndex]);
   
   // Clean up all timeouts when component unmounts
   // Clean up all timeouts when component unmounts or when transitioning starts
   useEffect(() => {
     return () => {
-      // Clear all timeouts
-      imageTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+      // Clear all timeouts and animation frames
+      imageTimeoutsRef.current.forEach(id => {
+        if (typeof id === 'number') {
+          // Animation frame IDs are typically very large numbers
+          // Timeout IDs are typically smaller numbers
+          if (id > 1000000) {
+            try {
+              cancelAnimationFrame(id);
+            } catch (e) {
+              // Ignore errors for invalid animation frame IDs
+            }
+          } else {
+            try {
+              clearTimeout(id);
+            } catch (e) {
+              // Ignore errors for invalid timeout IDs
+            }
+          }
+        }
+      });
       imageTimeoutsRef.current = [];
       
       // Clear any autoImageChangeInterval
@@ -1455,394 +1502,53 @@ const HomePage = () => {
     };
   }, []);
 
-  // Preload images for smoother transitions (useEffect for imageCache and preloadAllImages)
+  // Optimized image preloading with better memory management
   useEffect(() => {
-    // Use a Map instead of WeakMap since we're dealing with strings
-    const imageCache = new Map<string, boolean>();
-    let loadPromises: Promise<void>[] = [];
-    let isMounted = true;
+    // TEMPORARILY DISABLED to prevent memory spikes on initial load
+    // let isMounted = true;
+    // const imageCache = new Map<string, HTMLImageElement>();
+    // let loadPromises: Promise<void>[] = [];
+    // let timeoutId: NodeJS.Timeout | null = null;
     
-    const preloadAllImages = async () => {
-      // Only preload in production or if explicitly enabled
-      const shouldPreload = process.env.NODE_ENV === 'production' || true;
-      if (!shouldPreload) return;
+    // const preloadAllImages = async () => {
+    //   if (!isMounted) return;
       
-      // Limit how many images we preload at once
-      const imagesToPreload = ABOUT_IMAGES_DATA.slice(0, 2); // Only preload 2 images at a time
-      
-      loadPromises = imagesToPreload.map((src) => {
-        return new Promise<void>((resolvePromise) => {
-          if (imageCache.has(src)) {
-            resolvePromise();
-            return;
-          }
-          
-          const img = new Image();
-          let timerId: NodeJS.Timeout | null = null;
-
-          const cleanupAndResolve = () => {
-            if (timerId) {
-              clearTimeout(timerId);
-              timerId = null;
-            }
-            img.onload = null;
-            img.onerror = null;
-            resolvePromise();
-          };
-          
-          // Set a shorter timeout for each image
-          timerId = setTimeout(() => {
-            cleanupAndResolve();
-          }, 3000); // 3 second timeout per image
-          
-          img.onload = () => {
-            imageCache.set(src, true);
-            cleanupAndResolve();
-          };
-          
-            img.onerror = () => {
-            cleanupAndResolve();
-            };
-          
-          img.src = src;
-        });
-      });
-      
-      try {
-        // Set a reasonable timeout for the entire operation
-        const timeoutPromise = new Promise<void>((_, reject) => {
-        setTimeout(() => {
-            reject(new Error('Preloading images timed out'));
-          }, 5000); // 5 second total timeout
-      });
-      
-      await Promise.race([Promise.all(loadPromises), timeoutPromise]);
-      } catch (error) {
-        console.log('Preloading images timed out');
-      } finally {
-        // Clear references
-        loadPromises = [];
-      }
-    };
+    //   try {
+    //     // Set a reasonable timeout for the entire operation
+    //     const timeoutPromise = new Promise<void>((_, reject) => {
+    //       timeoutId = setTimeout(() => {
+    //         reject(new Error('Preloading images timed out'));
+    //       }, 3000); // Reduced timeout to 3 seconds
+    //     });
+        
+    //     await Promise.race([Promise.all(loadPromises), timeoutPromise]);
+    //   } catch (error) {
+    //     if (isMounted) {
+    //       console.log('Preloading images timed out');
+    //     }
+    //   } finally {
+    //     // Clear references only if still mounted
+    //     if (isMounted) {
+    //       loadPromises = [];
+    //       imageCache.clear();
+    //     }
+    //   }
+    // };
     
-    // Start preloading
-    preloadAllImages();
+    // // Start preloading
+    // preloadAllImages();
     
-    return () => {
-      // Clear cache references and abort any pending operations when component unmounts
-      isMounted = false;
-      imageCache.clear();
-      loadPromises = [];
-    };
+    // return () => {
+    //   // Clear cache references and abort any pending operations when component unmounts
+    //   isMounted = false;
+    //   imageCache.clear();
+    //   loadPromises = [];
+    //   if (timeoutId) {
+    //     clearTimeout(timeoutId);
+    //   }
+    // };
   }, []);
-
-  // Optimized auto image change interval with IntersectionObserver for better performance
-  useEffect(() => {
-    let observer: IntersectionObserver | null = null;
-    let intervalId: NodeJS.Timeout | null = null;
-    
-    // Only start auto-rotation when the image slider is visible in viewport
-    if (aboutImageRef.current && 'IntersectionObserver' in window) {
-      observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          // Start/stop interval based on visibility
-          if (entry.isIntersecting) {
-            // Start the interval only if component is mounted and visible
-            if (!intervalId && !imageTransitionInProgress.current && isMounted.current) {
-              intervalId = setInterval(() => {
-                // Only proceed if component is still mounted and not transitioning
-                if (!imageTransitionInProgress.current && isMounted.current) {
-                  changeImage('next');
-                }
-              }, 8000); // Increased interval to reduce memory pressure
-              
-              // Store interval in ref for cleanup elsewhere
-              autoImageChangeInterval.current = intervalId;
-            }
-          } else {
-            // Stop the interval when not visible to save resources
-            if (intervalId) {
-              clearInterval(intervalId);
-              intervalId = null;
-              autoImageChangeInterval.current = null;
-            }
-          }
-        });
-      }, { threshold: 0.2 }); // Start when 20% visible
-      
-      observer.observe(aboutImageRef.current);
-    }
-
-    // Cleanup: clear interval and disconnect observer on unmount
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-        // intervalId = null; // Local var, not strictly needed to nullify
-      }
-      
-      if (autoImageChangeInterval.current) {
-        clearInterval(autoImageChangeInterval.current);
-        autoImageChangeInterval.current = null;
-      }
-      
-      if (observer) {
-        observer.disconnect();
-        // observer = null; // Local var, not strictly needed to nullify
-      }
-      // The problematic lines that interfered with changeImage's own state/timeout management
-      // have been removed from this cleanup function.
-    };
-  }, [changeImage]);
   
-  // Optimized animation enhancements with better memory management
-  useEffect(() => {
-    if (!aboutImageRef.current) return;
-    
-    const container = aboutImageRef.current;
-    const currentImage = container.querySelector<HTMLElement>('.current-image');
-    const prevImage = container.querySelector<HTMLElement>('.prev-image');
-    const nextImage = container.querySelector<HTMLElement>('.next-image');
-    
-    if (!currentImage || !prevImage || !nextImage) return;
-
-    // Use requestAnimationFrame for smoother performance and better memory usage
-    let animationFrameId: number | null = null;
-    // Track all applied styles to reset them correctly
-    const originalStyles: Record<string, Record<string, string>> = {
-      current: {},
-      prev: {},
-      next: {}
-    };
-    
-    // Store original styles to restore them later
-    const saveOriginalStyles = (element: HTMLElement, key: 'current' | 'prev' | 'next') => {
-      originalStyles[key] = {
-        opacity: element.style.opacity,
-        transform: element.style.transform,
-        filter: element.style.filter,
-        transition: element.style.transition,
-        willChange: element.style.willChange,
-        boxShadow: element.style.boxShadow
-      };
-    };
-    
-    // Save original styles
-    if (currentImage instanceof HTMLElement) saveOriginalStyles(currentImage, 'current');
-    if (prevImage instanceof HTMLElement) saveOriginalStyles(prevImage, 'prev');
-    if (nextImage instanceof HTMLElement) saveOriginalStyles(nextImage, 'next');
-    
-    if (imageTransitioning && transitionDirection) {
-      // Only add will-change during transitions to optimize memory usage
-      animationFrameId = requestAnimationFrame(() => {
-        if (currentImage instanceof HTMLElement) {
-          currentImage.style.willChange = 'transform, opacity';
-        }
-        if (nextImage instanceof HTMLElement) {
-          nextImage.style.willChange = 'transform, opacity';
-        }
-        if (prevImage instanceof HTMLElement) {
-          prevImage.style.willChange = 'transform, opacity';
-        }
-      });
-    } else if (!imageTransitioning) {
-      // Transition is over, reset inline styles to allow CSS to take over for the resting state
-      animationFrameId = requestAnimationFrame(() => {
-        if (currentImage instanceof HTMLElement) {
-          currentImage.style.opacity = originalStyles.current.opacity || '';
-          currentImage.style.transform = originalStyles.current.transform || '';
-          currentImage.style.filter = originalStyles.current.filter || '';
-          currentImage.style.transition = originalStyles.current.transition || '';
-          currentImage.style.willChange = 'auto'; // Reset will-change to free up resources
-        }
-        if (nextImage instanceof HTMLElement) {
-          nextImage.style.opacity = originalStyles.next.opacity || '';
-          nextImage.style.transform = originalStyles.next.transform || '';
-          nextImage.style.boxShadow = originalStyles.next.boxShadow || '';
-          nextImage.style.transition = originalStyles.next.transition || '';
-          nextImage.style.willChange = 'auto'; // Reset will-change to free up resources
-        }
-        if (prevImage instanceof HTMLElement) {
-          prevImage.style.opacity = originalStyles.prev.opacity || '';
-          prevImage.style.transform = originalStyles.prev.transform || '';
-          prevImage.style.boxShadow = originalStyles.prev.boxShadow || '';
-          prevImage.style.transition = originalStyles.prev.transition || '';
-          prevImage.style.willChange = 'auto'; // Reset will-change to free up resources
-        }
-      });
-    }
-    
-    // Cleanup animation frame to prevent memory leaks
-    return () => {
-      if (animationFrameId !== null) {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
-      }
-      
-      // Make sure we reset will-change on cleanup to free GPU memory
-      if (currentImage instanceof HTMLElement) {
-        currentImage.style.willChange = 'auto';
-        // Reset all styles to original state
-        Object.entries(originalStyles.current).forEach(([prop, value]) => {
-          if (value) (currentImage.style as any)[prop] = value;
-        });
-      }
-      if (nextImage instanceof HTMLElement) {
-        nextImage.style.willChange = 'auto';
-        // Reset all styles to original state
-        Object.entries(originalStyles.next).forEach(([prop, value]) => {
-          if (value) (nextImage.style as any)[prop] = value;
-        });
-      }
-      if (prevImage instanceof HTMLElement) {
-        prevImage.style.willChange = 'auto';
-        // Reset all styles to original state
-        Object.entries(originalStyles.prev).forEach(([prop, value]) => {
-          if (value) (prevImage.style as any)[prop] = value;
-        });
-      }
-    };
-  }, [imageTransitioning, transitionDirection]);
-  
-  // Optimized parallax effect with throttling for better performance and memory usage
-  useEffect(() => {
-    if (!aboutImageRef.current) return;
-    
-    const container = aboutImageRef.current;
-    const currentImage = container.querySelector('.current-image');
-    
-    // Throttle function to limit the rate of function calls
-    const throttle = (func: Function, limit: number) => {
-      let inThrottle: boolean = false;
-      let lastFunc: ReturnType<typeof setTimeout> | null = null;
-      let lastRan: number = 0;
-      
-      return function(this: any, ...args: any[]) {
-        if (!inThrottle) {
-          func.apply(this, args);
-          lastRan = Date.now();
-          inThrottle = true;
-          
-          setTimeout(() => {
-            inThrottle = false;
-          }, limit);
-        } else {
-          if (lastFunc) clearTimeout(lastFunc);
-          
-          lastFunc = setTimeout(() => {
-            if ((Date.now() - lastRan) >= limit) {
-              func.apply(this, args);
-              lastRan = Date.now();
-            }
-          }, limit - (Date.now() - lastRan));
-        }
-      };
-    };
-    
-    // Throttled mouse move handler to reduce function calls
-    const handleMouseMove = throttle((e: MouseEvent) => {
-      if (imageTransitionInProgress.current || !currentImage || !(currentImage instanceof HTMLElement)) return;
-      
-      // Calculate mouse position relative to container center
-      const rect = container.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      const moveX = (e.clientX - centerX) / 40; // Further reduce movement for better performance
-      const moveY = (e.clientY - centerY) / 40;
-      
-      // Apply subtle transform to create parallax effect
-      requestAnimationFrame(() => {
-        // Only set will-change during the actual movement
-        currentImage.style.willChange = 'transform';
-        currentImage.style.transition = 'transform 0.6s ease-out';
-        currentImage.style.transform = `translateX(${moveX}px) translateY(${moveY}px) scale(1.005)`;
-      });
-    }, 50); // Throttle to 50ms (20 updates per second)
-    
-    const handleMouseLeave = () => {
-      if (!currentImage || !(currentImage instanceof HTMLElement)) return;
-      
-      requestAnimationFrame(() => {
-        currentImage.style.transition = 'transform 0.4s ease-out';
-        currentImage.style.transform = 'translateX(0) translateY(0) scale(1)';
-        
-        // Reset will-change after transition to free up resources
-        setTimeout(() => {
-          if (currentImage instanceof HTMLElement) {
-            currentImage.style.willChange = 'auto';
-          }
-        }, 400);
-      });
-    };
-    
-    // Only add mouse effects on non-mobile
-    if (!isMobileDevice.current) {
-      container.addEventListener('mousemove', handleMouseMove as EventListener);
-      container.addEventListener('mouseleave', handleMouseLeave);
-    }
-    
-    return () => {
-      if (!isMobileDevice.current) {
-        container.removeEventListener('mousemove', handleMouseMove as EventListener);
-        container.removeEventListener('mouseleave', handleMouseLeave);
-      }
-    };
-  }, [aboutImageIndex]); // Re-attach when the image changes
-
-  // Implement lazy loading for images using IntersectionObserver
-  useEffect(() => {
-    // Preload only the current and adjacent images when in viewport
-    const preloadAdjacentImages = () => {
-      const currentIndex = aboutImageIndex;
-      const prevIndex = (currentIndex - 1 + ABOUT_IMAGES_DATA.length) % ABOUT_IMAGES_DATA.length;
-      const nextIndex = (currentIndex + 1) % ABOUT_IMAGES_DATA.length;
-      
-      // Only preload if not already in DOM
-      const preloadImage = (src: string) => {
-        const existingImages = Array.from(document.images);
-        const isPreloaded = existingImages.some(img => img.src === src);
-        
-        if (!isPreloaded) {
-          const img = new Image();
-          img.src = src;
-          // Clean up event listeners to prevent memory leaks
-          img.onload = null;
-          img.onerror = null;
-        }
-      };
-      
-      // Preload adjacent images with small delay to prioritize current image
-      preloadImage(ABOUT_IMAGES_DATA[currentIndex]);
-      
-      setTimeout(() => {
-        if (isMounted.current) {
-          preloadImage(ABOUT_IMAGES_DATA[prevIndex]);
-          preloadImage(ABOUT_IMAGES_DATA[nextIndex]);
-        }
-      }, 300);
-    };
-    
-    // Use IntersectionObserver to detect when slider is in viewport
-    if (aboutImageRef.current && 'IntersectionObserver' in window) {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            preloadAdjacentImages();
-          }
-        });
-      }, { threshold: 0.1 });
-      
-      observer.observe(aboutImageRef.current);
-      
-      return () => {
-        observer.disconnect();
-      };
-    } else {
-      // Fallback for browsers without IntersectionObserver
-      preloadAdjacentImages();
-    }
-  }, [aboutImageIndex]);
-  /* const aboutImages = ABOUT_IMAGES_DATA; */ // Now using ABOUT_IMAGES_DATA directly
-
   // Regular scroll handler for testimonials
   useEffect(() => {
     const handleScroll = () => {
@@ -1862,7 +1568,7 @@ const HomePage = () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [hasSwipedCards]);
-
+  
   const handleCardSwipe = () => {
     if (isMounted.current) { // Guard setHasSwipedCards and setShowTestimonialTooltip
     setHasSwipedCards(true);
@@ -1870,25 +1576,174 @@ const HomePage = () => {
     }
   };
 
-  // programs array (define outside if static)
-  /* const programs = PROGRAMS_DATA; */ // Now using PROGRAMS_DATA directly
+  // COMPLETELY DISABLED auto image rotation to fix 3GB+ memory leak
+  // Optimized auto image change interval with IntersectionObserver for better performance
+  // useEffect(() => {
+  //   let observer: IntersectionObserver | null = null;
+  //   let intervalId: NodeJS.Timeout | null = null;
+    
+  //   // Only start auto-rotation when the image slider is visible in viewport
+  //   if (aboutImageRef.current && 'IntersectionObserver' in window) {
+  //     observer = new IntersectionObserver((entries) => {
+  //       entries.forEach(entry => {
+  //         // Start/stop interval based on visibility
+  //         if (entry.isIntersecting) {
+  //           // Start the interval only if component is mounted and visible
+  //           if (!intervalId && !imageTransitionInProgress.current && isMounted.current) {
+  //             intervalId = setInterval(() => {
+  //               // Only proceed if component is still mounted and not transitioning
+  //               if (!imageTransitionInProgress.current && isMounted.current) {
+  //                 changeImage('next');
+  //               }
+  //             }, 20000); // Increased from 12000 to 20000 (20 seconds) to reduce memory pressure
+              
+  //             // Store interval in ref for cleanup elsewhere
+  //             autoImageChangeInterval.current = intervalId;
+  //           }
+  //         } else {
+  //           // Stop the interval when not visible to save resources
+  //           if (intervalId) {
+  //             clearInterval(intervalId);
+  //             intervalId = null;
+  //             autoImageChangeInterval.current = null;
+  //           }
+  //         }
+  //       });
+  //     }, { threshold: 0.2 }); // Start when 20% visible
+      
+  //     observer.observe(aboutImageRef.current);
+  //   }
 
-  // Add state for about modal
-  const [showAboutModal, setShowAboutModal] = useState(false);
-
-  // This code adds a listener for page visibility to help with debugging modal issues
+  //   // Cleanup: clear interval and disconnect observer on unmount
+  //   return () => {
+  //     if (intervalId) {
+  //       clearInterval(intervalId);
+  //       intervalId = null;
+  //     }
+      
+  //     if (autoImageChangeInterval.current) {
+  //       clearInterval(autoImageChangeInterval.current);
+  //       autoImageChangeInterval.current = null;
+  //     }
+      
+  //     if (observer) {
+  //       observer.disconnect();
+  //       observer = null;
+  //     }
+  //   };
+  // }, [changeImage]);
+  
+  // Optimized animation enhancements with better memory management
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        console.log('Page is now visible');
+    if (!imageTransitioning || !aboutImageRef.current) return;
+    
+    const container = aboutImageRef.current;
+    const currentImage = container.querySelector('.current-image') as HTMLElement;
+    const nextImage = container.querySelector('.next-image') as HTMLElement;
+    const prevImage = container.querySelector('.prev-image') as HTMLElement;
+    
+    if (!currentImage || !nextImage || !prevImage) return;
+    
+    // Use simple CSS transitions instead of complex animations
+    if (transitionDirection === 'next') {
+      currentImage.style.opacity = '0';
+      currentImage.style.transform = 'translateX(-20px)';
+      nextImage.style.opacity = '1';
+      nextImage.style.transform = 'translateX(0)';
+    } else if (transitionDirection === 'prev') {
+      currentImage.style.opacity = '0';
+      currentImage.style.transform = 'translateX(20px)';
+      prevImage.style.opacity = '1';
+      prevImage.style.transform = 'translateX(0)';
+    }
+    
+    // Reset styles after transition
+    const timeout = setTimeout(() => {
+      if (currentImage) {
+        currentImage.style.opacity = '';
+        currentImage.style.transform = '';
+      }
+      if (nextImage) {
+        nextImage.style.opacity = '';
+        nextImage.style.transform = '';
+      }
+      if (prevImage) {
+        prevImage.style.opacity = '';
+        prevImage.style.transform = '';
+      }
+    }, 300);
+    
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [imageTransitioning, transitionDirection]);
+  
+  // Optimized parallax effect with throttling for better performance and memory usage
+  useEffect(() => {
+    if (!aboutImageRef.current) return;
+    
+    const container = aboutImageRef.current;
+    const currentImage = container.querySelector('.current-image');
+    
+    const handleMouseLeave = () => {
+      if (currentImage && currentImage instanceof HTMLElement) {
+        currentImage.style.transform = '';
       }
     };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // Add event listeners with passive option for better performance
+    container.addEventListener('mousemove', throttledMouseMoveHandler as EventListener, { passive: true });
+    container.addEventListener('mouseleave', handleMouseLeave, { passive: true });
+    
+    // Cleanup event listeners
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      container.removeEventListener('mousemove', throttledMouseMoveHandler as EventListener);
+        container.removeEventListener('mouseleave', handleMouseLeave);
+      
+      // Reset transform on cleanup
+      if (currentImage && currentImage instanceof HTMLElement) {
+        currentImage.style.transform = '';
+        }
+      };
+  }, [throttledMouseMoveHandler]);
+  
+  // Optimized scroll handler with throttling
+  useEffect(() => {
+    window.addEventListener('scroll', throttledScrollHandler, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', throttledScrollHandler);
     };
-  }, []);
+  }, [throttledScrollHandler]);
+  
+  // COMPLETELY DISABLED visibility change handler to fix memory leak
+  // Optimized visibility change handler
+  // useEffect(() => {
+  //   const handleVisibilityChange = () => {
+  //     if (document.visibilityState === 'hidden') {
+  //       // Pause animations and intervals when tab is hidden
+  //       if (autoImageChangeInterval.current) {
+  //         clearInterval(autoImageChangeInterval.current);
+  //         autoImageChangeInterval.current = null;
+  //       }
+  //     } else if (document.visibilityState === 'visible') {
+  //       // Resume animations when tab becomes visible
+  //       if (aboutImageRef.current && !autoImageChangeInterval.current && !imageTransitionInProgress.current) {
+  //         autoImageChangeInterval.current = setInterval(() => {
+  //           if (!imageTransitionInProgress.current && isMounted.current) {
+  //             changeImage('next');
+  //           }
+  //         }, 20000); // Increased from 12000 to 20000 (20 seconds) to reduce memory pressure
+  //       }
+  //     }
+  //   };
+    
+  //   document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+  //   return () => {
+  //     document.removeEventListener('visibilitychange', handleVisibilityChange);
+  //   };
+  // }, [changeImage]);
 
   return (
     <>
@@ -1983,7 +1838,7 @@ const HomePage = () => {
                       src={ABOUT_IMAGES_DATA[aboutImageIndex]} 
                       alt="YKFA Training" 
                       className="w-full h-full object-cover transition-opacity duration-300"
-                      loading="eager"
+                      loading="lazy"
                       decoding="async"
                       style={{
                         opacity: imageTransitioning ? 0.8 : 1,
@@ -1992,16 +1847,14 @@ const HomePage = () => {
                             onLoad={(e) => {
         if (e.currentTarget) {
           e.currentTarget.style.opacity = '1';
-          // Clean up any references
+          // Clean up any references - simplified to prevent memory leaks
           const img = e.currentTarget;
-          const rafId = requestAnimationFrame(() => {
-            if (img) img.style.opacity = '1';
-          });
-          
-          // Cleanup function for the event
-          return () => {
-            cancelAnimationFrame(rafId);
-          };
+          // Use a simple timeout instead of requestAnimationFrame to prevent memory leaks
+          setTimeout(() => {
+            if (img && isMounted.current) {
+              img.style.opacity = '1';
+            }
+          }, 0);
         }
       }}
                     />
@@ -2058,17 +1911,17 @@ const HomePage = () => {
 
       {/* Programs Section */}
       <section ref={programsSectionRef} className="section relative overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-95"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.05),transparent_80%)]"></div>
-        <div className="container">
+        <div className="absolute inset-0 bg-black opacity-95 z-0"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(234,179,8,0.05),transparent_80%)] z-0"></div>
+        <div className="container z-10 relative">
           <div className="text-center max-w-2xl mx-auto mb-12 animate-fade-up">
-            <h2 className="mb-4">Training Programs for <span className="text-transparent bg-clip-text bg-gold-gradient">All Levels</span></h2>
-            <p className="text-gray-300">
+            <h2 className="mb-4 text-white">Training Programs for <span className="text-transparent bg-clip-text bg-gold-gradient">All Levels</span></h2>
+            <p className="text-gray-200">
               Explore our diverse range of training programs designed to help you achieve your fitness and martial arts goals.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {PROGRAMS_DATA.map((program, index) => (
               <ProgramCard 
                 key={program.id}

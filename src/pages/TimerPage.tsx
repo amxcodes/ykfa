@@ -407,31 +407,12 @@ const TimerPage = () => {
       <AnimatePresence mode="wait">
         <motion.div 
           key="running-mode"
-          className="absolute top-0 left-0 right-0 bottom-0 min-h-screen z-[20] backdrop-blur-[15px] pt-24 sm:pt-16 md:pt-12 pb-0 flex flex-col items-center justify-center overflow-hidden"
+          className="absolute top-0 left-0 right-0 bottom-0 min-h-screen z-[20] pt-24 sm:pt-16 md:pt-12 pb-0 flex flex-col items-center justify-center overflow-hidden"
           style={{ position: 'relative' }}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          {/* Gradient background layers - extended to connect with footer */}
-          <div style={{
-            ...getGradientLayerStyle(bgLayers.layer1),
-            bottom: '-20px', /* Extended to better connect with footer */
-            height: 'auto'
-          }} />
-          <div style={{
-            ...getGradientLayerStyle(bgLayers.layer2),
-            bottom: '-20px', /* Extended to better connect with footer */
-            height: 'auto'
-          }} />
-
-          {/* Visual enhancement - vignette only, no texture */}
-          <div style={{
-            ...vignetteStyle,
-            bottom: '-20px', /* Extended to better connect with footer */
-            height: 'auto'
-          }} />
-          
           {/* Content - Push down on mobile with better spacing */}
           <div className="relative z-10 w-full h-full flex flex-col items-center justify-center mt-28 sm:mt-16 md:mt-0 mb-16 sm:mb-10 md:mb-0">
             <TimerDisplay fullscreen />
@@ -446,23 +427,9 @@ const TimerPage = () => {
     );
   }
 
-  // Setup mode with yellow and black gradient
+  // Setup mode with solid background
   return (
-    <div className="min-h-screen pt-16 md:pt-20 pb-0 backdrop-blur-[10px] relative overflow-hidden">
-      {/* Settings mode: Fixed yellow and black gradient background */}
-      <div className="absolute inset-0 z-0" style={{
-        background: SETTINGS_GRADIENT,
-        bottom: '-20px', /* Extended to better connect with footer */
-        height: 'auto'
-      }} />
-      
-      {/* Visual enhancement - vignette only, no texture */}
-      <div style={{
-        ...vignetteStyle,
-        bottom: '-20px', /* Extended to better connect with footer */
-        height: 'auto'
-      }} />
-      
+    <div className="min-h-screen pt-16 md:pt-20 pb-0 relative overflow-hidden bg-black">
       {/* Content */}
       <div className="relative z-10">
         <div className="container mx-auto px-4 py-4 md:py-8 h-full">
@@ -504,13 +471,13 @@ const TimerPage = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="fixed inset-0 pt-16 backdrop-blur-[15px] bg-black/50 z-[95] flex items-center justify-center"
+                className="fixed inset-0 pt-16 bg-black/50 z-[95] flex items-center justify-center"
               >
                 <motion.div 
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: 'spring', damping: 20, stiffness: 90 }}
-                  className="bg-dark-800/70 backdrop-blur-md border border-white/10 rounded-2xl p-8 max-w-md mx-4 shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
+                  className="bg-dark-800/70 border border-white/10 rounded-2xl p-8 max-w-md mx-4 shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
                 >
                   <h2 className="text-2xl md:text-3xl font-bold text-center mb-4 text-purple-400">
                     Workout Complete!

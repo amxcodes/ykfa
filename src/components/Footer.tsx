@@ -1,7 +1,8 @@
 import { Mail, MapPin, Phone, Facebook, Instagram, ChevronRight, Github, Globe, X } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useRef, useEffect, useCallback, useContext } from 'react';
+// import { motion, AnimatePresence } from 'framer-motion'; // Replaced with CSS animations
+import { WidgetContext } from '../App';
 
 // Program types that match the HomePage.tsx program data
 
@@ -42,27 +43,19 @@ const DevModal = ({ isOpen, onClose }: DevModalProps) => {
   }, [isOpen, onClose]);
   
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
-        <motion.div 
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in"
           onClick={handleOutsideClick}
         >
           {/* Simple backdrop */}
           <div className="fixed inset-0 bg-black/70" />
           
           {/* Modal container */}
-          <motion.div 
+          <div 
             ref={modalRef}
-            className="relative w-72 z-10"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="relative w-72 z-10 animate-scale-in"
           >
             {/* Minimal card design */}
             <div className="bg-black rounded-xl overflow-hidden border border-white/10 shadow-2xl">
@@ -121,10 +114,10 @@ const DevModal = ({ isOpen, onClose }: DevModalProps) => {
                 </a>
               </div>
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 };
 
@@ -132,28 +125,21 @@ const Footer = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showDevModal, setShowDevModal] = useState(false);
+  const { performanceMode } = useContext(WidgetContext);
   
   // Check if we're on the timer page
   const isTimerPage = location.pathname === '/timer';
   
   // Function to handle program link clicks
   const handleProgramClick = (programName: string) => {
-    // Store the program in localStorage to retrieve in HomePage
+    // Store the program name in localStorage
     localStorage.setItem('selectedProgram', programName);
-    console.log("Stored program in localStorage:", programName);
     
-    // Check if we're already on the home page
-    if (location.pathname === '/') {
-      // If we're already on the home page, dispatch a custom event
-      const event = new CustomEvent(PROGRAM_SELECTED_EVENT, { 
-        detail: { programName } 
-      });
-      window.dispatchEvent(event);
-      console.log("Dispatched event for:", programName);
-    } else {
-      // Navigate to home page - the modal will be opened by HomePage useEffect
-      navigate('/');
-    }
+    // Dispatch custom event for program selection
+    const event = new CustomEvent(PROGRAM_SELECTED_EVENT, {
+      detail: { programName }
+    });
+    window.dispatchEvent(event);
   };
   
   return (
@@ -175,7 +161,7 @@ const Footer = () => {
               <div className="relative w-10 h-10 flex items-center justify-center rounded-lg overflow-hidden bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg group-hover:shadow-amber-400/50 transition-shadow duration-300">
                 <span className="absolute inset-0 bg-gradient-to-br from-amber-300 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                 <img 
-                  src="https://i.postimg.cc/g0mqFF16/favicon.png" 
+                  src="/img/favicon.webp" 
                   alt="Dumbbell icon" 
                   className="w-10 h-10 text-black z-10 transform group-hover:scale-105 transition-transform duration-300"
                   style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))' }}
@@ -188,7 +174,7 @@ const Footer = () => {
                     img.src = "/icons/dumbbell-small.svg";
                   }}
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "https://i.postimg.cc/g0mqFF16/favicon.png";
+                    (e.target as HTMLImageElement).src = "/img/favicon.webp";
                   }}
                 />
               </div>
@@ -264,7 +250,7 @@ const Footer = () => {
                 <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Group Fitness
               </button>
               <button 
-                onClick={() => handleProgramClick('GYM ONLY')}
+                onClick={() => handleProgramClick('GYM FIT FUSION')}
                 className="text-left text-gray-400 hover:text-amber-400 transition-colors text-sm flex items-center"
               >
                 <ChevronRight className="w-4 h-4 text-amber-400/70 mr-1.5" />Gym Access

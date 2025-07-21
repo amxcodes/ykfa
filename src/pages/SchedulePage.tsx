@@ -1,5 +1,5 @@
 import { Clock, Calendar, Users, Dumbbell } from 'lucide-react';
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion'; // Replaced with CSS animations
 import { useState, useEffect } from 'react';
 
 // Define schedule data types
@@ -8,6 +8,7 @@ interface TimeSlot {
   time: string;
   notes?: string;
   highlight?: boolean;
+  coach?: string;
 }
 
 interface ScheduleCategory {
@@ -33,39 +34,39 @@ const SchedulePage = () => {
   const scheduleData: Record<string, ScheduleCategory[]> = {
     mmagym: [
       {
-        title: "MMA - Batch A",
+        title: "Batch A",
         icon: <Users size={20} className="text-amber-400" />,
         timeSlots: [
-          { title: "Monday", time: "07:30pm to 08:30pm", notes: "MMA" },
-          { title: "Wednesday", time: "07:30pm to 08:30pm", notes: "MMA" },
-          { title: "Thursday", time: "06:00pm to 07:30pm", notes: "MMA" }
+          { title: "Monday", time: "07:30 PM to 08:30 PM", notes: "Boxing/Kickboxing/Muay Thai", coach: "John Samuel" },
+          { title: "Wednesday", time: "08:00 PM to 09:00 PM", notes: "Strength & Conditioning + Cardio/Sparring", coach: "Malik Dhinar" },
+          { title: "Thursday", time: "06:00 PM to 07:30 PM", notes: "Wrestling/Judo/BJJ", coach: "Alan C Benny" },
+          { title: "Tuesday", time: "08:00 PM to 09:00 PM", notes: "GYM" },
+          { title: "Friday", time: "08:00 PM to 09:00 PM", notes: "GYM" },
+          { title: "Saturday", time: "08:00 PM to 09:00 PM", notes: "GYM" },
         ]
       },
       {
-        title: "GYM - Batch A",
-        icon: <Dumbbell size={20} className="text-amber-400" />,
-        timeSlots: [
-          { title: "Tuesday", time: "07:30pm to 08:30pm", notes: "Evening" },
-          { title: "Friday", time: "07:30pm to 08:30pm", notes: "Evening" },
-          { title: "Saturday", time: "07:30pm to 08:30pm", notes: "Evening" }
-        ]
-      },
-      {
-        title: "MMA - Batch B",
+        title: "Batch B",
         icon: <Users size={20} className="text-amber-400" />,
         timeSlots: [
-          { title: "Monday", time: "08:30pm to 09:30pm", notes: "MMA" },
-          { title: "Wednesday", time: "08:30pm to 09:30pm", notes: "MMA" },
-          { title: "Thursday", time: "08:00pm to 09:30pm", notes: "MMA" }
+          { title: "Monday", time: "08:30 PM to 09:30 PM", notes: "Boxing/Kickboxing/Muay Thai", coach: "John Samuel" },
+          { title: "Wednesday", time: "09:00 PM to 10:00 PM", notes: "Strength & Conditioning + Cardio/Sparring", coach: "Malik Dhinar" },
+          { title: "Thursday", time: "08:00 PM to 09:30 PM", notes: "Wrestling/Judo/BJJ", coach: "Alan C Benny" },
+          { title: "Tuesday", time: "09:00 PM to 10:00 PM", notes: "GYM" },
+          { title: "Friday", time: "09:00 PM to 10:00 PM", notes: "GYM" },
+          { title: "Saturday", time: "09:00 PM to 10:00 PM", notes: "GYM" },
         ]
       },
       {
-        title: "GYM - Batch B",
-        icon: <Dumbbell size={20} className="text-amber-400" />,
+        title: "Batch C",
+        icon: <Users size={20} className="text-amber-400" />,
         timeSlots: [
-          { title: "Tuesday", time: "08:30pm to 09:30pm", notes: "Evening" },
-          { title: "Friday", time: "08:30pm to 09:30pm", notes: "Evening" },
-          { title: "Saturday", time: "08:30pm to 09:30pm", notes: "Evening" }
+          { title: "Tuesday", time: "08:00 PM to 09:30 PM", notes: "Wrestling/Judo/BJJ", coach: "Malik Dhinar" },
+          { title: "Friday", time: "07:00 PM to 08:00 PM", notes: "Boxing/Kickboxing/Muay Thai", coach: "John Samuel" },
+          { title: "Saturday", time: "08:00 PM to 09:00 PM", notes: "Strength & Conditioning + Cardio/Sparring", coach: "Malik Dhinar" },
+          { title: "Monday", time: "08:00 PM to 09:00 PM", notes: "GYM" },
+          { title: "Wednesday", time: "08:00 PM to 09:00 PM", notes: "GYM" },
+          { title: "Thursday", time: "08:00 PM to 09:00 PM", notes: "GYM" },
         ]
       }
     ],
@@ -99,25 +100,20 @@ const SchedulePage = () => {
         ]
       }
     ],
-    gym: [
-      {
-        title: "Gym Only",
-        icon: <Dumbbell size={20} className="text-amber-400" />,
-        timeSlots: [
-          { title: "Morning", time: "06:00am to 10:30am" },
-          { title: "Evening", time: "05:00pm to 10:00pm" }
-        ]
-      }
-    ],
     group: [
       {
-        title: "Group Fitness Classes",
+        title: "GYM FIT FUSION",
         icon: <Users size={20} className="text-amber-400" />,
         timeSlots: [
           { title: "Batch 1", time: "06:00am to 07:00am" },
           { title: "Batch 2", time: "07:00am to 08:00am" },
           { title: "Batch 3", time: "08:00am to 09:00am" },
-          { title: "Ladies batch", time: "09:30am to 10:30am", highlight: true }
+          { title: "Ladies batch", time: "09:30am to 10:30am", highlight: true },
+          { title: "Batch 4", time: "05:00pm to 06:00pm" },
+          { title: "Batch 5", time: "06:00pm to 07:00pm" },
+          { title: "Batch 6", time: "07:00pm to 08:00pm" },
+          { title: "Batch 7", time: "08:00pm to 09:00pm" },
+          { title: "Batch 8", time: "09:00pm to 10:00pm" },
         ]
       }
     ]
@@ -160,92 +156,66 @@ const SchedulePage = () => {
       <div className="max-w-4xl mx-auto relative">
         {/* Header */}
         <div className="mb-10 text-center">
-          <motion.h1 
-            className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-600 mb-2 font-spaceGrotesk"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+          <h1 
+            className="text-3xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-600 mb-2 font-spaceGrotesk animate-fade-in-up"
           >
             Class Schedule
-          </motion.h1>
-          <motion.div 
-            className="flex items-center justify-center gap-2 sm:text-lg text-white/80 mt-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
+          </h1>
+          <div 
+            className="flex items-center justify-center gap-2 sm:text-lg text-white/80 mt-2 animate-fade-in-up"
+            style={{ animationDelay: '0.2s' }}
           >
            
           
-          </motion.div>
+          </div>
         </div>
 
         {/* Schedule Tabs */}
         <div className="mb-8 overflow-x-auto overflow-y-hidden -mx-4 px-4 pb-3">
           <div className="inline-flex p-1 bg-black/40 backdrop-blur-md border border-white/10 rounded-full shadow-lg whitespace-nowrap">
-            <motion.button
-              className={`px-4 sm:px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 flex-shrink-0 ${
+            <button
+              className={`px-4 sm:px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 hover:scale-105 active:scale-95 flex-shrink-0 ${
                 activeTab === 'mmagym' 
                   ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black' 
                   : 'text-white hover:bg-white/10'
               }`}
               onClick={() => setActiveTab('mmagym')}
-              whileHover={activeTab !== 'mmagym' ? { scale: 1.05 } : {}}
-              whileTap={{ scale: 0.97 }}
             >
               MMA+GYM
-            </motion.button>
+            </button>
             
-            <motion.button
-              className={`px-4 sm:px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 flex-shrink-0 ${
+            <button
+              className={`px-4 sm:px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 hover:scale-105 active:scale-95 flex-shrink-0 ${
                 activeTab === 'mma' 
                   ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black' 
                   : 'text-white hover:bg-white/10'
               }`}
               onClick={() => setActiveTab('mma')}
-              whileHover={activeTab !== 'mma' ? { scale: 1.05 } : {}}
-              whileTap={{ scale: 0.97 }}
             >
               MMA
-            </motion.button>
+            </button>
             
-            <motion.button
-              className={`px-4 sm:px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 flex-shrink-0 ${
+            <button
+              className={`px-4 sm:px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 hover:scale-105 active:scale-95 flex-shrink-0 ${
                 activeTab === 'karate' 
                   ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black' 
                   : 'text-white hover:bg-white/10'
               }`}
               onClick={() => setActiveTab('karate')}
-              whileHover={activeTab !== 'karate' ? { scale: 1.05 } : {}}
-              whileTap={{ scale: 0.97 }}
             >
               Karate
-            </motion.button>
+            </button>
             
-            <motion.button
-              className={`px-4 sm:px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 flex-shrink-0 ${
-                activeTab === 'gym' 
-                  ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black' 
-                  : 'text-white hover:bg-white/10'
-              }`}
-              onClick={() => setActiveTab('gym')}
-              whileHover={activeTab !== 'gym' ? { scale: 1.05 } : {}}
-              whileTap={{ scale: 0.97 }}
-            >
-              Gym Only
-            </motion.button>
-            
-            <motion.button
-              className={`px-4 sm:px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 flex-shrink-0 ${
+            <button
+              className={`px-4 sm:px-5 py-2 text-sm font-medium rounded-full transition-all duration-300 hover:scale-105 active:scale-95 flex-shrink-0 ${
                 activeTab === 'group' 
                   ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-black' 
                   : 'text-white hover:bg-white/10'
               }`}
               onClick={() => setActiveTab('group')}
-              whileHover={activeTab !== 'group' ? { scale: 1.05 } : {}}
-              whileTap={{ scale: 0.97 }}
             >
-              Group Fitness
-            </motion.button>
+              GYM FIT FUSION
+            </button>
           </div>
         </div>
 
@@ -264,23 +234,15 @@ const SchedulePage = () => {
         `}</style>
 
         {/* Schedule Content */}
-        <motion.div 
+        <div 
           className="space-y-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
           key={activeTab}
         >
           {scheduleData[activeTab].map((category, index) => (
-            <motion.div
+            <div
               key={category.title}
-              className="backdrop-blur-md bg-black/40 border border-amber-500/20 rounded-xl overflow-hidden hover:shadow-amber-900/20 hover:shadow-lg transition-all duration-300"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ 
-                opacity: animatedItems ? 1 : 0, 
-                y: animatedItems ? 0 : 20 
-              }}
-              transition={{ delay: index * 0.1, duration: 0.4 }}
+              className="backdrop-blur-md bg-black/40 border border-amber-500/20 rounded-xl overflow-hidden hover:shadow-amber-900/20 hover:shadow-lg transition-all duration-300 animate-fade-in-up"
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
               {/* Category Header */}
               <div className="bg-gradient-to-r from-amber-500/10 to-amber-800/10 backdrop-blur-lg p-5 border-b border-amber-500/20 relative overflow-hidden">
@@ -299,15 +261,10 @@ const SchedulePage = () => {
               <div className="p-3 md:p-4">
                 <ul className="divide-y divide-amber-500/10">
                   {category.timeSlots.map((slot, i) => (
-                    <motion.li 
+                    <li 
                       key={i}
-                      className="group"
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ 
-                        opacity: animatedItems ? 1 : 0, 
-                        x: animatedItems ? 0 : -10 
-                      }}
-                      transition={{ delay: (index * 0.1) + (i * 0.05) + 0.2, duration: 0.3 }}
+                      className="group animate-fade-in-up"
+                      style={{ animationDelay: `${(index * 0.1) + (i * 0.05) + 0.2}s` }}
                     >
                       <div className="p-3 md:p-4 flex items-center gap-3 rounded-lg group-hover:bg-amber-500/5 transition-all duration-300 relative">
                         {/* Subtle accent on the left */}
@@ -339,13 +296,13 @@ const SchedulePage = () => {
                           </div>
                         )}
                       </div>
-                    </motion.li>
+                    </li>
                   ))}
                 </ul>
               </div>
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </div>
   );

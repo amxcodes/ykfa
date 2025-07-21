@@ -1,12 +1,4 @@
-/* 
- * This file uses Tailwind CSS directives:
- * - @tailwind directives are used to include Tailwind's base, components, and utilities styles
- * - @apply directives are used to apply Tailwind utility classes within CSS rules
- * 
- * These directives are processed by the Tailwind CSS compiler and are valid CSS.
- * Editor warnings about unknown at-rules (@tailwind, @apply) can be safely ignored.
- */
-
+/* Optimized CSS for lowest CPU usage */
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@300;400;500;600&display=swap');
 
 @tailwind base;
@@ -19,512 +11,131 @@
   }
 
   html {
-    @apply scroll-smooth;
+    scroll-behavior: smooth;
   }
 
   body {
     @apply bg-black text-gray-100 font-inter;
-    /* Prevent any potential white lines or flashes */
     overflow-x: hidden;
     width: 100%;
-    /* Make all text non-selectable/non-copyable by default */
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    
-    /* Ensure cursor is always visible */
     cursor: default;
   }
   
-  /* Hide scrollbar for Chrome, Safari and Opera */
+  /* Hide scrollbars for better performance */
   ::-webkit-scrollbar {
     display: none;
   }
-  
-  /* Hide scrollbar for IE, Edge and Firefox */
   html, body {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
-  
-  /* Allow selection only in specific elements where needed */
   input, textarea, [data-selectable] {
     -webkit-user-select: text;
     -moz-user-select: text;
     -ms-user-select: text;
     user-select: text;
   }
-
-  /* This ensures that no white background shows through between elements */
   body, header, main, section {
     @apply bg-black;
   }
-
   h1, h2, h3, h4, h5, h6 {
     @apply font-spaceGrotesk font-bold;
   }
-
   h1 {
     @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight;
   }
-
   h2 {
     @apply text-2xl sm:text-3xl md:text-4xl leading-tight;
   }
-
   h3 {
     @apply text-xl sm:text-2xl md:text-3xl leading-tight;
   }
-
   p {
     @apply leading-relaxed;
-  }
-  
-  /* Custom Scrollbar Styling */
-  @media (min-width: 1024px) {
-    /* For Webkit browsers (Chrome, Safari, Edge) */
-    ::-webkit-scrollbar {
-      width: 10px;
-    }
-    
-    ::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 10px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-      background: rgba(251, 191, 36, 0.3);
-      border-radius: 10px;
-      border: 2px solid rgba(255, 255, 255, 0.05);
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(251, 191, 36, 0.5);
-    }
-    
-    /* Special styling for textarea scrollbar */
-    textarea::-webkit-scrollbar {
-      width: 8px;
-    }
-    
-    textarea::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 8px;
-    }
-    
-    textarea::-webkit-scrollbar-thumb {
-      background: rgba(251, 191, 36, 0.2);
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    
-    textarea::-webkit-scrollbar-thumb:hover {
-      background: rgba(251, 191, 36, 0.4);
-    }
-    
-    /* For Firefox */
-    * {
-      scrollbar-width: thin;
-      scrollbar-color: rgba(251, 191, 36, 0.3) rgba(255, 255, 255, 0.05);
-    }
-    
-    textarea {
-      scrollbar-width: thin;
-      scrollbar-color: rgba(251, 191, 36, 0.2) rgba(255, 255, 255, 0.03);
-    }
   }
 }
 
 @layer components {
-  /* Fix cursor visibility on interactive elements */
   button, a, [role="button"], .cursor-pointer, input[type="submit"], input[type="button"], input[type="reset"], select, details, summary {
     cursor: pointer !important;
   }
-  
-  /* Ensure text inputs show text cursor */
   input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="search"], input[type="tel"], input[type="url"], textarea {
     cursor: text !important;
   }
-  
-  /* Default container styles */
   .container {
     @apply px-4 mx-auto max-w-7xl;
   }
-
   .section {
     @apply py-12 sm:py-16 md:py-24;
   }
-
   .btn {
-    @apply inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-medium rounded-lg transition-all duration-300;
+    @apply inline-flex items-center justify-center px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base font-medium rounded-lg;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s;
   }
-
   .btn-primary {
-    @apply bg-gradient-to-r from-amber-400 to-amber-500 text-black hover:shadow-[0_0_15px_rgba(255,215,0,0.5)] focus:ring-2 focus:ring-amber-400;
+    @apply bg-gradient-to-r from-amber-400 to-amber-500 text-black;
   }
-
   .btn-outline {
-    @apply border-2 border-amber-400 text-amber-400 hover:bg-amber-400/10 hover:shadow-[0_0_15px_rgba(255,215,0,0.3)];
+    @apply border-2 border-amber-400 text-amber-400 hover:bg-amber-400/10;
   }
-
   .card {
-    @apply bg-dark-800 rounded-2xl p-4 sm:p-6 transition-all duration-300;
+    @apply bg-dark-800 rounded-2xl p-4 sm:p-6;
   }
-
   .nav-link {
-    @apply relative py-2 font-medium transition-all duration-300 hover:text-amber-400;
+    @apply relative py-2 font-medium hover:text-amber-400;
+    transition: color 0.15s;
   }
-
   .nav-link::after {
     content: '';
-    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-amber-400 to-amber-500 transition-all duration-300;
+    @apply absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-amber-400 to-amber-500;
+    transition: width 0.15s;
   }
-
-  .nav-link:hover::after {
+  .nav-link:hover::after, .nav-link.active::after {
     @apply w-full;
   }
-
   .nav-link.active {
     @apply text-amber-400;
   }
-
-  .nav-link.active::after {
-    @apply w-full;
+  .glassmorphic, .glassmorphic-dark, .glassmorphic-nav, .glassmorphic-card {
+    background: rgba(30, 30, 30, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    backdrop-filter: none;
+    }
+  .animate-fade-up, .animate-fade-in, .animate-scale-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
-
-  .gold-glow {
-    @apply hover:shadow-[0_0_15px_rgba(255,215,0,0.5)];
+  .card-container, .pricing-card, .duration-change-enter, .duration-change-enter-active {
+    transition: none !important;
   }
-
-  /* Glassmorphism effects */
-  .glassmorphic {
-    @apply backdrop-blur-lg bg-white/10 border border-white/20 shadow-xl;
-  }
-
-  .glassmorphic-dark {
-    @apply backdrop-blur-xl bg-black/40 border border-white/10;
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
-  }
-
-  .glassmorphic-nav {
-    @apply backdrop-blur-xl bg-black/30 border-b border-white/10;
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.2);
-  }
-
-  .glassmorphic-card {
-    @apply rounded-xl backdrop-blur-lg bg-white/5 border border-white/10 transition-all duration-300;
-    box-shadow: 0 10px 40px -15px rgba(0, 0, 0, 0.5);
-  }
-
-  .glassmorphic-icon {
-    position: relative;
-    z-index: 1;
-  }
-
-  .glassmorphic-icon::before {
-    content: '';
-    position: absolute;
-    inset: -5px;
-    z-index: -1;
-    border-radius: 12px;
-    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    backdrop-filter: blur(7px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .glassmorphic-icon:hover::before {
-    opacity: 1;
-  }
-
-  /* Animations */
-  .animate-fade-up {
-    @apply opacity-0 translate-y-8 transition-all duration-700 ease-out;
-  }
-
-  .animate-fade-up.active {
-    @apply opacity-100 translate-y-0;
-  }
-  
-  /* Program card animations */
-  .card-container {
-    transform: translateZ(0);
-    will-change: transform, opacity;
-    perspective: 1000px;
-    opacity: 0;
-    filter: blur(10px);
-    transform: translateY(20px);
-    transition: opacity 1.2s cubic-bezier(0.33, 1, 0.68, 1),
-                filter 1.2s cubic-bezier(0.33, 1, 0.68, 1),
-                transform 1.2s cubic-bezier(0.33, 1, 0.68, 1);
-  }
-  
-  .card-container.visible {
-    opacity: 1;
-    filter: blur(0);
-    transform: translateY(0);
-  }
-  
-  .card {
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    transform-style: preserve-3d;
-    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), 
-                box-shadow 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    /* Add transition-delay for exiting hover state */
-    transition-delay: 0s;
-  }
-  
-  /* Active hover state - no delay */
   .card-container:hover .card {
-    transform: translateY(-12px) scale(1.02) rotate3d(1, 5, 0, 2deg);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3), 
-                0 0 15px rgba(251, 191, 36, 0.2);
-    transition-delay: 0s;
+    transform: none !important;
   }
-  
-  /* Exit hover state - add delay */
-  .card-container:not(:hover) .card {
-    transition-delay: 300ms;
-  }
-  
-  /* Image and text now use simpler transitions instead of animations */
-  .img-active {
-    opacity: 0;
-    transform: scale(1.1);
-    filter: saturate(0.8) brightness(0.8);
-    transition: opacity 1s ease-out, 
-                transform 1s ease-out,
-                filter 1s ease-out;
-  }
-  
-  .img-active.visible {
-    opacity: 1;
-    transform: scale(1);
-    filter: saturate(1) brightness(1);
-  }
-  
-  .text-active {
-    opacity: 0;
-    transform: translateY(10px);
-    transition: opacity 0.7s ease-out, 
-                transform 0.7s ease-out;
-  }
-  
-  .text-active.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  
-  /* Improve hover animations for child elements */
-  .card-container .img-active {
-    transition: opacity 1s ease-out, 
-                transform 1.2s cubic-bezier(0.25, 1, 0.5, 1),
-                filter 1s ease-out,
-                scale 1.2s cubic-bezier(0.25, 1, 0.5, 1);
-  }
-  
-  /* Add delay to image scale when hover ends */
-  .card-container:not(:hover) .img-active {
-    transition-delay: 200ms;
-  }
-
-  @keyframes apple-pop {
-    0% {
-      transform: scale(0.95) translateY(10px);
-      opacity: 0;
-    }
-    60% {
-      transform: scale(1.02) translateY(-2px);
-      opacity: 1;
-    }
-    100% {
-      transform: scale(1) translateY(0);
-      opacity: 1;
-    }
-  }
-
-  .animate-apple-pop {
-    animation: apple-pop 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  }
-
-  @keyframes bounce-x {
-    0%, 100% {
-      transform: translateX(0);
-    }
-    50% {
-      transform: translateX(10px);
-    }
-  }
-
-  .animate-bounce-x {
-    animation: bounce-x 1s ease-in-out infinite;
-  }
-
-  /* Mobile optimizations */
   @media (max-width: 640px) {
     .container {
-      @apply px-4;
+      @apply px-3;
     }
-
     .section {
-      @apply py-8;
+      @apply py-8 sm:py-12;
     }
-
     .card {
-      @apply p-4;
+      @apply p-3;
     }
-
     .btn {
-      @apply w-full justify-center;
+      @apply px-3 py-2 text-sm;
     }
   }
-
-  /* Context Menu Glassmorphic Styles */
-  .glassmorphic-menu {
-    @apply backdrop-blur-xl bg-black/30 border border-white/20 shadow-xl;
-    box-shadow: 
-      0 10px 30px -10px rgba(0, 0, 0, 0.5),
-      0 0 20px rgba(0, 0, 0, 0.3),
-      inset 0 0 10px rgba(255, 255, 255, 0.05);
-  }
-  
-  .glassmorphic-menu-item {
-    @apply relative overflow-hidden rounded-lg transition-all duration-150;
-  }
-  
-  .glassmorphic-menu-item:hover {
-    @apply bg-white/10;
-  }
-  
-  /* Animation for context menu items */
-  @keyframes fadeSlideIn {
-    from {
-      opacity: 0;
-      transform: translateY(5px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  .animate-fade-slide-in {
-    animation: fadeSlideIn 150ms forwards;
-  }
-  
-  /* Animation for decorative elements */
-  @keyframes floatAnimation {
-    0% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-5px);
-    }
-    100% {
-      transform: translateY(0);
-    }
-  }
-  
-  .animate-float {
-    animation: floatAnimation 3s ease-in-out infinite;
-  }
-  
-  /* Animation for gradient shift */
-  @keyframes gradientShift {
-    0% {
-      background-position: 0% 50%;
-    }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
-    }
-  }
-  
-  .animate-gradient {
-    background-size: 200% 200%;
-    animation: gradientShift 3s ease infinite;
-  }
-
-  /* Pricing Card Animations */
-  .pricing-card {
-    opacity: 0;
-    transform: translateY(50px);
-    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .pricing-card.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* Duration change animation */
-  .duration-change-enter {
-    opacity: 0;
-    transform: translateY(15px) scale(0.95);
-    filter: blur(5px);
-  }
-
-  .duration-change-enter-active {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-    transition: 
-      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), 
-      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-      filter 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-  }
-
-  /* Fancy animation for price changes */
-  @keyframes grow-strikethrough {
-    0% { width: 0; left: 0; right: auto; }
-    50% { width: 100%; left: 0; right: auto; }
-    51% { width: 100%; right: 0; left: auto; }
-    100% { width: 0; right: 0; left: auto; }
-  }
-
-  .animate-grow-strikethrough {
-    animation: grow-strikethrough 1.5s cubic-bezier(0.6, 0.2, 0.1, 1) forwards;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  .animate-fadeIn {
-    animation: fadeIn 0.5s ease forwards;
-  }
-}
-
-@layer utilities {
-  .animate-bounce-slow {
-    animation: bounce 3s infinite;
-  }
-
-  @keyframes bounce {
-    0%, 100% {
-      transform: translateY(-25%);
-      animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
-    }
-    50% {
-      transform: translateY(0);
-      animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
-    }
-  }
-
-  /* Hide scrollbar but allow scrolling */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
-  
   .scrollbar-hide::-webkit-scrollbar {
-    display: none;  /* Chrome, Safari and Opera */
+    display: none;
   }
 }

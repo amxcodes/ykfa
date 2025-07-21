@@ -57,7 +57,7 @@ export function safeRemoveEventListener(
     try {
       element.removeEventListener(event, handler, options);
     } catch (error) {
-      console.error(`Error removing event listener: ${error}`);
+      // Handle event listener removal errors silently
     }
   }
 }
@@ -75,7 +75,7 @@ export function safeAddEventListener(
     try {
       element.addEventListener(event, handler, options);
     } catch (error) {
-      console.error(`Error adding event listener: ${error}`);
+      // Handle event listener addition errors silently
     }
   }
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Wifi, Home, RefreshCw, AlertTriangle, Server, SearchX } from 'lucide-react';
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion'; // Replaced with CSS animations
 
 // Define error types and their specific messages
 type ErrorType = 'network' | 'notFound' | 'server' | 'unknown';
@@ -51,53 +51,7 @@ const errorConfigs: Record<ErrorType, ErrorConfig> = {
   }
 };
 
-// Animation constants
-const ANIMATIONS = {
-  container: {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.4 }
-  },
-  icon: {
-    initial: { scale: 0.8, opacity: 0 },
-    animate: { scale: 1, opacity: 1 },
-    transition: { delay: 0.2, duration: 0.4 }
-  },
-  title: {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0 },
-    transition: { delay: 0.3, duration: 0.4 }
-  },
-  description: {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0 },
-    transition: { delay: 0.4, duration: 0.4 }
-  },
-  suggestion: {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0 },
-    transition: { delay: 0.5, duration: 0.4 }
-  },
-  primaryButton: {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0 },
-    transition: { delay: 0.6, duration: 0.4 },
-    whileHover: { scale: 1.03 },
-    whileTap: { scale: 0.97 }
-  },
-  secondaryButton: {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0 },
-    transition: { delay: 0.7, duration: 0.4 },
-    whileHover: { scale: 1.03 },
-    whileTap: { scale: 0.97 }
-  },
-  info: {
-    initial: { opacity: 0 },
-    animate: { opacity: 1 },
-    transition: { delay: 0.8, duration: 0.4 }
-  }
-};
+// CSS animations are now used instead of Framer Motion
 
 interface ErrorPageProps {
   errorType?: ErrorType;
@@ -154,7 +108,6 @@ const ErrorPage = ({
       
       if (stateCode || stateMessage) {
         // We have state from a redirect but won't trigger another navigation
-        console.log('Error page received state:', location.state);
       }
     }
   }, [location]);
@@ -197,9 +150,8 @@ const ErrorPage = ({
         <div className="absolute bottom-1/3 -left-40 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl"></div>
       </div>
       
-      <motion.div 
-        className="relative max-w-md w-full rounded-2xl backdrop-blur-xl bg-black/40 border border-white/10 shadow-2xl overflow-hidden"
-        {...ANIMATIONS.container}
+      <div 
+        className="relative max-w-md w-full rounded-2xl backdrop-blur-xl bg-black/40 border border-white/10 shadow-2xl overflow-hidden animate-fade-in-up"
       >
         {/* Decorative header line */}
         <div className="h-1 w-full bg-gradient-to-r from-transparent via-amber-500 to-transparent"></div>
@@ -207,39 +159,39 @@ const ErrorPage = ({
         <div className="p-8 text-center">
           <div className="flex justify-center mb-6">
             <div className="p-4 rounded-2xl bg-black/40 border border-white/10">
-              <motion.div {...ANIMATIONS.icon}>
+              <div className="animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
                 {config.icon}
-              </motion.div>
+              </div>
             </div>
           </div>
           
-          <motion.h1 
-            className="text-2xl md:text-3xl font-bold text-white mb-2"
-            {...ANIMATIONS.title}
+          <h1 
+            className="text-2xl md:text-3xl font-bold text-white mb-2 animate-fade-in-up"
+            style={{ animationDelay: '0.3s' }}
           >
             {config.title}
-          </motion.h1>
+          </h1>
           
-          <motion.p 
-            className="text-gray-400 mb-4"
-            {...ANIMATIONS.description}
+          <p 
+            className="text-gray-400 mb-4 animate-fade-in-up"
+            style={{ animationDelay: '0.4s' }}
           >
             {message || config.description}
-          </motion.p>
+          </p>
           
-          <motion.p 
-            className="text-sm text-white/60 mb-8"
-            {...ANIMATIONS.suggestion}
+          <p 
+            className="text-sm text-white/60 mb-8 animate-fade-in-up"
+            style={{ animationDelay: '0.5s' }}
           >
             {config.suggestion}
-          </motion.p>
+          </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <motion.button
-              className={`px-6 py-3 rounded-xl ${config.primaryColor} text-black font-medium flex items-center justify-center gap-2 hover:shadow-lg transition-all`}
+            <button
+              className={`px-6 py-3 rounded-xl ${config.primaryColor} text-black font-medium flex items-center justify-center gap-2 hover:shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 animate-fade-in-up`}
               onClick={handleAction}
               disabled={isRetrying}
-              {...ANIMATIONS.primaryButton}
+              style={{ animationDelay: '0.6s' }}
             >
               {isRetrying ? (
                 <RefreshCw className="w-5 h-5 animate-spin" />
@@ -253,35 +205,35 @@ const ErrorPage = ({
                 </>
               )}
               {config.primaryAction}
-            </motion.button>
+            </button>
             
             {effectiveErrorType !== 'notFound' && (
-              <motion.button
-                className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+              <button
+                className="px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-white/10 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 animate-fade-in-up"
                 onClick={() => navigate('/')}
-                {...ANIMATIONS.secondaryButton}
+                style={{ animationDelay: '0.7s' }}
               >
                 <Home className="w-5 h-5" />
                 Go Home
-              </motion.button>
+              </button>
             )}
           </div>
           
           {/* Additional information - only render when needed */}
           {(code || retryCount > 0) && (
-            <motion.div 
-              className="mt-8 text-xs text-gray-500"
-              {...ANIMATIONS.info}
+            <div 
+              className="mt-8 text-xs text-gray-500 animate-fade-in-up"
+              style={{ animationDelay: '0.8s' }}
             >
               {code && <p>Error code: {code}</p>}
               {retryCount > 0 && <p>Retry attempts: {retryCount}</p>}
               <p className="mt-1">
                 Current path: {location.pathname}
               </p>
-            </motion.div>
+            </div>
           )}
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };

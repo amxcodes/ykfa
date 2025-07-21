@@ -204,7 +204,7 @@ ${message}
                 <option value="MMA ONLY">MMA ONLY</option>
                 <option value="GROUP FITNESS">GROUP FITNESS</option>
                 <option value="KARATE">KARATE</option>
-                <option value="GYM ONLY">GYM ONLY</option>
+                <option value="GYM FIT FUSION">GYM FIT FUSION</option>
                 <option value="PERSONAL TRAINING">PERSONAL TRAINING</option>
                 <option value="Trial Class">Trial Class</option>
               </select>

@@ -11,29 +11,13 @@ const Hero = ({ loadingComplete = false }: HeroProps) => {
     members: 0,
     years: 0
   });
-
+  
   const statsRef = useRef(null);
   const hasAnimated = useRef(false);
   
-  // Force animation to start regardless of loading state
+  // Effect 1: Start animations when component mounts
   useEffect(() => {
-    console.log('Hero mounted, will start animations');
-    
-    // Start animation after a short delay to ensure component is fully mounted
-    const initialDelay = setTimeout(() => {
-      console.log('Starting animations now');
-      hasAnimated.current = true;
-      animateNumbers();
-    }, 1000); // Delay animation start by 1 second
-    
-    return () => clearTimeout(initialDelay);
-  }, []);
-  
-  // Backup animation trigger when loading completes
-  useEffect(() => {
-    if (loadingComplete && !hasAnimated.current) {
-      console.log('Loader complete, starting animations');
-      hasAnimated.current = true;
+    if (loadingComplete) {
       animateNumbers();
     }
   }, [loadingComplete]);
@@ -48,7 +32,6 @@ const Hero = ({ loadingComplete = false }: HeroProps) => {
       (entries) => {
         const [entry] = entries;
         if (entry.isIntersecting && !hasAnimated.current) {
-          console.log('Stats section visible, starting animations');
           hasAnimated.current = true;
           animateNumbers();
         }
@@ -68,7 +51,8 @@ const Hero = ({ loadingComplete = false }: HeroProps) => {
   }, []);
 
   // Ref to store the animation timer
-  const timerRef = useRef<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const hasStartedAnimation = useRef(false);
   
   // Clean up the timer when component unmounts
   useEffect(() => {
@@ -81,7 +65,12 @@ const Hero = ({ loadingComplete = false }: HeroProps) => {
   }, []);
 
   const animateNumbers = () => {
-    console.log('Starting number animation'); // Debug log
+    // Prevent multiple animations from running
+    if (hasStartedAnimation.current) {
+      return;
+    }
+    
+    hasStartedAnimation.current = true;
     
     // Reset numbers first to ensure animation is visible
     setAnimatedNumbers({
@@ -92,7 +81,7 @@ const Hero = ({ loadingComplete = false }: HeroProps) => {
     });
     
     const duration = 2000; // 2 seconds
-    const steps = 60;
+    const steps = 30; // Reduced from 60 to 30 for better performance
     const interval = duration / steps;
 
     const targetNumbers = {
@@ -111,7 +100,7 @@ const Hero = ({ loadingComplete = false }: HeroProps) => {
     }
 
     // Start the animation immediately
-    timerRef.current = window.setInterval(() => {
+    timerRef.current = setInterval(() => {
       currentStep++;
       
       const progress = currentStep / steps;
@@ -135,25 +124,15 @@ const Hero = ({ loadingComplete = false }: HeroProps) => {
 
   return (
     <section className="hero-section relative min-h-[90vh] md:min-h-screen flex items-center bg-black">
-      {/* Background video with overlay */}
+      {/* Background image with overlay - removed video to prevent memory leaks */}
       <div className="absolute inset-0 z-0 bg-black overflow-hidden">
-        <video 
+        <img 
+          src="https://images.pexels.com/photos/4761352/pexels-photo-4761352.jpeg?auto=compress&cs=tinysrgb&w=800&q=70" 
+          alt="Martial arts training"
           className="absolute inset-0 w-full h-full object-cover opacity-50"
-          autoPlay 
-          muted 
-          loop 
-          playsInline
-          poster="https://images.pexels.com/photos/4761352/pexels-photo-4761352.jpeg?auto=compress&cs=tinysrgb&w=1920"
-        >
-          <source src="/sounds/video1.mp4" type="video/mp4" />
-          {/* Fallback for browsers that don't support video */}
-          <img 
-            src="https://images.pexels.com/photos/4761352/pexels-photo-4761352.jpeg?auto=compress&cs=tinysrgb&w=1920" 
-            alt="Martial arts training"
-            className="absolute inset-0 w-full h-full object-cover opacity-50"
-            loading="eager"
-          />
-        </video>
+          loading="lazy"
+          decoding="async"
+        />
         <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/40 to-black"></div>
       </div>
 

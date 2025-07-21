@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+// import { motion, AnimatePresence } from 'framer-motion'; // Replaced with CSS animations
 import { useTimerContext } from '../context/TimerContext';
 import { 
   Play, Flame, Clock, Activity, Coffee, Fan, Plus, Minus } from 'lucide-react';
@@ -27,7 +27,7 @@ class AnimationController {
     element.style.transition = `all ${duration}s ${ease} ${delay}s`;
     
     // Apply properties
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       Object.entries(properties).forEach(([prop, value]) => {
         // Handle special properties
         if (prop === 'scale') {
@@ -43,43 +43,20 @@ class AnimationController {
       });
     }, 10);
     
-    // Handle repeating animations for things like pulsing
-    if (repeat === -1 && 'boxShadow' in properties) {
-      // Special handling for infinite pulsing boxShadow
-      let isFirstState = false;
-      const pulseDuration = duration * 1000;
-      
-      const pulseInterval = setInterval(() => {
-        isFirstState = !isFirstState;
-        
-        // Apply pulsing effect by toggling between states
-        if (isFirstState) {
-          element.style.boxShadow = '0 0 0px rgba(96, 165, 250, 0), 0 0 15px rgba(96, 165, 250, 0.5), 0 0 0px rgba(96, 165, 250, 0)';
-        } else {
-          element.style.boxShadow = '0 0 5px rgba(96, 165, 250, 0.3), 0 0 10px rgba(96, 165, 250, 0), 0 0 15px rgba(96, 165, 250, 0)';
-        }
-      }, pulseDuration);
-      
-      // Store the interval ID on the element to clear it later if needed
-      (element as any)._pulseIntervalId = pulseInterval;
-    } else {
       // Call onComplete after animation finishes
-      setTimeout(() => {
+    const completeTimeoutId = setTimeout(() => {
         // Restore original transition
         element.style.transition = originalTransition;
         if (onComplete) onComplete();
       }, (duration + delay) * 1000);
-    }
     
     return {
       // Cleanup function to cancel animations
       cancel: () => {
+        clearTimeout(timeoutId);
+        clearTimeout(completeTimeoutId);
         element.style.transition = originalTransition;
         element.style.boxShadow = originalBoxShadow;
-        if ((element as any)._pulseIntervalId) {
-          clearInterval((element as any)._pulseIntervalId);
-          delete (element as any)._pulseIntervalId;
-        }
       }
     };
   }
@@ -116,7 +93,7 @@ class AnimationController {
     void element.offsetWidth;
     
     // Reset transition and animate to target properties
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       element.style.transition = originalTransition;
       AnimationController.animate(element, toProps, options);
     }, 20);
@@ -124,6 +101,7 @@ class AnimationController {
     return {
       // Cleanup function
       cancel: () => {
+        clearTimeout(timeoutId);
         element.style.transition = originalTransition;
       }
     };
@@ -155,6 +133,28 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
   
   // Set slider mode as default state
   const [isSliderMode, setIsSliderMode] = useState<boolean>(true);
+
+  // Initialize input values with current settings
+  useEffect(() => {
+    const newInputValues: Record<string, { minutes?: string; seconds?: string; value?: string }> = {};
+    settingSections.forEach(section => {
+      if (section.showMinutes) {
+        newInputValues[section.key] = {
+          minutes: getMinutes(settings[section.key as keyof typeof settings] as number).toString(),
+          seconds: getSeconds(settings[section.key as keyof typeof settings] as number).toString()
+        };
+      } else if (section.key === 'rounds') {
+        newInputValues[section.key] = {
+          value: settings[section.key].toString()
+        };
+      } else {
+        newInputValues[section.key] = {
+          value: settings[section.key as keyof typeof settings]?.toString() || ''
+        };
+      }
+    });
+    setInputValues(newInputValues);
+  }, []); // Only run once on mount
 
   const getMinutes = (totalSeconds: number) => {
     return Math.floor(totalSeconds / 60);
@@ -242,44 +242,26 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
 
-  // Update input values when settings change
+  // Update input values when settings change (but not when user is actively editing)
   useEffect(() => {
-    // Only update input values if they're different from current settings
-    const shouldUpdate = settingSections.some(section => {
+    const newInputValues: Record<string, { minutes?: string; seconds?: string; value?: string }> = {};
+    settingSections.forEach(section => {
       if (section.showMinutes) {
-        const currentMinutes = getMinutes(settings[section.key as keyof typeof settings] as number).toString();
-        const currentSeconds = getSeconds(settings[section.key as keyof typeof settings] as number).toString();
-        const currentInputs = inputValues[section.key];
-        return !currentInputs || 
-               currentInputs.minutes !== currentMinutes || 
-               currentInputs.seconds !== currentSeconds;
+        newInputValues[section.key] = {
+          minutes: getMinutes(settings[section.key as keyof typeof settings] as number).toString(),
+          seconds: getSeconds(settings[section.key as keyof typeof settings] as number).toString()
+        };
+      } else if (section.key === 'rounds') {
+        newInputValues[section.key] = {
+          value: settings[section.key].toString()
+        };
       } else {
-        const currentValue = settings[section.key as keyof typeof settings]?.toString();
-        const currentInput = inputValues[section.key]?.value;
-        return !currentInput || currentInput !== currentValue;
+        newInputValues[section.key] = {
+          value: settings[section.key as keyof typeof settings]?.toString() || ''
+        };
       }
     });
-
-    if (shouldUpdate) {
-      const newInputValues: Record<string, { minutes?: string; seconds?: string; value?: string }> = {};
-      settingSections.forEach(section => {
-        if (section.showMinutes) {
-          newInputValues[section.key] = {
-            minutes: getMinutes(settings[section.key as keyof typeof settings] as number).toString(),
-            seconds: getSeconds(settings[section.key as keyof typeof settings] as number).toString()
-          };
-        } else if (section.key === 'rounds') {
-          newInputValues[section.key] = {
-            value: settings[section.key].toString()
-          };
-        } else {
-          newInputValues[section.key] = {
-            value: settings[section.key as keyof typeof settings]?.toString() || ''
-          };
-        }
-      });
-      setInputValues(newInputValues);
-    }
+    setInputValues(newInputValues);
   }, [settings, settingSections, getMinutes, getSeconds]);
 
   // Handler for input changes
@@ -424,20 +406,15 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
     if (settingsRef.current) {
       const startButton = settingsRef.current.querySelector('.start-button') as HTMLElement;
       if (startButton) {
-        AnimationController.animate(startButton, {
-          boxShadow: '0 0 0px rgba(96, 165, 250, 0), 0 0 15px rgba(96, 165, 250, 0.5), 0 0 0px rgba(96, 165, 250, 0)'
-        }, {
-          duration: 2,
-          ease: 'ease-in-out', // sine.inOut
-          repeat: -1
-        });
+        // Use CSS animation instead of JavaScript intervals to prevent memory leaks
+        startButton.style.animation = 'pulse-glow 2s ease-in-out infinite';
       }
       
       // Clean up animation on unmount
       return () => {
         const startButton = settingsRef.current?.querySelector('.start-button') as HTMLElement;
-        if (startButton && (startButton as any)._pulseIntervalId) {
-          clearInterval((startButton as any)._pulseIntervalId);
+        if (startButton) {
+          startButton.style.animation = '';
         }
       };
     }
@@ -482,20 +459,17 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
   return (
     <div 
       ref={settingsRef}
-      className={`bg-dark-900/95 backdrop-blur-xl rounded-xl p-4 border border-white/10 shadow-2xl ${className} max-w-sm mx-auto w-full overflow-hidden`}
+      className={`glassmorphic-dark p-4 ${className} max-w-sm mx-auto w-full overflow-hidden`}
     >
       {/* Header with gradient text */}
-      <motion.div 
-        className="text-center mb-4"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+      <div 
+        className="text-center mb-4 animate-fade-in-up"
       >
         <h2 className="text-xl font-bold bg-gradient-to-r from-amber-400 to-amber-500 bg-clip-text text-transparent">
           Workout Timer Settings
         </h2>
         <p className="text-gray-400 mt-1 text-xs">Customize your workout experience</p>
-      </motion.div>
+      </div>
 
       {/* Mode Toggle */}
       <div className="flex items-center justify-center mb-4">
@@ -525,16 +499,12 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
 
       {/* Settings Grid */}
       <div className="space-y-2">
-        <AnimatePresence mode="sync">
-          {settingSections.map((section, index) => (
-            <motion.div
-              key={section.key}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="bg-dark-800/50 rounded-lg p-3 border border-white/5 hover:border-amber-500/30 transition-all duration-300"
-            >
+        {settingSections.map((section, index) => (
+          <div
+            key={section.key}
+            className="bg-dark-800/50 rounded-lg p-3 border border-white/5 hover:border-amber-500/30 transition-all duration-300 animate-fade-in-up"
+            style={{ animationDelay: `${index * 0.05}s` }}
+          >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <div className="p-1.5 rounded-lg bg-amber-500/10">
@@ -591,51 +561,70 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
                   <div className="flex items-center space-x-2">
                     {section.key === 'rounds' ? (
                       <div className="flex items-center space-x-2">
-                        <motion.button
-                          className="p-2 rounded-lg bg-dark-700 hover:bg-dark-600 transition-colors"
-                          whileTap={{ scale: 0.95 }}
+                        <button
+                          className="p-2 rounded-lg bg-dark-700 hover:bg-dark-600 transition-colors active:scale-95"
                           onClick={handleDecreaseRounds}
                           disabled={settings.rounds <= 1}
                         >
                           <Minus className="w-4 h-4" />
-                        </motion.button>
+                        </button>
                         
                         <input
                           type="text"
-                          value={inputValues[section.key]?.value || settings.rounds.toString()}
+                          value={inputValues[section.key]?.value || settings.rounds.toString() || '1'}
                           onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'value', e.target.value)}
                           onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'value')}
-                          className="w-12 bg-dark-700 text-center font-medium rounded-lg py-1"
+                          className="w-12 bg-dark-700 text-center font-medium rounded-lg py-1 text-white placeholder-gray-400 border border-gray-600"
+                          placeholder="1"
+                          style={{ 
+                            color: 'white !important', 
+                            backgroundColor: '#374151 !important',
+                            caretColor: 'white',
+                            outline: 'none'
+                          }}
                         />
                         
-                        <motion.button
-                          className="p-2 rounded-lg bg-dark-700 hover:bg-dark-600 transition-colors"
-                          whileTap={{ scale: 0.95 }}
+                        <button
+                          className="p-2 rounded-lg bg-dark-700 hover:bg-dark-600 transition-colors active:scale-95"
                           onClick={handleIncreaseRounds}
                           disabled={settings.rounds >= 30}
                         >
                           <Plus className="w-4 h-4" />
-                        </motion.button>
+                        </button>
                       </div>
                     ) : section.showMinutes ? (
                       <div className="flex items-center space-x-2">
                         <div className="flex items-center space-x-1">
                           <input
                             type="text"
-                            value={inputValues[section.key]?.minutes || getMinutes(settings[section.key as keyof typeof settings] as number).toString()}
+                            value={inputValues[section.key]?.minutes || getMinutes(settings[section.key as keyof typeof settings] as number).toString() || '0'}
                             onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'minutes', e.target.value)}
                             onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'minutes')}
-                            className="w-12 bg-dark-700 text-center font-medium rounded-lg py-1"
+                            className="w-12 bg-dark-700 text-center font-medium rounded-lg py-1 text-white placeholder-gray-400 border border-gray-600"
+                            placeholder="0"
+                            style={{ 
+                              color: 'white !important', 
+                              backgroundColor: '#374151 !important',
+                              caretColor: 'white',
+                              outline: 'none'
+                            }}
                           />
                           <span className="text-gray-400">m</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <input
                             type="text"
-                            value={inputValues[section.key]?.seconds || getSeconds(settings[section.key as keyof typeof settings] as number).toString()}
+                            value={inputValues[section.key]?.seconds || getSeconds(settings[section.key as keyof typeof settings] as number).toString() || '0'}
                             onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'seconds', e.target.value)}
                             onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'seconds')}
-                            className="w-12 bg-dark-700 text-center font-medium rounded-lg py-1"
+                            className="w-12 bg-dark-700 text-center font-medium rounded-lg py-1 text-white placeholder-gray-400 border border-gray-600"
+                            placeholder="0"
+                            style={{ 
+                              color: 'white !important', 
+                              backgroundColor: '#374151 !important',
+                              caretColor: 'white',
+                              outline: 'none'
+                            }}
                           />
                           <span className="text-gray-400">s</span>
                         </div>
@@ -644,10 +633,17 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
                       <div className="flex items-center space-x-1">
                         <input
                           type="text"
-                          value={inputValues[section.key]?.value || settings[section.key as keyof typeof settings].toString()}
+                          value={inputValues[section.key]?.value || settings[section.key as keyof typeof settings].toString() || '0'}
                           onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'value', e.target.value)}
                           onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'value')}
-                          className="w-12 bg-dark-700 text-center font-medium rounded-lg py-1"
+                          className="w-12 bg-dark-700 text-center font-medium rounded-lg py-1 text-white placeholder-gray-400 border border-gray-600"
+                          placeholder="0"
+                          style={{ 
+                            color: 'white !important', 
+                            backgroundColor: '#374151 !important',
+                            caretColor: 'white',
+                            outline: 'none'
+                          }}
                         />
                         <span className="text-gray-400">{section.unit}</span>
                       </div>
@@ -655,28 +651,23 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
                   </div>
                 )}
               </div>
-            </motion.div>
+            </div>
           ))}
-        </AnimatePresence>
-      </div>
+        </div>
 
       {/* Start Button */}
-      <motion.button
+      <button
         className="w-full mt-4 py-3 px-4 bg-gradient-to-r from-amber-400 to-amber-500 text-black font-bold rounded-lg 
-          hover:shadow-[0_0_15px_rgba(251,191,36,0.3)] transition-all duration-300 relative overflow-hidden group"
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+          hover:shadow-[0_0_15px_rgba(251,191,36,0.3)] hover:scale-105 active:scale-95 transition-all duration-300 relative overflow-hidden group animate-fade-in-up"
         onClick={handleStartWorkout}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3, duration: 0.4 }}
+        style={{ animationDelay: '0.3s' }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
         <div className="relative flex items-center justify-center space-x-2">
           <Play className="w-4 h-4" />
           <span className="text-sm">START WORKOUT</span>
         </div>
-      </motion.button>
+      </button>
     </div>
   );
 };
