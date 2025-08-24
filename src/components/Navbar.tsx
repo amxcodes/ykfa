@@ -82,17 +82,8 @@ const Navbar = ({ isScrolled }: { isScrolled: boolean }) => {
                     alt="Dumbbell icon" 
                     className="w-10 h-10 text-black z-10 transform group-hover:scale-105 transition-transform duration-300"
                     style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))' }}
-                    onLoad={(e) => {
-                      const img = new Image();
-                      img.onload = () => {
-                        (e.target as HTMLImageElement).src = "/icons/dumbbell-small.svg";
-                      };
-                      img.onerror = () => {}; // Keep fallback image
-                      img.src = "/icons/dumbbell-small.svg";
-                    }}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = "https://i.postimg.cc/g0mqFF16/favicon.png";
-                    }}
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <div className="flex flex-col">

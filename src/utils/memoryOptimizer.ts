@@ -38,27 +38,11 @@ export class MemoryOptimizer {
     this.performCleanup();
   }
 
-  // Perform memory cleanup
+  // Perform memory cleanup - SIMPLIFIED to prevent infinite loops
   private performCleanup() {
-    // Clear all timeouts and intervals
-    const highestTimeoutId = setTimeout(() => {}, 0);
-    const highestIntervalId = setInterval(() => {}, 0);
+    console.log('🗑️ Simplified cleanup - no aggressive clearing');
     
-    for (let i = 0; i < highestTimeoutId; i++) {
-      clearTimeout(i);
-    }
-    
-    for (let i = 0; i < highestIntervalId; i++) {
-      clearInterval(i);
-    }
-
-    // Clear all animation frames
-    const highestAnimationFrameId = requestAnimationFrame(() => {});
-    for (let i = 0; i < highestAnimationFrameId; i++) {
-      cancelAnimationFrame(i);
-    }
-
-    // Run registered cleanup tasks
+    // Only run registered cleanup tasks (safe operations)
     this.cleanupTasks.forEach(task => {
       try {
         task();
@@ -67,6 +51,12 @@ export class MemoryOptimizer {
       }
     });
     this.cleanupTasks = [];
+    
+    // DISABLED aggressive timeout/interval clearing that caused CPU spikes
+    // The following code was creating more problems than it solved:
+    // - Clearing ALL timeouts/intervals by ID causes massive CPU usage
+    // - React's own timers get cleared, breaking component behavior
+    // - Animation frames get cleared, breaking animations
   }
 
   // Register a cleanup task
@@ -130,7 +120,9 @@ export class MemoryOptimizer {
 // Export singleton instance
 export const memoryOptimizer = MemoryOptimizer.getInstance();
 
-// Auto-enable on page load
+// DISABLED auto-enable to prevent memory consumption issues
+// The aggressive cleanup loops were causing more CPU usage than they saved
 if (typeof window !== 'undefined') {
-  memoryOptimizer.enable();
+  // memoryOptimizer.enable(); // DISABLED
+  console.log('🚫 MemoryOptimizer disabled to prevent CPU overload');
 } 

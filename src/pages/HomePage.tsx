@@ -253,7 +253,7 @@ const FloatingButtons = () => {
                       type="number"
                       value={weight}
                       onChange={(e) => setWeight(e.target.value)}
-                      className="w-full px-2.5 py-2 bg-dark-700/50 border border-white/10 rounded-lg focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400/50 text-white placeholder-gray-500 text-xs sm:text-sm transition-all duration-200"
+                      className="w-full px-2.5 py-2 bg-white/90 border border-white/20 rounded-lg focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400/50 text-gray-900 placeholder-gray-500 text-xs sm:text-sm transition-all duration-200"
                       placeholder="Enter weight"
                     />
                   </div>
@@ -265,7 +265,7 @@ const FloatingButtons = () => {
                       type="number"
                       value={height}
                       onChange={(e) => setHeight(e.target.value)}
-                      className="w-full px-2.5 py-2 bg-dark-700/50 border border-white/10 rounded-lg focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400/50 text-white placeholder-gray-500 text-xs sm:text-sm transition-all duration-200"
+                      className="w-full px-2.5 py-2 bg-white/90 border border-white/20 rounded-lg focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400/50 text-gray-900 placeholder-gray-500 text-xs sm:text-sm transition-all duration-200"
                       placeholder="Enter height"
                     />
                   </div>
@@ -1308,14 +1308,12 @@ const HomePage = () => {
     };
   }, []);
   
-  // Reduce loading time to 1 second
+  // DISABLED loading timeout to fix browser tab loading issue
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (isMounted.current) {
+    // Immediately set force complete to prevent loading delays
+    if (isMounted.current) {
       setForceComplete(true);
-      }
-    }, 1000);
-    return () => clearTimeout(timer);
+    }
   }, []);
   
   // Add state for program details modal

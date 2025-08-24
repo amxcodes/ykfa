@@ -271,7 +271,7 @@
     // Setup auto retry
     startAutoRetry();
     
-    // Manual retry connection
+    // Manual retry connection - SIMPLIFIED to prevent browser loading
     function retryConnection() {
       if (isRetrying) return;
       
@@ -280,23 +280,10 @@
       buttonText.textContent = "Checking...";
       button.classList.add("retrying");
       
-      // Simulate fetch to trigger connection check
-      fetch('/', { method: 'HEAD', cache: 'no-store' })
-        .then(response => {
-          if (response.ok) {
-            // Connected! Reload the page
-            buttonText.textContent = "Connected!";
-            statusText.textContent = "Connection restored";
-            setTimeout(() => {
-              window.location.reload();
-            }, 500);
-          } else {
-            failedRetry();
-          }
-        })
-        .catch(error => {
-          failedRetry();
-        });
+      // Simple reload without fetch to prevent loading indicator issues
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     }
     
     // Update UI for failed retry
@@ -307,28 +294,11 @@
       statusText.textContent = `Offline Mode (${retryAttempts} ${retryAttempts === 1 ? 'retry' : 'retries'})`;
     }
     
-    // Automatic periodic retry
+    // Automatic periodic retry - DISABLED to prevent persistent browser loading
     function startAutoRetry() {
-      retryTimer = setInterval(() => {
-        // Only auto-retry a limited number of times
-        if (retryAttempts < MAX_AUTOMATIC_RETRIES) {
-          // Check if we're online without UI changes
-          if (navigator.onLine) {
-            fetch('/', { method: 'HEAD', cache: 'no-store' })
-              .then(response => {
-                if (response.ok) {
-                  window.location.reload();
-                }
-              })
-              .catch(() => {
-                // Still offline
-                updateConnectionStatus();
-              });
-          } else {
-            updateConnectionStatus();
-          }
-        }
-      }, RETRY_INTERVAL);
+      console.log('Auto-retry disabled to prevent browser loading indicator persistence');
+      // REMOVED: setInterval that was making fetch requests every 10 seconds
+      // This was causing the browser loading indicator to never stop
     }
     
     // Update connection status based on navigator.onLine

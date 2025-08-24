@@ -72,6 +72,12 @@ const Hero = ({ loadingComplete = false }: HeroProps) => {
     
     hasStartedAnimation.current = true;
     
+    // Clear any existing timer before starting a new one
+    if (timerRef.current !== null) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    
     // Reset numbers first to ensure animation is visible
     setAnimatedNumbers({
       trainers: 0,
@@ -81,7 +87,7 @@ const Hero = ({ loadingComplete = false }: HeroProps) => {
     });
     
     const duration = 2000; // 2 seconds
-    const steps = 30; // Reduced from 60 to 30 for better performance
+    const steps = 20; // Further reduced for better performance
     const interval = duration / steps;
 
     const targetNumbers = {
@@ -92,14 +98,8 @@ const Hero = ({ loadingComplete = false }: HeroProps) => {
     };
 
     let currentStep = 0;
-    
-    // Clear any existing timer before starting a new one
-    if (timerRef.current !== null) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
 
-    // Start the animation immediately
+    // Start the animation with guaranteed cleanup
     timerRef.current = setInterval(() => {
       currentStep++;
       
@@ -124,16 +124,27 @@ const Hero = ({ loadingComplete = false }: HeroProps) => {
 
   return (
     <section className="hero-section relative min-h-[90vh] md:min-h-screen flex items-center bg-black">
-      {/* Background image with overlay - removed video to prevent memory leaks */}
+      {/* Background video with overlay */}
       <div className="absolute inset-0 z-0 bg-black overflow-hidden">
-        <img 
-          src="https://images.pexels.com/photos/4761352/pexels-photo-4761352.jpeg?auto=compress&cs=tinysrgb&w=800&q=70" 
-          alt="Martial arts training"
-          className="absolute inset-0 w-full h-full object-cover opacity-50"
-          loading="lazy"
-          decoding="async"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/40 to-black"></div>
+        <video 
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-60"
+          preload="metadata"
+        >
+          <source src="/vid/video1.mp4" type="video/mp4" />
+          {/* Fallback image for browsers that don't support video */}
+          <img 
+            src="https://images.pexels.com/photos/4761352/pexels-photo-4761352.jpeg?auto=compress&cs=tinysrgb&w=800&q=70" 
+            alt="Martial arts training"
+            className="absolute inset-0 w-full h-full object-cover opacity-50"
+            loading="lazy"
+            decoding="async"
+          />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/30 to-black/70"></div>
       </div>
 
       <style>

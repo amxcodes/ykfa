@@ -109,7 +109,7 @@ const AboutUsPage = () => {
           <div 
             className="absolute inset-0 bg-center bg-cover opacity-40"
             style={{ 
-              backgroundImage: "url('https://i.postimg.cc/P50QC6rf/IMG-9847.jpg?w=800&q=70')",
+              backgroundImage: "url('/img/about-about-master-yaseen-training.webp')",
               transform: isVisible ? 'scale(1)' : 'scale(1.1)',
               transition: 'transform 1.5s ease-out'
             }}

@@ -45,6 +45,7 @@ interface TimerContextProps {
   backgroundGradient: string;
   isWorkoutSoundMuted: boolean;
   toggleWorkoutSoundMute: () => void;
+  unlockAllAudio?: () => void;
 }
 
 const defaultSettings: TimerSettings = {
@@ -1322,6 +1323,17 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     // Instead, requestWakeLock checks the current wakeLock state.
   }, [isRunning, isPaused, timerMode]); // Removed wakeLock from dependencies
 
+  // Add unlockAllAudio to unlock all audio elements on user gesture
+  function unlockAllAudio() {
+    Object.values(audioRefs.current).forEach(audio => {
+      if (audio) {
+        try {
+          audio.play().then(() => audio.pause()).catch(() => {});
+        } catch {}
+      }
+    });
+  }
+
   const value = {
     settings,
     currentPhase,
@@ -1345,6 +1357,7 @@ export function TimerProvider({ children }: { children: ReactNode }) {
     backgroundGradient,
     isWorkoutSoundMuted,
     toggleWorkoutSoundMute,
+    unlockAllAudio,
   };
 
   // Wrap the timer provider with a div that has the background gradient

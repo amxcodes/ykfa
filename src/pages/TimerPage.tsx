@@ -63,43 +63,18 @@ const TimerAppLoading = ({ onComplete }: { onComplete: () => void }) => {
     timeoutsRef.current = [];
   }, []);
 
+  // DISABLED ALL loading animations to prevent browser loading conflicts
   useEffect(() => {
-    // Simulate loading sequence for each feature
-    features.forEach((_, index) => {
-      // Adjust timing to be slightly faster on mobile for better UX
-      const baseDelay = isMobile ? 200 : 250;
-      const itemDelay = isMobile ? 250 : 300;
-      const delay = baseDelay + (index * itemDelay);
-      
-      // Store timeoutId for cleanup
-      const timeoutId = window.setTimeout(() => {
-        // Use functional state update for safety
-        setFeatures(prev => {
-          const newFeatures = [...prev];
-          if (newFeatures[index]) newFeatures[index].loaded = true;
-          return newFeatures;
-        });
-        
-        // Update progress percentage based on completed features
-        setProgress(((index + 1) / features.length) * 100);
-        
-        // When all features are loaded
-        if (index === features.length - 1) {
-          const innerTimeoutId1 = window.setTimeout(() => {
-            setIsAppReady(true);
-            const innerTimeoutId2 = window.setTimeout(onComplete, isMobile ? 400 : 500);
-            timeoutsRef.current.push(innerTimeoutId2);
-          }, isMobile ? 300 : 400);
-          timeoutsRef.current.push(innerTimeoutId1);
-        }
-      }, delay);
-      
-      timeoutsRef.current.push(timeoutId);
-    });
-
-    // Cleanup function to clear all timeouts
+    // Immediately complete without any delays or animations
+    setFeatures(prev => prev.map(f => ({ ...f, loaded: true })));
+    setProgress(100);
+    setIsAppReady(true);
+    
+    // Complete immediately without timeouts
+    onComplete();
+    
     return clearAllTimeouts;
-  }, [isMobile, onComplete, features.length, clearAllTimeouts]);
+  }, [onComplete, clearAllTimeouts]);
 
   return (
     <motion.div 

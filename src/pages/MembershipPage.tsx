@@ -53,29 +53,19 @@ const ModernPricingCard = ({
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
-  // Animation effect for price switching with continuous strikethrough
+  // DISABLED price animation to reduce memory consumption
+  // The continuous 3-second intervals were causing performance issues
   useEffect(() => {
     if (!plan.originalPrice) return;
     
-    // Initial animation
-    const initialTimeout = setTimeout(() => {
+    // Simple one-time animation without intervals
+    const timer = setTimeout(() => {
       setShowOfferPrice(true);
     }, 1500);
     
-    // Set up cycling animation
-    intervalRef.current = setInterval(() => {
-      // Switch back to original price with fresh animation
-      setShowOfferPrice(false);
-      setAnimationKey(prev => prev + 1);
-      
-      // Show offer price after strike animation completes
-      timeoutRef.current = setTimeout(() => {
-        setShowOfferPrice(true);
-      }, 1500);
-    }, 3000);
-    
     return () => {
-      clearTimeout(initialTimeout);
+      clearTimeout(timer);
+      // Cleanup refs
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -245,23 +235,19 @@ const RecoveryServiceCard = ({ service }: { service: RecoveryService }) => {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
+  // DISABLED price animation intervals to reduce memory consumption
+  // The continuous cycling was causing performance issues
   useEffect(() => {
     if (!service.originalPrice) return;
     
-    initialTimeoutRef.current = setTimeout(() => {
+    // Simple one-time animation without intervals
+    const timer = setTimeout(() => {
       setShowOfferPrice(true);
     }, 1500);
     
-    intervalRef.current = setInterval(() => {
-      setShowOfferPrice(false);
-      setAnimationKey(prev => prev + 1);
-      timeoutRef.current = setTimeout(() => {
-        setShowOfferPrice(true);
-      }, 1500);
-    }, 3000);
-    
     return () => {
-      // Clear all timeouts and intervals
+      clearTimeout(timer);
+      // Cleanup all refs
       if (initialTimeoutRef.current) {
         clearTimeout(initialTimeoutRef.current);
         initialTimeoutRef.current = null;
@@ -502,7 +488,7 @@ const MembershipPage = () => {
         period: "month",
         description: "Complete package with access to all MMA classes and gym facilities.",
         programType: "MMA + GYM",
-        image: "https://images.pexels.com/photos/6295763/pexels-photo-6295763.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+        image: "/img/membership-mma-gym-training-card.webp",
         features: [
           { name: "Access to gym, 3 days per week", included: true },
           { name: "3 mixed martial arts classes per week", included: true },
@@ -521,7 +507,7 @@ const MembershipPage = () => {
         period: "month",
         description: "Access to all MMA classes including boxing, kickboxing, and grappling.",
         programType: "MMA ONLY",
-        image: "https://images.pexels.com/photos/4401810/pexels-photo-4401810.jpeg?auto=compress&cs=tinysrgb&w=800&q=80",
+        image: "/img/membership-mma-only-training-card.webp",
         features: [
           { name: "3 mixed martial arts classes per week", included: true },
           { name: "Boxing, Kickboxing, Muay Thai", included: true },
@@ -539,7 +525,7 @@ const MembershipPage = () => {
         period: "month",
         description: "Traditional Karate training with belt progression system.",
         programType: "KARATE",
-        image: "https://images.pexels.com/photos/4428290/pexels-photo-4428290.jpeg?auto=compress&cs=tinysrgb&w=800&q=80",
+        image: "/img/membership-karate-training-card.webp",
         features: [
           { name: "2 classes per week", included: true },
           { name: "Belt progression and certification system", included: true },
@@ -556,7 +542,7 @@ const MembershipPage = () => {
         period: "month",
         description: "Unlimited access to our modern gym with top-tier equipment.",
         programType: "GYM FIT FUSION",
-        image: "https://images.pexels.com/photos/841130/pexels-photo-841130.jpeg?auto=compress&fit=crop&w=800&q=80",
+        image: "/img/membership-gym-fit-fusion-card.webp",
         features: [
           { name: "Access to gym", included: true },
           { name: "Access to gym app", included: true },
@@ -792,7 +778,7 @@ const MembershipPage = () => {
         "Soothes muscle soreness",
         "Promotes skin health"
       ],
-      image: "https://images.pexels.com/photos/18408806/pexels-photo-18408806/free-photo-of-interior-of-a-modern-sauna.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      image: "/img/facility-steam-bath-facility.webp",
       icon: <Wind size={24} className="text-sky-400" />,
       note: "Must be booked at least one day in advance."
     },
@@ -808,7 +794,7 @@ const MembershipPage = () => {
         "Boosts central nervous system",
         "Enhances mental clarity"
       ],
-      image: "https://images.pexels.com/photos/7002772/pexels-photo-7002772.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      image: "/img/facility-ice-bath-facility.webp",
       icon: <Droplet size={24} className="text-blue-400" />,
       note: "Must be booked at least one day in advance."
     },
@@ -825,7 +811,7 @@ const MembershipPage = () => {
         "Cost-effective bundle",
         "Flexible booking (1 day advance notice)"
       ],
-      image: "https://images.pexels.com/photos/5327537/pexels-photo-5327537.jpeg?auto=compress&cs=tinysrgb&w=800&q=75", // Placeholder
+      image: "/img/facility-recovery-package-facility.webp", // Placeholder
       icon: <Zap size={24} className="text-green-400" />,
       note: "Steam bath and Ice bath services must be booked at least one day in advance."
     }
@@ -862,7 +848,7 @@ const MembershipPage = () => {
           <div 
             className="absolute inset-0 bg-center bg-cover opacity-40"
             style={{ 
-              backgroundImage: "url('https://images.pexels.com/photos/4164766/pexels-photo-4164766.jpeg?auto=compress&cs=tinysrgb&w=800&q=70')"
+              backgroundImage: "url('/img/membership-membership-hero-banner.webp')"
             }}
           ></div>
           <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/70 to-black/70"></div>
@@ -1096,7 +1082,7 @@ const MembershipPage = () => {
               <div className="relative rounded-2xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] group transition-all duration-500 flex flex-col">
                 <div className="absolute inset-0 -z-10">
                   <img 
-                    src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=compress&q=80&w=1200" 
+                    src="/img/membership-gym-personal-training.webp" 
                     alt="Gym Personal Training"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
@@ -1172,7 +1158,7 @@ const MembershipPage = () => {
               <div className="relative rounded-2xl overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] group transition-all duration-500 flex flex-col">
                 <div className="absolute inset-0 -z-10">
                   <img 
-                    src="https://images.pexels.com/photos/6295763/pexels-photo-6295763.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
+                    src="/img/membership-mma-gym-training-card.webp" 
                     alt="MMA Personal Training"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />

@@ -1,9 +1,7 @@
-import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
-import { memoryOptimizer } from './utils/memoryOptimizer';
 
 // Create root and render app
 const container = document.getElementById('root');
@@ -13,39 +11,30 @@ if (!container) {
 
 const root = createRoot(container);
 
-// Enable memory optimization
-memoryOptimizer.enable();
-
-// Properly signal page load completion
-const signalPageLoadComplete = () => {
-  // Signal to browser that the page has loaded
-  if (document.readyState === 'complete') {
-    window.dispatchEvent(new Event('load'));
-  } else {
-    document.addEventListener('DOMContentLoaded', () => {
-      window.dispatchEvent(new Event('load'));
-    });
-  }
+// Clean page load completion strategy
+const completePageLoad = () => {
+  // Remove any loading text from title
+  document.title = document.title.replace(/\s*-?\s*Loading\.*/g, '').trim();
   
-  // Set a flag to indicate page is fully loaded
+  // Set completion flag
   (window as any).__YKFA_LOADED__ = true;
   
-  // Remove loading indicator from browser tab
-  document.title = document.title.replace(' - Loading...', '');
+  // Dispatch load event to signal completion
+  window.dispatchEvent(new Event('load'));
   
-  // Optimize images and reduce effects for better performance
-  memoryOptimizer.optimizeImages();
-  memoryOptimizer.reduceEffects();
+  // Log performance improvement
+  console.log('✅ YKFA loaded with optimized memory management');
 };
 
-// Signal page load completion after a short delay
-setTimeout(signalPageLoadComplete, 1000);
-
-// Render the app
+// Render the app without StrictMode to prevent double rendering and timer amplification
 root.render(
-  <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </StrictMode>
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>
 );
+
+// Complete page load immediately - no delays
+requestAnimationFrame(() => {
+  // Immediate completion to stop browser loading indicator
+  completePageLoad();
+});

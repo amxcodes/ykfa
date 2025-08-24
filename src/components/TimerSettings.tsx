@@ -123,13 +123,16 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
     isPaused,
     resetTimer,
     setTimerMode,
-    toggleTimer
+    toggleTimer,
+    unlockAllAudio
   } = useTimerContext();
 
   const settingsRef = useRef<HTMLDivElement>(null);
 
   // Local state for input fields
   const [inputValues, setInputValues] = useState<Record<string, { minutes?: string; seconds?: string; value?: string }>>({});
+  // Track which field is being edited
+  const [currentlyEditing, setCurrentlyEditing] = useState<string | null>(null);
   
   // Set slider mode as default state
   const [isSliderMode, setIsSliderMode] = useState<boolean>(true);
@@ -244,6 +247,7 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
 
   // Update input values when settings change (but not when user is actively editing)
   useEffect(() => {
+    if (currentlyEditing) return; // Don't overwrite while editing
     const newInputValues: Record<string, { minutes?: string; seconds?: string; value?: string }> = {};
     settingSections.forEach(section => {
       if (section.showMinutes) {
@@ -262,7 +266,7 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
       }
     });
     setInputValues(newInputValues);
-  }, [settings, settingSections, getMinutes, getSeconds]);
+  }, [settings, settingSections, getMinutes, getSeconds, currentlyEditing]);
 
   // Handler for input changes
   const handleInputChange = (
@@ -270,7 +274,6 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
     type: 'minutes' | 'seconds' | 'value', 
     value: string
   ) => {
-    // Update local state immediately for responsive UI
     setInputValues(prev => ({
       ...prev,
       [setting]: {
@@ -280,6 +283,14 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
     }));
   };
 
+  // On focus, set currentlyEditing
+  const handleInputFocus = (
+    setting: keyof typeof settings,
+    type: 'minutes' | 'seconds' | 'value'
+  ) => {
+    setCurrentlyEditing(`${setting}-${type}`);
+  };
+
   // Validate and commit changes on blur
   const handleInputBlur = (
     setting: keyof typeof settings, 
@@ -287,27 +298,15 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
   ) => {
     const currentValue = inputValues[setting]?.[type] || '';
     let parsedValue = parseInt(currentValue, 10);
-    
-    // Handle empty inputs
     if (currentValue === '' || isNaN(parsedValue)) {
       parsedValue = type === 'minutes' || type === 'value' ? 0 : 5;
     }
-    
     if (type === 'minutes') {
-      // Clamp minutes between 0-99
       parsedValue = Math.max(0, Math.min(99, parsedValue));
-      
-      // Get current seconds
       const seconds = parseInt(inputValues[setting]?.seconds || '0', 10) || 0;
-      
-      // Calculate new total time
       let totalSeconds = (parsedValue * 60) + seconds;
-      
-      // If minutes are 0, ensure seconds are at least 5
       if (parsedValue === 0 && seconds < 5) {
         totalSeconds = 5;
-        
-        // Update the seconds field in UI
         setInputValues(prev => ({
           ...prev,
           [setting]: {
@@ -316,23 +315,13 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
           }
         }));
       }
-      
-      // Update setting
       updateSettings(setting, totalSeconds);
       animateSettingChange(`.${setting}-value`);
-      
     } else if (type === 'seconds') {
-      // Clamp seconds between 0-59
       parsedValue = Math.max(0, Math.min(59, parsedValue));
-      
-      // Get current minutes
       const minutes = parseInt(inputValues[setting]?.minutes || '0', 10) || 0;
-      
-      // If minutes are 0, ensure seconds are at least 5
       if (minutes === 0 && parsedValue < 5) {
         parsedValue = 5;
-        
-        // Update the seconds field in UI
         setInputValues(prev => ({
           ...prev,
           [setting]: {
@@ -341,28 +330,19 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
           }
         }));
       }
-      
-      // Calculate new total time
       const totalSeconds = (minutes * 60) + parsedValue;
-      
-      // Update setting
       updateSettings(setting, totalSeconds);
       animateSettingChange(`.${setting}-value`);
-      
     } else { // type === 'value'
       if (setting === 'rounds') {
-        // Clamp rounds between 1-30
         parsedValue = Math.max(1, Math.min(30, parsedValue));
       } else {
-        // For transition delay and other simple values
-        // Allow 0 as minimum value
         parsedValue = Math.max(0, Math.min(59, parsedValue));
       }
-      
-      // Update setting
       updateSettings(setting, parsedValue);
       animateSettingChange(`.${setting}-value`);
     }
+    setCurrentlyEditing(null); // Clear editing state on blur
   };
 
   // Handler for slider changes
@@ -437,6 +417,7 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
   };
 
   const handleStartWorkout = () => {
+    if (unlockAllAudio) unlockAllAudio(); // Unlock audio on first user gesture
     // Update to running mode
     setTimerMode('running');
     
@@ -571,17 +552,13 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
                         
                         <input
                           type="text"
-                          value={inputValues[section.key]?.value || settings.rounds.toString() || '1'}
+                          value={inputValues[section.key]?.value !== undefined ? inputValues[section.key]?.value : settings.rounds.toString()}
                           onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'value', e.target.value)}
+                          onFocus={() => handleInputFocus(section.key as keyof typeof settings, 'value')}
                           onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'value')}
-                          className="w-12 bg-dark-700 text-center font-medium rounded-lg py-1 text-white placeholder-gray-400 border border-gray-600"
+                          className="w-10 h-8 bg-white text-center font-normal text-base rounded-full shadow border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-400 text-gray-900 placeholder-gray-400 transition-all duration-200"
                           placeholder="1"
-                          style={{ 
-                            color: 'white !important', 
-                            backgroundColor: '#374151 !important',
-                            caretColor: 'white',
-                            outline: 'none'
-                          }}
+                          inputMode="numeric"
                         />
                         
                         <button
@@ -597,34 +574,26 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
                         <div className="flex items-center space-x-1">
                           <input
                             type="text"
-                            value={inputValues[section.key]?.minutes || getMinutes(settings[section.key as keyof typeof settings] as number).toString() || '0'}
+                            value={inputValues[section.key]?.minutes !== undefined ? inputValues[section.key]?.minutes : getMinutes(settings[section.key as keyof typeof settings] as number).toString()}
                             onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'minutes', e.target.value)}
+                            onFocus={() => handleInputFocus(section.key as keyof typeof settings, 'minutes')}
                             onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'minutes')}
-                            className="w-12 bg-dark-700 text-center font-medium rounded-lg py-1 text-white placeholder-gray-400 border border-gray-600"
+                            className="w-10 h-8 bg-white text-center font-normal text-base rounded-full shadow border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-900 placeholder-gray-400 transition-all duration-200"
                             placeholder="0"
-                            style={{ 
-                              color: 'white !important', 
-                              backgroundColor: '#374151 !important',
-                              caretColor: 'white',
-                              outline: 'none'
-                            }}
+                            inputMode="numeric"
                           />
                           <span className="text-gray-400">m</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <input
                             type="text"
-                            value={inputValues[section.key]?.seconds || getSeconds(settings[section.key as keyof typeof settings] as number).toString() || '0'}
+                            value={inputValues[section.key]?.seconds !== undefined ? inputValues[section.key]?.seconds : getSeconds(settings[section.key as keyof typeof settings] as number).toString()}
                             onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'seconds', e.target.value)}
+                            onFocus={() => handleInputFocus(section.key as keyof typeof settings, 'seconds')}
                             onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'seconds')}
-                            className="w-12 bg-dark-700 text-center font-medium rounded-lg py-1 text-white placeholder-gray-400 border border-gray-600"
+                            className="w-10 h-8 bg-white text-center font-normal text-base rounded-full shadow border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-900 placeholder-gray-400 transition-all duration-200"
                             placeholder="0"
-                            style={{ 
-                              color: 'white !important', 
-                              backgroundColor: '#374151 !important',
-                              caretColor: 'white',
-                              outline: 'none'
-                            }}
+                            inputMode="numeric"
                           />
                           <span className="text-gray-400">s</span>
                         </div>
@@ -633,17 +602,13 @@ const TimerSettings: React.FC<TimerSettingsProps> = ({
                       <div className="flex items-center space-x-1">
                         <input
                           type="text"
-                          value={inputValues[section.key]?.value || settings[section.key as keyof typeof settings].toString() || '0'}
+                          value={inputValues[section.key]?.value !== undefined ? inputValues[section.key]?.value : settings[section.key as keyof typeof settings].toString()}
                           onChange={(e) => handleInputChange(section.key as keyof typeof settings, 'value', e.target.value)}
+                          onFocus={() => handleInputFocus(section.key as keyof typeof settings, 'value')}
                           onBlur={() => handleInputBlur(section.key as keyof typeof settings, 'value')}
-                          className="w-12 bg-dark-700 text-center font-medium rounded-lg py-1 text-white placeholder-gray-400 border border-gray-600"
+                          className="w-10 h-8 bg-white text-center font-normal text-base rounded-full shadow border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400 text-gray-900 placeholder-gray-400 transition-all duration-200"
                           placeholder="0"
-                          style={{ 
-                            color: 'white !important', 
-                            backgroundColor: '#374151 !important',
-                            caretColor: 'white',
-                            outline: 'none'
-                          }}
+                          inputMode="numeric"
                         />
                         <span className="text-gray-400">{section.unit}</span>
                       </div>

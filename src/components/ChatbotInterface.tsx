@@ -36,8 +36,8 @@ interface ChatbotInterfaceProps {
   onClose: () => void;
 }
 
-// Add a global message ID counter
-let globalMessageId = 1;
+// Add a global message ID counter - reset for each session
+let globalMessageId = Date.now(); // Use timestamp to ensure uniqueness
 
 // Memoize individual message component to prevent unnecessary re-renders
 const ChatMessage = memo(({ message }: { message: Message }) => {
@@ -108,12 +108,16 @@ const ChatMessage = memo(({ message }: { message: Message }) => {
 
 const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
   // Use lazy initialization for initial state to avoid creating objects on every render
-  const [messages, setMessages] = useState<Message[]>(() => [{
-    id: 1,
-    text: "Hello! I'm your YKFA assistant. How can I help you today?",
-    isBot: true,
-    timestamp: new Date()
-  }]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const initialMessage = {
+      id: globalMessageId++,
+      text: "Hello! I'm your YKFA assistant. How can I help you today?",
+      isBot: true,
+      timestamp: new Date()
+    };
+    console.log('Initializing chatbot with message:', initialMessage);
+    return [initialMessage];
+  });
   const [inputMessage, setInputMessage] = useState('');
   const [showPrompts, setShowPrompts] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -127,8 +131,14 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
   
   // Cleanup on unmount
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
+      // Clean up any pending timeouts on unmount
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
     };
   }, []);
 
@@ -402,10 +412,22 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
   // Reset prompts visibility when reopening the chat
   useEffect(() => {
     if (isOpen) {
+      console.log('Chatbot opened, current messages:', messages.length);
       // If there's only the welcome message, show prompts
       if (messages.length <= 1) {
         setShowPrompts(true);
       }
+      // Reset typing state when opening
+      setIsTyping(false);
+      // Clear any pending timeouts
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    } else {
+      console.log('Chatbot closed');
+      // Clear typing state when closing
+      setIsTyping(false);
     }
   }, [isOpen, messages.length]);
 
@@ -470,161 +492,215 @@ const ChatbotInterface = ({ isOpen, onClose }: ChatbotInterfaceProps) => {
     // Clear any existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
     
+    // Stop typing indicator
+    setIsTyping(false);
+    
     timeoutRef.current = setTimeout(() => {
-      onClose();
-      setIsClosing(false);
+      if (isMountedRef.current) {
+        onClose();
+        setIsClosing(false);
+      }
       timeoutRef.current = null;
     }, 300);
   };
 
   const handleRefresh = () => {
+    console.log('Refreshing chatbot');
     // Reset chat to initial state
-    setMessages([
-      {
-        id: 1,
-        text: "Hello! I'm your YKFA assistant. How can I help you today?",
-        isBot: true,
-        timestamp: new Date()
-      }
-    ]);
+    const welcomeMessage = {
+      id: globalMessageId++,
+      text: "Hello! I'm your YKFA assistant. How can I help you today?",
+      isBot: true,
+      timestamp: new Date()
+    };
+    setMessages([welcomeMessage]);
     setShowPrompts(true);
     setInputMessage('');
+    setIsTyping(false);
+    
+    // Clear any pending timeouts
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
   };
 
-  // Function to match user message with knowledge base using fuzzy matching
+  // Function to match user message with knowledge base - simplified version
   const getBotResponse = (userMessage: string): { text: string; actions?: ChatAction[] } => {
-    // Convert to lowercase for easier matching
-    const userMessageLower = userMessage.toLowerCase();
+    console.log('getBotResponse called with:', userMessage);
     
-    // Default response if no match is found
-    let matchedResponse: { text: string; actions?: ChatAction[] } = {
-      text: "I'm not sure I understand. Could you rephrase your question? I can help with information about our programs, membership options, schedule, location, or anything else related to YKFA."
-    };
+    const userMessageLower = userMessage.toLowerCase().trim();
     
-    // Score for the best match
-    let bestMatchScore = 0;
-    
-    // Check each knowledge base entry
-    knowledgeBase.forEach(entry => {
-      // Calculate match score based on keyword presence
-      let matchScore = 0;
-      
-      entry.keywords.forEach(keyword => {
-        // Skip empty keywords (used for fallback)
-        if (!keyword) return;
-        
-        // Simple fuzzy matching - check if keyword is contained in user message
-        if (userMessageLower.includes(keyword.toLowerCase())) {
-          // Longer keywords get higher scores
-          matchScore += keyword.length;
-        }
-      });
-      
-      // Update response if this is the best match so far
-      if (matchScore > bestMatchScore) {
-        bestMatchScore = matchScore;
-        matchedResponse = {
-          text: entry.response,
-          actions: entry.actions
-        };
-      }
-    });
-    
-    // If no good match, try more lenient matching with individual words
-    if (bestMatchScore === 0) {
-      const userWords = userMessageLower.split(/\s+/);
-      
-      knowledgeBase.forEach(entry => {
-        let matchScore = 0;
-        
-        entry.keywords.forEach(keyword => {
-          if (!keyword) return;
-          
-          const keywordLower = keyword.toLowerCase();
-          userWords.forEach(word => {
-            if (word.length > 3 && (keywordLower.includes(word) || word.includes(keywordLower))) {
-              matchScore += 1;
-            }
-          });
-        });
-        
-        if (matchScore > bestMatchScore) {
-          bestMatchScore = matchScore;
-          matchedResponse = {
-            text: entry.response,
-            actions: entry.actions
-          };
-        }
-      });
+    // Handle basic greetings first
+    if (userMessageLower.includes('hello') || userMessageLower.includes('hi') || userMessageLower.includes('hey')) {
+      console.log('Matched greeting');
+      return {
+        text: "Hello there! I'm your YKFA assistant. How can I help you today? Feel free to ask about our programs, schedule, membership options, or anything else you'd like to know about Yaseen's Kickboxing and Fitness Academy."
+      };
     }
     
-    return matchedResponse;
+    // Handle thank you
+    if (userMessageLower.includes('thank') || userMessageLower.includes('thanks')) {
+      console.log('Matched thanks');
+      return {
+        text: "You're welcome! I'm happy to help with any other questions you might have about YKFA. Is there anything else you'd like to know?"
+      };
+    }
+    
+    // Handle location queries
+    if (userMessageLower.includes('location') || userMessageLower.includes('address') || userMessageLower.includes('where')) {
+      console.log('Matched location');
+      return {
+        text: "We're located at Y&Y Arcade, Vp Marakkar Road, Edappally Po, Kochi 682024. Our academy is easily accessible with ample parking space.",
+        actions: [
+          { 
+            label: "View on Map", 
+            value: "map", 
+            icon: <MapPin className="w-4 h-4" />,
+            path: "/contact" 
+          }
+        ]
+      };
+    }
+    
+    // Handle program queries
+    if (userMessageLower.includes('program') || userMessageLower.includes('class') || userMessageLower.includes('training')) {
+      console.log('Matched programs');
+      return {
+        text: "We offer a variety of programs including MMA (Mixed Martial Arts), Karate, Group Fitness, and Gym-Only memberships. Our MMA program covers boxing, kickboxing, and grappling techniques. We also offer personal training for those seeking more individualized attention.",
+        actions: [
+          { 
+            label: "View Programs", 
+            value: "programs", 
+            icon: <Dumbbell className="w-4 h-4" />,
+            path: "/membership" 
+          }
+        ]
+      };
+    }
+    
+    // Default response
+    console.log('Using default response');
+    return {
+      text: "I'm here to help! I can provide information about our programs, membership options, schedule, location, or anything else related to YKFA. What would you like to know?"
+    };
   };
 
-  // Handle form submission - optimized with isMountedRef check
+  // Handle form submission - simplified version
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim()) return;
 
-    // Add user message with unique ID
+    const currentMessage = inputMessage.trim();
+    console.log('Submitting message:', currentMessage);
+    
+    // Add user message immediately
     const userMessage: Message = {
       id: globalMessageId++,
-      text: inputMessage,
+      text: currentMessage,
       isBot: false,
       timestamp: new Date()
     };
-    setMessages(prev => [...prev, userMessage]);
+    
+    // Update messages with user message
+    setMessages(prev => {
+      const newMessages = [...prev, userMessage];
+      console.log('Messages after user:', newMessages.length);
+      return newMessages;
+    });
+    
+    // Clear input and hide prompts
     setInputMessage('');
     setShowPrompts(false);
     setIsTyping(true);
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    // Get bot response after a delay to simulate typing
-    timeoutRef.current = setTimeout(() => {
-      if (!isMountedRef.current) return;
-      const response = getBotResponse(userMessage.text);
-      const botMessage: Message = {
-        id: globalMessageId++,
-        text: response.text,
-        isBot: true,
-        timestamp: new Date(),
-        actions: response.actions
-      };
-      setMessages(prev => [...prev, botMessage]);
-      setIsTyping(false);
-      timeoutRef.current = null;
-    }, Math.min(1000, userMessage.text.length * 50));
+    
+    // Generate bot response immediately with a small delay for typing effect
+    setTimeout(() => {
+      try {
+        console.log('Generating bot response for:', currentMessage);
+        const response = getBotResponse(currentMessage);
+        console.log('Bot response generated:', response.text.substring(0, 50));
+        
+        const botMessage: Message = {
+          id: globalMessageId++,
+          text: response.text,
+          isBot: true,
+          timestamp: new Date(),
+          actions: response.actions
+        };
+        
+        // Add bot message
+        setMessages(prev => {
+          const newMessages = [...prev, botMessage];
+          console.log('Messages after bot:', newMessages.length);
+          return newMessages;
+        });
+        
+        setIsTyping(false);
+        console.log('Bot response added successfully');
+      } catch (error) {
+        console.error('Error in bot response:', error);
+        
+        // Add error message
+        const errorMessage: Message = {
+          id: globalMessageId++,
+          text: "Sorry, I'm having trouble right now. Please try again!",
+          isBot: true,
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, errorMessage]);
+        setIsTyping(false);
+      }
+    }, 1000); // Simple 1 second delay
   };
 
-  // Handle quick prompt selection
+  // Handle quick prompt selection - simplified
   const handleQuickPrompt = (prompt: QuickPrompt) => {
+    console.log('Quick prompt selected:', prompt.value);
+    
     const userMessage: Message = {
       id: globalMessageId++,
       text: prompt.value,
       isBot: false,
       timestamp: new Date()
     };
+    
     setMessages(prev => [...prev, userMessage]);
     setShowPrompts(false);
     setIsTyping(true);
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    timeoutRef.current = setTimeout(() => {
-      const response = getBotResponse(prompt.value);
-      const botMessage: Message = {
-        id: globalMessageId++,
-        text: response.text,
-        isBot: true,
-        timestamp: new Date(),
-        actions: response.actions
-      };
-      setMessages(prev => [...prev, botMessage]);
-      setIsTyping(false);
-      timeoutRef.current = null;
+    
+    // Generate response after short delay
+    setTimeout(() => {
+      try {
+        const response = getBotResponse(prompt.value);
+        const botMessage: Message = {
+          id: globalMessageId++,
+          text: response.text,
+          isBot: true,
+          timestamp: new Date(),
+          actions: response.actions
+        };
+        
+        setMessages(prev => [...prev, botMessage]);
+        setIsTyping(false);
+        console.log('Quick prompt response added');
+      } catch (error) {
+        console.error('Error with quick prompt:', error);
+        
+        const errorMessage: Message = {
+          id: globalMessageId++,
+          text: "Sorry, I'm having trouble right now. Please try again!",
+          isBot: true,
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, errorMessage]);
+        setIsTyping(false);
+      }
     }, 800);
   };
 

@@ -50,6 +50,7 @@ interface OptimizedImageProps extends ImgHTMLAttributes<HTMLImageElement> {
   optimizeWidth?: number; // Width to optimize the image to
   blurUp?: boolean;    // Whether to use blur-up technique
   forceLowQuality?: boolean; // Force low quality regardless of performance mode
+  isCritical?: boolean; // NEW: mark above-the-fold images
 }
 
 /**
@@ -74,6 +75,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
   className = '',
   style = {},
   forceLowQuality = false,
+  isCritical = false, // NEW
   ...props
 }) => {
   const [loaded, setLoaded] = useState(false);
@@ -105,6 +107,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   // Set up intersection observer for lazy loading
   useEffect(() => {
+    if (isCritical) return; // Don't lazy load critical images
     if (!lazyLoad || !imgRef.current) return;
 
     const observer = new IntersectionObserver(
@@ -131,14 +134,18 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       }
       observer.disconnect();
     };
-  }, [lazyLoad, threshold]);
+  }, [lazyLoad, threshold, isCritical]);
 
   // Load the image without lazy loading
   useEffect(() => {
+    if (isCritical) {
+      loadImage();
+      return;
+    }
     if (!lazyLoad) {
       loadImage();
     }
-  }, [lazyLoad, src]);
+  }, [lazyLoad, src, isCritical]);
 
   // Optimize the image after it loads
   useEffect(() => {
@@ -193,7 +200,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       alt={alt}
       className={className}
       style={imageStyle}
-      loading={lazyLoad ? 'lazy' : undefined}
+      loading={isCritical ? 'eager' : (lazyLoad ? 'lazy' : undefined)}
       decoding="async"
       {...props}
       onLoad={() => {

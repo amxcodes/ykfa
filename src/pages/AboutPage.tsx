@@ -259,7 +259,7 @@ const BlogPage = () => {
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-center bg-cover opacity-30 transform scale-105 motion-safe:animate-subtle-zoom"
             style={{ 
-              backgroundImage: "url('https://images.pexels.com/photos/7045611/pexels-photo-7045611.jpeg?auto=compress&cs=tinysrgb&w=1280')"
+              backgroundImage: "url('/img/blog-blog-hero-background.webp')"
             }}>
           </div>
           <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/70 to-black"></div>

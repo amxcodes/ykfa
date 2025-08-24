@@ -9,31 +9,14 @@ interface LayoutProps {
   children?: ReactNode;
 }
 
-// Simplified Layout component - removed all network monitoring code
+// Simplified Layout component - removed all network monitoring and loading code
 const Layout = ({ children }: LayoutProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [loadingComplete, setLoadingComplete] = useState(false);
   const location = useLocation();
   // Use a more generic type to store event handlers
   const eventHandlersRef = useRef<{ [key: string]: any }>({});
-  const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
 
-  // Add event listener for force loading complete
-  useEffect(() => {
-    // Force loading complete after 2 seconds no matter what
-    const fallbackTimer = setTimeout(() => {
-      setLoadingComplete(true);
-    }, 2000);
-    
-    // Track timeout for proper cleanup
-    timeoutsRef.current.push(fallbackTimer);
-    
-    return () => {
-      // Clear all tracked timeouts
-      timeoutsRef.current.forEach(clearTimeout);
-      timeoutsRef.current = [];
-    };
-  }, []);
+  // REMOVED all loading states and timers that could cause browser loading indicator
 
   // Always scroll to top on route change or refresh
   useEffect(() => {
@@ -97,9 +80,8 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <>
-      {/* Re-enabled now that initialization error is fixed */}
-      {/* Show loader until critical resources are loaded */}
-      {!loadingComplete && <Loader loadingComplete={loadingComplete} />}
+      {/* DISABLED loader to fix browser tab loading issue */}
+      {/* {!loadingComplete && <Loader loadingComplete={loadingComplete} />} */}
       
       {/* Main layout */}
       <div className="flex flex-col min-h-screen bg-dark-950 text-white">

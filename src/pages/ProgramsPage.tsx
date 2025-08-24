@@ -36,12 +36,11 @@ const shareContent = (title: string, text: string, url: string) => {
 
 // Add fallback images array
 const fallbackImages = [
-  "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&auto=format&fit=crop&q=80", // Boxing gym
-  "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800&auto=format&fit=crop&q=80", // MMA training
-  "https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=800&auto=format&fit=crop&q=80", // Martial arts dojo
-  "https://images.unsplash.com/photo-1599058945522-28d584b6f0ff?w=800&auto=format&fit=crop&q=80", // Kickboxing
-  "https://images.unsplash.com/photo-1605296867424-35c82a8b402e?w=800&auto=format&fit=crop&q=80", // Gym equipment
-  "https://images.unsplash.com/photo-1591117207239-788bf8de6c3b?w=800&auto=format&fit=crop&q=80"  // Training area
+  "/img/gallery-boxing-gym-fallback.webp", // Boxing gym
+  "/img/gallery-mma-training-fallback.webp", // MMA training
+  "/img/gallery-martial-arts-dojo-fallback.webp", // Martial arts dojo
+  "/img/gallery-kickboxing-fallback.webp", // Kickboxing
+  "/img/gallery-training-area-fallback.webp" // Training area
 ];
 
 // Add function to get random fallback image
@@ -76,7 +75,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 3,
-    src: "https://img.youtube.com/vi/GLtEfAEpa_s/hqdefault.jpg",
+    src: "/img/gallery-youtube-gym-promo-thumbnail.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Gym Promo",
     description: "Explore our modern gym facilities and training equipment",
@@ -88,7 +87,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 4,
-    src: "https://img.youtube.com/vi/ZzWmeqCa3RI/maxresdefault.jpg",
+    src: "/img/gallery-youtube-ykfa-promo-thumbnail.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Promo",
     description: "Experience the power of martial arts training at YKFA",
@@ -100,7 +99,7 @@ const galleryImages: GalleryImage[] = [
   },
   {
     id: 5,
-    src: "https://img.youtube.com/vi/UITDMMyzH04/hqdefault.jpg",
+    src: "/img/gallery-youtube-training-highlights-thumbnail.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Training Highlights",
     description: "Watch our students master the art of martial arts",
@@ -242,9 +241,70 @@ const galleryImages: GalleryImage[] = [
     size: "medium",
     type: "image"
   },
-  // New images from user
+  // New images from gallery2 folder - converted to WebP
   {
     id: 19,
+    src: "/img/gallery-ykfa-training-1.webp",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Training Session 1",
+    description: "Intensive martial arts training session at YKFA academy",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 20,
+    src: "/img/gallery-ykfa-training-2.webp",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Training Session 2",
+    description: "Professional martial arts instruction and technique practice",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 21,
+    src: "/img/gallery-ykfa-training-3.webp",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Training Session 3",
+    description: "Students practicing advanced martial arts techniques",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 22,
+    src: "/img/gallery-ykfa-training-4.webp",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Training Session 4",
+    description: "Group training and skill development at YKFA",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 23,
+    src: "/img/gallery-ykfa-training-5.webp",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Training Session 5",
+    description: "Martial arts practice and physical conditioning",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  {
+    id: 24,
+    src: "/img/gallery-ykfa-training-6.webp",
+    fallbackSrc: getRandomFallbackImage(),
+    title: "YKFA Training Session 6",
+    description: "Expert instruction and technique refinement",
+    aspectRatio: "4/3",
+    size: "medium",
+    type: "image"
+  },
+  // Additional existing images
+  {
+    id: 25,
     src: "/img/about-img9857.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 1",
@@ -254,7 +314,7 @@ const galleryImages: GalleryImage[] = [
     type: "image"
   },
   {
-    id: 20,
+    id: 26,
     src: "/img/about-img9840.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 2",
@@ -264,7 +324,7 @@ const galleryImages: GalleryImage[] = [
     type: "image"
   },
   {
-    id: 21,
+    id: 27,
     src: "/img/about-img9847.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 3",
@@ -274,7 +334,7 @@ const galleryImages: GalleryImage[] = [
     type: "image"
   },
   {
-    id: 22,
+    id: 28,
     src: "/img/about-img9853.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 4",
@@ -284,7 +344,7 @@ const galleryImages: GalleryImage[] = [
     type: "image"
   },
   {
-    id: 23,
+    id: 29,
     src: "/img/about-img9860.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 5",
@@ -294,7 +354,7 @@ const galleryImages: GalleryImage[] = [
     type: "image"
   },
   {
-    id: 24,
+    id: 30,
     src: "/img/about-img9826.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 6",
@@ -304,7 +364,7 @@ const galleryImages: GalleryImage[] = [
     type: "image"
   },
   {
-    id: 25,
+    id: 31,
     src: "/img/about-img9828.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 7",
@@ -314,7 +374,7 @@ const galleryImages: GalleryImage[] = [
     type: "image"
   },
   {
-    id: 26,
+    id: 32,
     src: "/img/about-img9845.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 8",
@@ -324,7 +384,7 @@ const galleryImages: GalleryImage[] = [
     type: "image"
   },
   {
-    id: 27,
+    id: 33,
     src: "/img/about-img9836.webp",
     fallbackSrc: getRandomFallbackImage(),
     title: "YKFA Event 9",
@@ -338,9 +398,8 @@ const galleryImages: GalleryImage[] = [
 // Custom data attributes for cursor interactions
 
 const ProgramsPage = () => {
-  // State management - optimized to remove unused states
+  // State management - optimized and removed loading states
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   // Use refs instead of state for scroll tracking to reduce re-renders
   const scrollPositionRef = useRef<number>(0);
   // Use a more efficient approach for tracking visible cards
@@ -366,97 +425,6 @@ const ProgramsPage = () => {
     visibleCardsRef.current.clear();
   }, []);
 
-  // Load images with optimized memory usage and progressive loading
-  useEffect(() => {
-    // TEMPORARILY DISABLED to prevent memory spikes on initial load
-    // Track if component is mounted to prevent state updates after unmount
-    // let isMounted = true;
-    // const imageElements: HTMLImageElement[] = [];
-    
-    // // Use a batched approach to load images in smaller groups
-    // const loadImagesInBatches = async () => {
-    //   const BATCH_SIZE = 5; // Process 5 images at a time to reduce memory pressure
-    //   const batches = [];
-      
-    //   // Split gallery images into batches
-    //   for (let i = 0; i < galleryImages.length; i += BATCH_SIZE) {
-    //     batches.push(galleryImages.slice(i, i + BATCH_SIZE));
-    //   }
-      
-    //   try {
-    //     // Process each batch sequentially
-    //     for (const batch of batches) {
-    //       if (!isMounted) return; // Stop if component unmounted
-          
-    //       await Promise.all(
-    //         batch.map((img) => {
-    //           return new Promise<void>((resolve) => {
-    //             // Use setTimeout to stagger image loading and reduce memory spikes
-    //             setTimeout(() => {
-    //               if (!isMounted) {
-    //                 resolve();
-    //                 return;
-    //               }
-                  
-    //               const image = new Image();
-    //               // Set image size explicitly to help browser allocate memory correctly
-    //               image.width = 300; // Reasonable thumbnail size
-    //               image.height = 200;
-    //               imageElements.push(image);
-                  
-    //               // Add timeout to prevent hanging on slow connections
-    //               const timeoutId = setTimeout(() => {
-    //                 if (isMounted) {
-    //                   image.src = img.fallbackSrc;
-    //                   resolve();
-    //                 }
-    //               }, 5000); // 5 second timeout
-                  
-    //               image.onload = () => {
-    //                 clearTimeout(timeoutId);
-    //                 resolve();
-    //               };
-                  
-    //               image.onerror = () => {
-    //                 clearTimeout(timeoutId);
-    //                 if (isMounted) image.src = img.fallbackSrc;
-    //                 resolve();
-    //               };
-                  
-    //               // Add query params to request optimized images from server
-    //               image.src = `${img.src}?w=300&q=75`;
-    //             }, 50); // Stagger loading by 50ms
-    //           });
-    //         })
-    //       );
-    //     }
-        
-    //     if (isMounted) setIsLoading(false);
-    //   } catch (error) {
-    //     console.error('Error loading images:', error);
-    //     if (isMounted) setIsLoading(false);
-    //   }
-    // };
-
-    // loadImagesInBatches();
-    
-    // // Comprehensive cleanup function
-    // return () => {
-    //   isMounted = false;
-    //   imageElements.forEach(img => {
-    //     // Clear all event handlers
-    //     img.onload = null;
-    //     img.onerror = null;
-        
-    //     // Cancel any pending requests
-    //     img.src = '';
-    //   });
-    // };
-    
-    // Set loading to false immediately since we're not preloading
-    setIsLoading(false);
-  }, []);
-
   // Track scroll position with refs to avoid re-renders
   useEffect(() => {
     const handleScroll = () => {
@@ -478,8 +446,6 @@ const ProgramsPage = () => {
 
   // Optimized effect for filter changes
   useEffect(() => {
-    if (isLoading) return;
-    
     // When filter changes, make all cards visible immediately using ref
     // This avoids unnecessary re-renders
     filteredGalleryImages.forEach((_, index) => {
@@ -488,7 +454,7 @@ const ProgramsPage = () => {
     
     // Force a single re-render to apply visibility changes
     forceUpdate({});
-  }, [isLoading, activeFilter, filteredGalleryImages.length]);
+  }, [activeFilter, filteredGalleryImages.length]);
   
   // Helper function to force a single re-render when needed
   const [, forceUpdate] = useState<object>(() => ({}));
@@ -496,7 +462,6 @@ const ProgramsPage = () => {
 
   // Set up intersection observer for initial load animations
   useEffect(() => {
-    if (isLoading) return;
     
     const options = {
       root: null,
@@ -532,7 +497,7 @@ const ProgramsPage = () => {
     });
     
     return () => observer.disconnect();
-  }, [isLoading]);
+  }, []);
 
   // Modal navigation
   const navigateImage = (direction: 'next' | 'prev') => {
@@ -573,28 +538,10 @@ const ProgramsPage = () => {
     }
   };
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-gradient-to-b from-dark-900 via-dark-800 to-dark-900">
-        <div className="relative w-20 h-20 mb-4">
-          <div className="absolute inset-0 border-4 border-amber-400/20 rounded-full"></div>
-          <div className="absolute inset-0 border-t-4 border-amber-400 rounded-full animate-spin"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Camera className="w-6 h-6 text-amber-400" />
-          </div>
-        </div>
-        <p className="text-gray-300 text-lg font-medium mb-2">Loading Gallery</p>
-        <p className="text-gray-400 text-sm">Preparing your images...</p>
-      </div>
-    );
-  }
-  
+  // Find the YKFA Champions video
   const selectedImageData = selectedImage !== null 
     ? galleryImages.find(img => img.id === selectedImage) 
     : null;
-
-  // Find the YKFA Champions video
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-dark-900 via-dark-800 to-dark-900 pt-20 md:pt-24 pb-16 md:pb-20 overflow-hidden">
