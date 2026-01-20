@@ -13,7 +13,7 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
   const [position, setPosition] = useState({ top: 0, right: 0 });
   const [isVisible, setIsVisible] = useState(false);
   const [isContentVisible, setIsContentVisible] = useState(false);
-  
+
   // Use provided buttonRef or fallback to default position
   const actualButtonRef = buttonRef || defaultButtonRef;
 
@@ -36,10 +36,10 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
           right: 20
         });
       }
-      
+
       // Show the widget container first
       setIsVisible(true);
-      
+
       // Then reveal the content with a slight delay
       setTimeout(() => {
         setIsContentVisible(true);
@@ -47,7 +47,7 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
     } else {
       // Hide content first
       setIsContentVisible(false);
-      
+
       // Then hide container after animation completes
       setTimeout(() => {
         setIsVisible(false);
@@ -59,7 +59,7 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        widgetRef.current && 
+        widgetRef.current &&
         !widgetRef.current.contains(event.target as Node) &&
         (!actualButtonRef.current || !actualButtonRef.current.contains(event.target as Node))
       ) {
@@ -98,18 +98,18 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
   return (
     <>
       {/* Widget container - Memory efficient version */}
-      <div 
+      <div
         ref={widgetRef}
         className="fixed z-[200] w-72 rounded-xl overflow-hidden"
-        style={{ 
-          top: `${position.top}px`, 
+        style={{
+          top: `${position.top}px`,
           right: `${position.right}px`,
-          transform: isContentVisible 
-            ? 'translateY(0) scale(1)' 
+          transform: isContentVisible
+            ? 'translateY(0) scale(1)'
             : 'translateY(-20px) scale(0.98)',
           opacity: isContentVisible ? 1 : 0,
-          boxShadow: isContentVisible 
-            ? '0 8px 15px -5px rgba(0, 0, 0, 0.25), 0 0 5px rgba(255, 255, 255, 0.05)' 
+          boxShadow: isContentVisible
+            ? '0 8px 15px -5px rgba(0, 0, 0, 0.25), 0 0 5px rgba(255, 255, 255, 0.05)'
             : '0 0 0 rgba(0, 0, 0, 0)',
           transition: 'transform 0.4s ease, opacity 0.3s ease, box-shadow 0.4s ease'
         }}
@@ -117,18 +117,18 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
         {/* Widget inner with solid background instead of blur */}
         <div className="relative glassmorphic h-full">
           {/* Top light effect - reduced opacity */}
-          <div 
+          <div
             className="absolute inset-x-0 top-0 h-20 pointer-events-none transition-opacity duration-500 delay-300"
             style={{
               background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.02), transparent)',
               opacity: isContentVisible ? 1 : 0
             }}
           />
-          
+
           {/* Container for all content */}
           <div className="relative">
             {/* Header */}
-            <div 
+            <div
               className="p-4 flex gap-3 border-b border-white/10"
               style={{
                 transform: isContentVisible ? 'translateY(0)' : 'translateY(-10px)',
@@ -140,10 +140,10 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
               {/* App icon - static version */}
               <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/10 shadow-lg flex-shrink-0">
                 <div className="w-full h-full bg-gradient-to-br from-amber-400 to-amber-600">
-                  <img 
-                    src="/icons/dumbbell-small.svg" 
-                    alt="YKFA Warriors" 
-                    className="w-full h-full p-1.5" 
+                  <img
+                    src="/icons/dumbbell-small.svg"
+                    alt="YKFA Warriors"
+                    className="w-full h-full p-1.5"
                   />
                 </div>
               </div>
@@ -151,7 +151,7 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
               {/* App details */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <h3 
+                  <h3
                     className="text-base font-bold text-white truncate"
                     style={{
                       transform: isContentVisible ? 'translateY(0)' : 'translateY(-5px)',
@@ -162,14 +162,14 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
                   >
                     YKFA Warriors
                   </h3>
-                  <button 
-                    onClick={onClose} 
+                  <button
+                    onClick={onClose}
                     className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300 hover:rotate-90"
                   >
                     <X size={12} className="text-gray-300" />
                   </button>
                 </div>
-                <p 
+                <p
                   className="text-amber-400 text-xs"
                   style={{
                     transform: isContentVisible ? 'translateY(0)' : 'translateY(-5px)',
@@ -184,7 +184,7 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
             </div>
 
             {/* Brief Description */}
-            <div 
+            <div
               className="p-3 border-b border-white/10"
               style={{
                 transform: isContentVisible ? 'translateY(0)' : 'translateY(10px)',
@@ -199,7 +199,7 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
             </div>
 
             {/* CTA Buttons */}
-            <div 
+            <div
               className="p-3 flex gap-3"
               style={{
                 transform: isContentVisible ? 'translateY(0)' : 'translateY(10px)',
@@ -209,8 +209,8 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
               }}
             >
               <div className="widget-button-container flex-1">
-                <a 
-                  href="https://play.google.com/store/apps/details?id=com.ydl.yaseensykfawarriors&pcampaignid=web_share"
+                <a
+                  href="https://play.google.com/store/apps/details?id=com.ydl.yaseensykfawarriorss&pcampaignid=web_share"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="widget-button"
@@ -228,7 +228,7 @@ const AppStoreWidget = ({ isOpen, onClose, buttonRef }: AppStoreWidgetProps) => 
               </div>
 
               <div className="widget-button-container flex-1">
-                <a 
+                <a
                   href="https://apps.apple.com/in/app/yaseens-ykfa-warriors/id6742874298"
                   target="_blank"
                   rel="noopener noreferrer"

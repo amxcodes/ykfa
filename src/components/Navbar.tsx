@@ -60,10 +60,9 @@ const Navbar = ({ isScrolled }: { isScrolled: boolean }) => {
     <>
       <header
         ref={navRef}
-        className={`fixed w-full z-[100] transition-all duration-300 bg-black ${
-          !show ? '-translate-y-full' : 'translate-y-0'
-        }`}
-        style={{ 
+        className={`fixed w-full z-[100] transition-all duration-300 bg-black ${!show ? '-translate-y-full' : 'translate-y-0'
+          }`}
+        style={{
           willChange: 'transform',
           transform: `translateZ(0)`,
           WebkitBackfaceVisibility: 'hidden',
@@ -77,9 +76,9 @@ const Navbar = ({ isScrolled }: { isScrolled: boolean }) => {
               <Link to="/" className="flex items-center gap-2 group">
                 <div className="relative w-10 h-10 flex items-center justify-center rounded-lg overflow-hidden bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg group-hover:shadow-amber-400/50 transition-shadow duration-300">
                   <span className="absolute inset-0 bg-gradient-to-br from-amber-300 to-amber-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-                  <img 
-                    src="https://i.postimg.cc/g0mqFF16/favicon.png" 
-                    alt="Dumbbell icon" 
+                  <img
+                    src="https://i.postimg.cc/g0mqFF16/favicon.png"
+                    alt="Dumbbell icon"
                     className="w-10 h-10 text-black z-10 transform group-hover:scale-105 transition-transform duration-300"
                     style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))' }}
                     loading="lazy"
@@ -97,82 +96,75 @@ const Navbar = ({ isScrolled }: { isScrolled: boolean }) => {
               {/* Desktop Navigation */}
               <nav className="hidden lg:flex items-center">
                 <div className="flex items-center space-x-1">
-                  <NavLink to="/" className={({ isActive }) => 
-                    `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${
-                      isActive 
-                        ? 'text-amber-400 bg-black border border-white/10' 
-                        : 'text-white hover:text-amber-400 hover:bg-black border border-transparent'
+                  <NavLink to="/" className={({ isActive }) =>
+                    `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${isActive
+                      ? 'text-amber-400 bg-black border border-white/10'
+                      : 'text-white hover:text-amber-400 hover:bg-black border border-transparent'
                     }`
                   }>
                     Home
                   </NavLink>
-                  
-                  <NavLink to="/programs" className={({ isActive }) => 
-                    `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${
-                      isActive 
-                        ? 'text-amber-400 bg-black border border-white/10' 
-                        : 'text-white hover:text-amber-400 hover:bg-black border border-transparent'
+
+                  <NavLink to="/programs" className={({ isActive }) =>
+                    `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${isActive
+                      ? 'text-amber-400 bg-black border border-white/10'
+                      : 'text-white hover:text-amber-400 hover:bg-black border border-transparent'
                     }`
                   }>
                     Gallery
                   </NavLink>
-                  
-                  <NavLink to="/schedule" className={({ isActive }) => 
-                    `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${
-                      isActive 
-                        ? 'text-amber-400 bg-black border border-white/10' 
-                        : 'text-white hover:text-amber-400 hover:bg-black border border-transparent'
+
+                  <NavLink to="/schedule" className={({ isActive }) =>
+                    `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${isActive
+                      ? 'text-amber-400 bg-black border border-white/10'
+                      : 'text-white hover:text-amber-400 hover:bg-black border border-transparent'
                     }`
                   }>
                     Schedule
                   </NavLink>
-                  
-                  <NavLink to="/store" className={({ isActive }) => 
-                    `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${
-                      isActive 
-                        ? 'text-amber-400 bg-black border border-white/10' 
-                        : 'text-white hover:text-amber-400 hover:bg-black border border-transparent'
+
+                  <NavLink to="/store" className={({ isActive }) =>
+                    `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${isActive
+                      ? 'text-amber-400 bg-black border border-white/10'
+                      : 'text-white hover:text-amber-400 hover:bg-black border border-transparent'
                     }`
                   }>
                     Store
                   </NavLink>
-                  <NavLink to="/membership" className={({ isActive }) => 
-                    `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${
-                      isActive 
-                        ? 'text-amber-400 bg-black border border-white/10' 
-                        : 'text-white hover:text-amber-400 hover:bg-black border border-transparent'
+                  <NavLink to="/membership" className={({ isActive }) =>
+                    `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${isActive
+                      ? 'text-amber-400 bg-black border border-white/10'
+                      : 'text-white hover:text-amber-400 hover:bg-black border border-transparent'
                     }`
                   }>
                     Membership
                   </NavLink>
 
-                  <NavLink to="/blog" className={({ isActive }) => 
-                    `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${
-                      isActive 
-                        ? 'text-amber-400 bg-black border border-white/10' 
-                        : 'text-white hover:text-amber-400 hover:bg-black border border-transparent'
+                  <NavLink to="/blog" className={({ isActive }) =>
+                    `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${isActive
+                      ? 'text-amber-400 bg-black border border-white/10'
+                      : 'text-white hover:text-amber-400 hover:bg-black border border-transparent'
                     }`
                   }>
                     Blogs
                   </NavLink>
 
-                  <NavLink to="/contact" className={({ isActive }) => 
-                    `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${
-                      isActive 
-                        ? 'text-amber-400 bg-black border border-white/10' 
-                        : 'text-white hover:text-amber-400 hover:bg-black border border-transparent'
+                  <NavLink to="/contact" className={({ isActive }) =>
+                    `px-3 py-1.5 rounded-lg text-sm transition-all duration-300 ${isActive
+                      ? 'text-amber-400 bg-black border border-white/10'
+                      : 'text-white hover:text-amber-400 hover:bg-black border border-transparent'
                     }`
                   }>
                     Contact
                   </NavLink>
                 </div>
-                
+
                 {/* Divider and Download App Button with extra spacing */}
                 <div className="flex items-center">
                   <div className="mx-8 h-5 w-px bg-white/10"></div>
-                  <a 
+                  <a
                     ref={appButtonRef}
-                    href="https://play.google.com/store/apps/details?id=com.ydl.yaseensykfawarriors&pcampaignid=web_share" 
+                    href="https://play.google.com/store/apps/details?id=com.ydl.yaseensykfawarriorss&pcampaignid=web_share"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-gradient-to-br from-amber-400 to-amber-500 text-black px-4 py-1.5 rounded-lg text-sm hover:shadow-[0_0_15px_rgba(255,191,36,0.3)] transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-2 border border-amber-300/30"
@@ -200,17 +192,17 @@ const Navbar = ({ isScrolled }: { isScrolled: boolean }) => {
         </div>
 
         {/* App Store Widget (desktop only) */}
-        <AppStoreWidget 
-          isOpen={showAppWidget} 
-          onClose={() => setShowAppWidget(false)} 
+        <AppStoreWidget
+          isOpen={showAppWidget}
+          onClose={() => setShowAppWidget(false)}
           buttonRef={appButtonRef}
         />
       </header>
 
       {/* Mobile Menu - updated to use children prop */}
-      <MobileMenu 
-        isOpen={isMenuOpen} 
-        onClose={() => setIsMenuOpen(false)} 
+      <MobileMenu
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
         currentPath={location.pathname}
       >
         {/* Removed performance mode option */}

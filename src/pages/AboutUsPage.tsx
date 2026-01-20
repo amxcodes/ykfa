@@ -236,15 +236,15 @@ const AboutUsPage = () => {
                           <ul className="text-sm space-y-1">
                             <li className="flex items-center gap-1.5">
                               <div className="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>
-                              <span>3rd Dan Black Belt in Karate</span>
+                              <span>Karate National Coach and Referee</span>
                             </li>
                             <li className="flex items-center gap-1.5">
                               <div className="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>
-                              <span>Certified Self-Defense Coach</span>
+                              <span>Muay Thai National Coach and Referee</span>
                             </li>
                             <li className="flex items-center gap-1.5">
                               <div className="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>
-                              <span>Level-4 Certified Fitness Trainer</span>
+                              <span>MMA State Coach and Referee</span>
                             </li>
                           </ul>
                         </div>
@@ -253,15 +253,11 @@ const AboutUsPage = () => {
                           <ul className="text-sm space-y-1">
                             <li className="flex items-center gap-1.5">
                               <div className="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>
-                              <span>Karate & MMA</span>
+                              <span>Awarded as Kerala Best Karate Master in 2025</span>
                             </li>
                             <li className="flex items-center gap-1.5">
                               <div className="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>
-                              <span>Sports Injury Management</span>
-                            </li>
-                            <li className="flex items-center gap-1.5">
-                              <div className="w-1.5 h-1.5 bg-amber-400 rounded-full"></div>
-                              <span>Kobudo (Weapons Training)</span>
+                              <span>Certified Fitness Coach</span>
                             </li>
                           </ul>
                         </div>

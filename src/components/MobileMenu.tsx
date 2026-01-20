@@ -36,7 +36,7 @@ const MobileMenu = ({ isOpen, onClose, currentPath = '/', children }: MobileMenu
   // Track screen size changes with debounce for better performance
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
-    
+
     const handleResize = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
@@ -64,7 +64,7 @@ const MobileMenu = ({ isOpen, onClose, currentPath = '/', children }: MobileMenu
       document.body.style.overflow = '';
       document.body.style.touchAction = '';
     }
-    
+
     return () => {
       document.body.style.overflow = '';
       document.body.style.touchAction = '';
@@ -78,11 +78,11 @@ const MobileMenu = ({ isOpen, onClose, currentPath = '/', children }: MobileMenu
         onClose();
       }
     };
-    
+
     if (isOpen) {
       window.addEventListener('keydown', handleEsc);
     }
-    
+
     return () => {
       window.removeEventListener('keydown', handleEsc);
     };
@@ -95,11 +95,11 @@ const MobileMenu = ({ isOpen, onClose, currentPath = '/', children }: MobileMenu
         onClose();
       }
     };
-    
+
     if (isOpen) {
       document.addEventListener('mousedown', handleOutsideClick);
     }
-    
+
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick);
     };
@@ -107,36 +107,36 @@ const MobileMenu = ({ isOpen, onClose, currentPath = '/', children }: MobileMenu
 
   // Use a ref to track mobile state instead of state to reduce re-renders
   const isMobileRef = useRef(window.innerWidth <= 768);
-  
+
   // Check if device is mobile - optimized to use ref instead of state
   useEffect(() => {
     const checkMobile = () => {
       isMobileRef.current = window.innerWidth <= 768;
     };
-    
+
     checkMobile();
     // Use passive listener for better performance
     window.addEventListener('resize', checkMobile, { passive: true });
-    
+
     return () => {
       window.removeEventListener('resize', checkMobile);
     };
   }, []);
-  
+
   // Calculate responsive dimensions
   const getContainerStyles = () => {
     const width = screenSize.width;
-    
+
     // Base styles - reduced width
     let containerWidth = Math.min(280, screenSize.width * 0.75) + 'px';
     let borderRadius = '14px';
-    
+
     // Small phones
     if (width < 350) {
       containerWidth = Math.min(250, screenSize.width * 0.82) + 'px';
       borderRadius = '12px';
     }
-    
+
     return {
       width: containerWidth,
       borderRadius
@@ -165,22 +165,22 @@ const MobileMenu = ({ isOpen, onClose, currentPath = '/', children }: MobileMenu
 
   const menuVariants = {
     hidden: { opacity: 0, transform: 'scale(0.95) translateY(10px)' },
-    visible: { 
-      opacity: 1, 
-      transform: 'scale(1) translateY(0px)', 
-      transition: { 
+    visible: {
+      opacity: 1,
+      transform: 'scale(1) translateY(0px)',
+      transition: {
         type: "spring",
         damping: 25,
         stiffness: 300,
         duration: 0.25
       }
     },
-    exit: { 
-      opacity: 0, 
-      transform: 'scale(0.95) translateY(10px)', 
-      transition: { 
-        duration: 0.15 
-      } 
+    exit: {
+      opacity: 0,
+      transform: 'scale(0.95) translateY(10px)',
+      transition: {
+        duration: 0.15
+      }
     }
   };
 
@@ -188,127 +188,126 @@ const MobileMenu = ({ isOpen, onClose, currentPath = '/', children }: MobileMenu
   return ReactDOM.createPortal(
     <>
       {isOpen && (
-        <div 
+        <div
           key="mobile-menu-container"
           className="fixed inset-0 flex items-center justify-center z-[999]"
-          style={{ 
+          style={{
             willChange: 'opacity',
             overscrollBehavior: 'none',
             touchAction: 'none'
           }}
         >
-        {/* Backdrop with blur */}
-        <div
-          className="absolute inset-0 bg-black/90 animate-fade-in"
-          onClick={onClose}
-          style={{ willChange: 'opacity' }}
-        />
-        
-        {/* Menu container */}
-        <div
-          ref={menuRef}
-          className="relative z-10 animate-mobile-menu-in"
-          style={{
-            width: styles.width,
-            willChange: 'transform, opacity',
-            transform: 'translateZ(0)',
-          }}
-        >
-          <div 
-            className="glassmorphic"
-            style={{ borderRadius: styles.borderRadius, transform: 'translateZ(0)' }}
+          {/* Backdrop with blur */}
+          <div
+            className="absolute inset-0 bg-black/90 animate-fade-in"
+            onClick={onClose}
+            style={{ willChange: 'opacity' }}
+          />
+
+          {/* Menu container */}
+          <div
+            ref={menuRef}
+            className="relative z-10 animate-mobile-menu-in"
+            style={{
+              width: styles.width,
+              willChange: 'transform, opacity',
+              transform: 'translateZ(0)',
+            }}
           >
-            {/* Simplified decorative elements - no blur */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/10 rounded-full opacity-40 pointer-events-none"></div>
-            <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/10 rounded-full opacity-40 pointer-events-none"></div>
-            
-            {/* Header with logo */}
-            <div className="p-3 border-b border-white/10">
-              <div className="flex items-center justify-center gap-2">
-                {/* Logo container */}
-                <div className="relative w-8 h-8 flex items-center justify-center rounded-lg overflow-hidden bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg">
-                  <span className="absolute inset-0 bg-gradient-to-br from-amber-300 to-amber-600 opacity-70"></span>
-                  <img 
-                    src="/icons/dumbbell-small.svg" 
-                    alt="YKFA" 
-                    className="w-8 h-8 relative z-10"
-                    style={{ 
-                      filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))',
-                      transform: 'translateZ(0)'
-                    }}
-                    width="32"
-                    height="32"
-                  />
-                </div>
-                
-                {/* Text content */}
-                <div className="flex flex-col items-center">
-                  <span className="text-lg font-bold font-spaceGrotesk tracking-wide whitespace-nowrap">
-                    Yaseen's <span className="text-amber-400">YKFA</span>
-                  </span>
-                  <span className="text-[9px] text-gray-400 -mt-1 tracking-wide">FITNESS & MARTIAL ARTS</span>
+            <div
+              className="glassmorphic"
+              style={{ borderRadius: styles.borderRadius, transform: 'translateZ(0)' }}
+            >
+              {/* Simplified decorative elements - no blur */}
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/10 rounded-full opacity-40 pointer-events-none"></div>
+              <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/10 rounded-full opacity-40 pointer-events-none"></div>
+
+              {/* Header with logo */}
+              <div className="p-3 border-b border-white/10">
+                <div className="flex items-center justify-center gap-2">
+                  {/* Logo container */}
+                  <div className="relative w-8 h-8 flex items-center justify-center rounded-lg overflow-hidden bg-gradient-to-r from-amber-400 to-amber-500 shadow-lg">
+                    <span className="absolute inset-0 bg-gradient-to-br from-amber-300 to-amber-600 opacity-70"></span>
+                    <img
+                      src="/icons/dumbbell-small.svg"
+                      alt="YKFA"
+                      className="w-8 h-8 relative z-10"
+                      style={{
+                        filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))',
+                        transform: 'translateZ(0)'
+                      }}
+                      width="32"
+                      height="32"
+                    />
+                  </div>
+
+                  {/* Text content */}
+                  <div className="flex flex-col items-center">
+                    <span className="text-lg font-bold font-spaceGrotesk tracking-wide whitespace-nowrap">
+                      Yaseen's <span className="text-amber-400">YKFA</span>
+                    </span>
+                    <span className="text-[9px] text-gray-400 -mt-1 tracking-wide">FITNESS & MARTIAL ARTS</span>
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            {/* Navigation Links */}
-            <nav className="p-2">
-              <ul className="space-y-1">
-                {navigationItems.map((item) => {
-                  const isActive = currentPath === item.to;
-                  const Icon = item.icon;
-                  
-                  return (
-                    <li key={item.to}>
-                    <Link
-                      to={item.to}
-                        className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
-                          isActive
-                            ? 'bg-amber-500/20 text-amber-400'
-                            : 'text-gray-300 hover:bg-white/5'
-                        }`}
-                        onClick={onClose}
-                      >
-                        <Icon className={`w-4 h-4 ${isActive ? 'text-amber-400' : 'text-gray-400'}`} />
-                        <span>{item.label}</span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </nav>
-            
-            {/* App download buttons */}
-            <div className="px-4 py-3 border-t border-white/10">
-              <div className="flex gap-2">
-                <a
-                href="https://play.google.com/store/apps/details?id=com.ydl.yaseensykfawarriors&pcampaignid=web_share"
-                target="_blank"
-                rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 bg-black/30 hover:bg-black/50 text-white py-2 rounded-lg border border-white/10 transition-colors"
-                onClick={onClose}
-              >
-                <PlayStoreIcon />
-                  <span className="text-xs">Google Play</span>
-                </a>
-                <a
-                  href="#"
-                  className="flex-1 flex items-center justify-center gap-2 bg-black/30 hover:bg-black/50 text-white py-2 rounded-lg border border-white/10 transition-colors"
-                onClick={onClose}
-              >
-                <AppleStoreIcon />
-                  <span className="text-xs">App Store</span>
-                </a>
+
+              {/* Navigation Links */}
+              <nav className="p-2">
+                <ul className="space-y-1">
+                  {navigationItems.map((item) => {
+                    const isActive = currentPath === item.to;
+                    const Icon = item.icon;
+
+                    return (
+                      <li key={item.to}>
+                        <Link
+                          to={item.to}
+                          className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${isActive
+                              ? 'bg-amber-500/20 text-amber-400'
+                              : 'text-gray-300 hover:bg-white/5'
+                            }`}
+                          onClick={onClose}
+                        >
+                          <Icon className={`w-4 h-4 ${isActive ? 'text-amber-400' : 'text-gray-400'}`} />
+                          <span>{item.label}</span>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+
+              {/* App download buttons */}
+              <div className="px-4 py-3 border-t border-white/10">
+                <div className="flex gap-2">
+                  <a
+                    href="https://play.google.com/store/apps/details?id=com.ydl.yaseensykfawarriorss&pcampaignid=web_share"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 bg-black/30 hover:bg-black/50 text-white py-2 rounded-lg border border-white/10 transition-colors"
+                    onClick={onClose}
+                  >
+                    <PlayStoreIcon />
+                    <span className="text-xs">Google Play</span>
+                  </a>
+                  <a
+                    href="#"
+                    className="flex-1 flex items-center justify-center gap-2 bg-black/30 hover:bg-black/50 text-white py-2 rounded-lg border border-white/10 transition-colors"
+                    onClick={onClose}
+                  >
+                    <AppleStoreIcon />
+                    <span className="text-xs">App Store</span>
+                  </a>
+                </div>
               </div>
+
+              {/* Render children if provided */}
+              {children}
             </div>
-            
-            {/* Render children if provided */}
-            {children}
           </div>
         </div>
-      </div>
       )}
-      
+
       {/* CSS animation for menu items */}
       <style>{`
         @keyframes navItemFadeIn {
